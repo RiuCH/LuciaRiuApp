@@ -378,9 +378,71 @@
     0%   { transform: translate(0,0) scale(0.6); opacity: 1; }
     100% { transform: translate(var(--dx), var(--dy)) scale(1.4) rotate(50deg); opacity: 0; }
   }
+
+  /* ------- lock screen ------- */
+  .lock {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 24px;
+    text-align: center;
+    background: linear-gradient(-45deg, var(--bg1), var(--bg2), var(--bg3), var(--bg1));
+    background-size: 400% 400%;
+    animation: gradientShift 18s ease infinite;
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .lock.open { opacity: 0; transform: scale(1.08); pointer-events: none; }
+  .lock .lockheart { font-size: 58px; animation: pulse 1.6s ease-in-out infinite; }
+  .lock .locktitle {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  .lock .prompt { color: var(--text-dim); font-size: 14.5px; line-height: 1.6; }
+  .lock input {
+    font-family: inherit;
+    font-size: 18px;
+    text-align: center;
+    letter-spacing: 2px;
+    color: var(--text);
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 12px 16px;
+    width: min(260px, 80vw);
+    outline: none;
+    transition: border-color 0.3s ease;
+  }
+  .lock input:focus { border-color: var(--accent); }
+  .lock input.wrong { animation: shakeX 0.4s ease; border-color: #ff2e63; }
+  @keyframes shakeX {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-9px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-6px); }
+    80% { transform: translateX(4px); }
+  }
+  .lock .lockhint { min-height: 20px; font-size: 12.5px; color: var(--text-dim); max-width: 300px; }
+  body.locked { overflow: hidden; }
 </style>
 </head>
 <body>
+
+<!-- ================= LOCK SCREEN ================= -->
+<div class="lock" id="lock">
+  <div class="lockheart">💞</div>
+  <div class="locktitle">Lucia <span class="amp">♥</span> Riu</div>
+  <div class="prompt">Members only. Population: 2.<br>When did we become <i>us</i>?</div>
+  <input type="text" id="lockInput" inputmode="numeric" placeholder="MM/DD/YYYY" autocomplete="off">
+  <button class="primary" id="lockBtn">Unlock 💘</button>
+  <div class="lockhint" id="lockHint"></div>
+</div>
 
 <div class="app">
   <header>
@@ -657,6 +719,22 @@ const CHIPS = {
   ldr:      { label: "💌 Long Distance", color: "#7ac7ff" }
 };
 
+// ---------------- URL-HASH PARAMS (our only "storage") ----------------
+function getHashParam(name) {
+  try {
+    const m = location.hash.match(new RegExp(name + "=([^&]+)"));
+    return m ? m[1] : null;
+  } catch (e) { return null; }
+}
+function setHashParam(name, val) {
+  try {
+    const parts = location.hash.replace(/^#/, "").split("&")
+      .filter(p => p && !p.startsWith(name + "="));
+    parts.push(name + "=" + val);
+    location.hash = parts.join("&");
+  } catch (e) {}
+}
+
 // ---------------- STATE ----------------
 const EPOCH = new Date(2026, 6, 24); // Day 1 = July 24, 2026 (local time)
 let afterDark = false;
@@ -894,7 +972,7 @@ document.getElementById("setDateBtn").addEventListener("click", () => {
 reunionInput.addEventListener("change", () => {
   if (!reunionInput.value) return;
   reunionDate = new Date(reunionInput.value + "T00:00:00");
-  try { location.hash = "reunion=" + reunionInput.value; } catch (e) {}
+  setHashParam("reunion", reunionInput.value);
   reunionInput.style.display = "none";
   document.getElementById("setDateBtn").textContent = "📅 Change the date";
   tickCountdown();
@@ -943,6 +1021,56 @@ function spawnHeart() {
   h.style.animationDuration = (7 + Math.random() * 8) + "s";
   document.body.appendChild(h);
   setTimeout(() => h.remove(), 16000);
+}
+
+// ---------------- LOCK SCREEN ----------------
+// Password = our anniversary (June 2, 2026), typed almost any way:
+// 06/02/2026, 6/2/26, 060226, 0602, "june 2"... all accepted.
+const LOCK_KEYS = ["0602", "602", "060226", "06022026", "622026", "6226"];
+const LOCK_SASS = [
+  "Nope 😗 Try again, stranger.",
+  "Wrong!! Do you even love us? 😤",
+  "Hint: it's our anniversary 😉",
+  "Bigger hint: summer 2026, the day we became official 🌸",
+  "Last hint: it's in June. One of us should know this 😌"
+];
+const lockEl = document.getElementById("lock");
+const lockInput = document.getElementById("lockInput");
+const lockHint = document.getElementById("lockHint");
+let lockFails = 0;
+
+function unlock(celebrate) {
+  document.body.classList.remove("locked");
+  if (!celebrate) { lockEl.remove(); return; }
+  setHashParam("unlocked", "1");
+  lockEl.classList.add("open");
+  setTimeout(() => lockEl.remove(), 650);
+  burst(innerWidth / 2, innerHeight / 2);
+  popToast("Welcome home 💞");
+}
+
+function tryUnlock() {
+  const digits = lockInput.value.replace(/\D/g, "");
+  const text = lockInput.value.trim().toLowerCase();
+  const ok = LOCK_KEYS.includes(digits) ||
+    (text.includes("jun") && /(^|\D)0?2(\D|$)/.test(text));
+  if (ok) { unlock(true); return; }
+  lockFails++;
+  lockInput.value = "";
+  lockInput.classList.remove("wrong");
+  void lockInput.offsetWidth; // restart the shake animation
+  lockInput.classList.add("wrong");
+  lockHint.textContent = LOCK_SASS[Math.min(lockFails - 1, LOCK_SASS.length - 1)];
+  lockInput.focus();
+}
+
+if (getHashParam("unlocked") === "1") {
+  unlock(false); // already let in this session — no ceremony
+} else {
+  document.body.classList.add("locked");
+  document.getElementById("lockBtn").addEventListener("click", tryUnlock);
+  lockInput.addEventListener("keydown", e => { if (e.key === "Enter") tryUnlock(); });
+  setTimeout(() => lockInput.focus(), 300);
 }
 
 // ---------------- INIT ----------------

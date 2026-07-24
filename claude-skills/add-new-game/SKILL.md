@@ -36,8 +36,9 @@ want to keep the joke placeholder.
 
 - **Shared daily content** must derive from the date:
   `mulberry32(dayNumber() * 7919 + OFFSET)` — pick a unique OFFSET per
-  feature (Question of the Day uses 0 and 104729; e.g. use 15485863 next).
-  Same date ⇒ both phones independently compute identical content.
+  feature. The claimed-offset registry lives in `SESSIONS.md` (source of
+  truth) — claim yours there before using it. Same date ⇒ both phones
+  independently compute identical content.
 - **No cross-device state.** The phones can't talk to each other (until the
   Supabase backend in docs/ROADMAP.md exists). Games must work as: both see
   the same prompt → they talk/text/call → they play. Score-keeping across

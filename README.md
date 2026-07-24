@@ -69,6 +69,9 @@ it's in the skills.)
 3. Don't break the daily-question determinism (both phones must agree)
 4. Don't push a broken `main` — the live app updates from it automatically
 5. Keep it cute 💖
+6. Building in parallel (both of us, or several Claude sessions at once)?
+   Check [`SESSIONS.md`](SESSIONS.md) — it's the who's-working-on-what
+   board. Claude reads it automatically before starting a feature.
 
 ---
 Made with 💖 (and Claude) by Riu — co-developed by Lucia.
