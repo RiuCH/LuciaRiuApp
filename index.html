@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Lucia ♥ Riu</title>
+<style>
+  :root {
+    --bg1: #1a0b2e;
+    --bg2: #451952;
+    --bg3: #662549;
+    --accent: #ff7aa2;
+    --accent-soft: rgba(255, 122, 162, 0.25);
+    --card-bg: rgba(255, 255, 255, 0.07);
+    --card-border: rgba(255, 255, 255, 0.16);
+    --text: #fdf3f7;
+    --text-dim: rgba(253, 243, 247, 0.62);
+  }
+  body.afterdark {
+    --bg1: #0d0208;
+    --bg2: #2b040f;
+    --bg3: #560a1f;
+    --accent: #ff2e63;
+    --accent-soft: rgba(255, 46, 99, 0.28);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { height: 100%; }
+  body {
+    min-height: 100%;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    color: var(--text);
+    background: linear-gradient(-45deg, var(--bg1), var(--bg2), var(--bg3), var(--bg1));
+    background-size: 400% 400%;
+    background-attachment: fixed;
+    animation: gradientShift 18s ease infinite;
+    overflow-x: hidden;
+    transition: background 1s ease;
+    display: flex;
+    justify-content: center;
+    padding: 24px 20px 110px;
+  }
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  /* floating hearts */
+  .heart {
+    position: fixed;
+    bottom: -40px;
+    font-size: 20px;
+    opacity: 0;
+    animation: floatUp linear forwards;
+    pointer-events: none;
+    z-index: 0;
+    filter: blur(0.3px);
+  }
+  @keyframes floatUp {
+    0%   { transform: translateY(0) rotate(0deg) scale(0.8); opacity: 0; }
+    10%  { opacity: 0.55; }
+    90%  { opacity: 0.25; }
+    100% { transform: translateY(-110vh) rotate(40deg) scale(1.25); opacity: 0; }
+  }
+
+  .app {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 520px;
+    text-align: center;
+  }
+
+  header .names {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  header .names .amp {
+    color: var(--accent);
+    display: inline-block;
+    animation: pulse 1.6s ease-in-out infinite;
+    margin: 0 8px;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.35); }
+  }
+  header .sub {
+    margin: 6px 0 20px;
+    color: var(--text-dim);
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: opacity 0.3s ease;
+  }
+
+  /* ------- pages ------- */
+  .page { display: none; }
+  .page.active { display: block; animation: pageIn 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.1); }
+  @keyframes pageIn {
+    from { transform: translateY(16px); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+  }
+
+  /* ------- shared card look ------- */
+  .panel {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 22px;
+    padding: 18px;
+    margin-bottom: 16px;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.1);
+    text-align: center;
+  }
+  .panel .ptitle {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+
+  /* ------- anniversary ------- */
+  .together { font-size: 17px; font-weight: 500; }
+  .anniv b, .together b { color: var(--accent); font-variant-numeric: tabular-nums; font-weight: 700; }
+  .nextanniv { font-size: 13px; color: var(--text-dim); margin-top: 6px; }
+  .nextanniv b { font-size: 13.5px; }
+  .panel.party {
+    border-color: var(--accent);
+    box-shadow: 0 0 24px var(--accent-soft), inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+
+  /* ------- clocks ------- */
+  .clocks { display: flex; gap: 12px; justify-content: center; }
+  .clock {
+    flex: 1;
+    max-width: 200px;
+    background: rgba(0,0,0,0.18);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 12px 10px;
+  }
+  .clock .who { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); }
+  .clock .time { font-size: 26px; font-weight: 700; margin: 3px 0 1px; font-variant-numeric: tabular-nums; }
+  .clock .city { font-size: 12px; color: var(--text-dim); }
+  .tzdiff { font-size: 12px; color: var(--text-dim); margin-top: 10px; }
+
+  /* ------- countdown ------- */
+  .countdown { display: flex; gap: 10px; justify-content: center; }
+  .cd-cell {
+    background: rgba(0,0,0,0.18);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 10px 0;
+    width: 74px;
+  }
+  .cd-cell .num { font-size: 23px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .cd-cell .unit { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); }
+  .rowbtns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 14px; }
+  input[type="date"] {
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text);
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 9px 12px;
+    color-scheme: dark;
+  }
+  .missyou {
+    display: none;
+    margin-top: 14px;
+    font-size: 15px;
+    line-height: 1.5;
+    background: rgba(0,0,0,0.18);
+    border: 1px dashed var(--accent);
+    border-radius: 14px;
+    padding: 14px 16px;
+  }
+  .missyou.show { display: block; animation: pageIn 0.4s ease; }
+
+  /* ------- teaser card on home ------- */
+  .teaser { cursor: pointer; transition: transform 0.15s ease, box-shadow 0.3s ease; }
+  .teaser:hover { transform: translateY(-2px); box-shadow: 0 20px 48px rgba(0,0,0,0.35), 0 0 20px var(--accent-soft); }
+  .teaser .go {
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  /* ------- game page ------- */
+  .daybar {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .daybar .pill {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 999px;
+    padding: 6px 14px;
+    backdrop-filter: blur(8px);
+  }
+  .daybar .pill b { color: var(--text); font-weight: 600; }
+
+  .card {
+    position: relative;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 26px;
+    padding: 44px 30px 38px;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12);
+    min-height: 250px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 7px 16px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    color: var(--text);
+    transition: all 0.4s ease;
+  }
+  .question {
+    font-size: 25px;
+    line-height: 1.45;
+    font-weight: 500;
+    max-width: 420px;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+  .question.swapping { opacity: 0; transform: translateY(10px); }
+  @media (max-width: 420px) { .question { font-size: 21px; } }
+
+  .btnrow { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+  button {
+    font-family: inherit;
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 999px;
+    padding: 12px 22px;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: transform 0.15s ease, background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    user-select: none;
+  }
+  button:hover { transform: translateY(-2px); background: rgba(255,255,255,0.13); }
+  button:active { transform: translateY(0) scale(0.97); }
+  button.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    box-shadow: 0 8px 24px var(--accent-soft);
+  }
+  button.primary:hover { filter: brightness(1.1); background: var(--accent); }
+  button.toggled {
+    background: linear-gradient(135deg, #ff2e63, #7a0b2b);
+    border-color: #ff2e63;
+    box-shadow: 0 8px 28px rgba(255, 46, 99, 0.45);
+  }
+  .hint {
+    margin-top: 16px;
+    font-size: 12.5px;
+    color: var(--text-dim);
+    letter-spacing: 0.4px;
+    min-height: 18px;
+  }
+
+  /* ------- coming soon page ------- */
+  .soonbox { padding: 40px 24px; }
+  .soonbox .big { font-size: 52px; margin-bottom: 14px; }
+  .soonbox h2 { font-size: 20px; margin-bottom: 8px; }
+  .soonbox p { color: var(--text-dim); font-size: 14px; line-height: 1.6; max-width: 340px; margin: 0 auto; }
+  .progress {
+    margin: 22px auto 8px;
+    max-width: 280px;
+    height: 10px;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--card-border);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .progress .fill {
+    width: 1%;
+    height: 100%;
+    background: var(--accent);
+    border-radius: 999px;
+    animation: wiggle 3s ease-in-out infinite;
+  }
+  @keyframes wiggle { 0%,100% { width: 1%; } 50% { width: 3%; } }
+  .progress-label { font-size: 11px; color: var(--text-dim); letter-spacing: 1px; }
+
+  /* ------- bottom nav ------- */
+  .nav {
+    position: fixed;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 4px;
+    background: rgba(10, 4, 18, 0.55);
+    border: 1px solid var(--card-border);
+    border-radius: 999px;
+    padding: 6px;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 12px 36px rgba(0,0,0,0.45);
+    z-index: 20;
+  }
+  .nav button {
+    border: none;
+    background: transparent;
+    padding: 10px 18px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    backdrop-filter: none;
+    white-space: nowrap;
+  }
+  .nav button:hover { transform: none; background: rgba(255,255,255,0.08); }
+  .nav button.active {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 6px 18px var(--accent-soft);
+  }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 84px;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(0,0,0,0.65);
+    border: 1px solid var(--card-border);
+    color: var(--text);
+    padding: 10px 20px;
+    border-radius: 999px;
+    font-size: 13px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.35s ease;
+    backdrop-filter: blur(8px);
+    z-index: 30;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .burst {
+    position: fixed;
+    font-size: 18px;
+    pointer-events: none;
+    z-index: 5;
+    animation: burstFly 0.9s ease-out forwards;
+  }
+  @keyframes burstFly {
+    0%   { transform: translate(0,0) scale(0.6); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) scale(1.4) rotate(50deg); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <div class="names">Lucia <span class="amp">♥</span> Riu</div>
+    <div class="sub" id="subtitle">Our Little Universe</div>
+  </header>
+
+  <!-- ================= HOME ================= -->
+  <section class="page active" id="page-home">
+
+    <div class="panel" id="annivBar">
+      <div class="ptitle">Us, so far</div>
+      <div class="together" id="togetherLine">💞 Together for …</div>
+      <div class="nextanniv" id="annivLine"></div>
+    </div>
+
+    <div class="panel">
+      <div class="ptitle">Miles apart, same heart</div>
+      <div class="clocks">
+        <div class="clock">
+          <div class="who">Riu</div>
+          <div class="time" id="timeRiu">--:--</div>
+          <div class="city">San Francisco</div>
+        </div>
+        <div class="clock">
+          <div class="who">Lucia</div>
+          <div class="time" id="timeLucia">--:--</div>
+          <div class="city">Phoenix</div>
+        </div>
+      </div>
+      <div class="tzdiff" id="tzdiff"></div>
+    </div>
+
+    <div class="panel">
+      <div class="ptitle" id="cdLabel">Until we're together again</div>
+      <div class="countdown" id="countdown" style="display:none">
+        <div class="cd-cell"><div class="num" id="cdD">0</div><div class="unit">days</div></div>
+        <div class="cd-cell"><div class="num" id="cdH">0</div><div class="unit">hours</div></div>
+        <div class="cd-cell"><div class="num" id="cdM">0</div><div class="unit">mins</div></div>
+      </div>
+      <div class="rowbtns">
+        <input type="date" id="reunionInput" style="display:none">
+        <button id="setDateBtn">📅 Set the date</button>
+        <button id="missYouBtn">💌 Miss-you text</button>
+      </div>
+      <div class="missyou" id="missyou"></div>
+    </div>
+
+    <div class="panel teaser" id="teaserCard">
+      <div class="ptitle">Today's game</div>
+      <div style="font-size: 17px; font-weight: 600;">💬 Question of the Day</div>
+      <div style="margin-top:8px"><span class="chip" id="teaserChip">😂 Funny</span></div>
+      <div class="go" id="teaserGo">Day 1 — tap to play →</div>
+    </div>
+
+  </section>
+
+  <!-- ================= QUESTION GAME ================= -->
+  <section class="page" id="page-game">
+
+    <div class="daybar">
+      <div class="pill" id="daypill">Day <b>1</b></div>
+      <div class="pill" id="datepill"></div>
+    </div>
+
+    <div class="card">
+      <div class="chip" id="chip">😂 Funny</div>
+      <div class="question" id="question">Loading today's question…</div>
+    </div>
+
+    <div class="btnrow">
+      <button class="primary" id="shuffleBtn">🎲 Give us another</button>
+      <button id="darkBtn">🌶️ After Dark</button>
+      <button id="copyBtn">📋 Copy</button>
+    </div>
+    <div class="hint" id="hint">Today's question is the same for both of you — no cheating, answer honestly 😌</div>
+
+  </section>
+
+  <!-- ================= COMING SOON ================= -->
+  <section class="page" id="page-soon">
+    <div class="panel soonbox">
+      <div class="big">🕹️</div>
+      <h2>Stupid Game #2</h2>
+      <p>Under extremely serious construction. The developer (Riu) is accepting ideas, bribes, and kisses to speed things up.</p>
+      <div class="progress"><div class="fill"></div></div>
+      <div class="progress-label">DEVELOPMENT PROGRESS: 1%</div>
+    </div>
+  </section>
+</div>
+
+<!-- ================= NAV ================= -->
+<nav class="nav">
+  <button id="navHome" class="active">🏠 Home</button>
+  <button id="navGame">💬 Daily Q</button>
+  <button id="navSoon">🕹️ Soon™</button>
+</nav>
+
+<div class="toast" id="toast">Copied!</div>
+
+<script>
+// ---------------- QUESTION BANK ----------------
+const BANK = {
+  funny: [
+    "If I were a kitchen appliance, which one would I be — and why?",
+    "What's the weirdest thing you've caught me doing when I thought no one was watching?",
+    "If we got arrested together, what would it 100% be for?",
+    "Which animal do I turn into when I'm hangry?",
+    "What would the title of a reality show about us be?",
+    "If my snoring was a music genre, which one would it be?",
+    "What's one word or phrase I say WAY too much?",
+    "If we swapped bodies for a day, what's the first thing you'd do?",
+    "What is my most useless talent?",
+    "If our love story was a movie, which actor would play me? Be honest.",
+    "What smell instantly reminds you of me? Be nice… or don't.",
+    "If I was an ice cream flavor, what would I be called?",
+    "What's the dumbest argument we've ever had?",
+    "Which emoji best describes my dance moves?",
+    "If aliens abducted us both, who would they return first — and why?",
+    "What is my villain origin story?",
+    "If our couple had a mascot, what would it be?",
+    "What ridiculous thing would I buy first if we won the lottery?",
+    "Which cartoon character is basically me?",
+    "What's the funniest face I make, and when do I make it?",
+    "If my brain had a loading screen, what would it say?",
+    "What conspiracy theory could you convince me of by Friday?",
+    "What would I go viral on the internet for — for all the wrong reasons?",
+    "If we opened a terrible restaurant together, what would it be called?",
+    "What's one chore I do so badly you suspect it's on purpose?",
+    "Who would survive longer in a zombie apocalypse — and defend your answer?",
+    "What's the weirdest compliment you could give me right now?",
+    "If I came with a warning label, what would it say?",
+    "What theme song should play every time I walk into a room?",
+    "What's probably the most embarrassing thing in my search history?",
+    "If we were a crime duo, who's the brains and who's the one who gets us caught?",
+    "What's a hill I would absolutely die on for no good reason?",
+    "If I had to be haunted by a ghost, what kind of ghost would annoy me the most?",
+    "What do you think I was like at age seven?",
+    "Which household object understands me on a spiritual level?"
+  ],
+  romantic: [
+    "What was the exact moment you knew you were falling for me?",
+    "What's your favorite memory of us that you secretly replay in your head?",
+    "What little thing do I do that makes you feel the most loved?",
+    "Where in the world would you want to wake up next to me tomorrow?",
+    "What's one thing about my smile you've never told me?",
+    "If you could relive one of our dates exactly as it happened, which one?",
+    "What song feels like 'us' to you?",
+    "What do you look forward to most about growing old together?",
+    "When do you find me most attractive — when I'm not even trying?",
+    "What tiny detail about me did you notice the very first time we met?",
+    "How did you describe me to your friends when we first started dating?",
+    "What's your favorite way I say 'I love you' without actually saying it?",
+    "If we renewed our vows tomorrow, what's one line you'd include?",
+    "What future memory with me are you most excited to make?",
+    "What's one thing I've taught you about love?",
+    "Which of my quirks did you fall for first?",
+    "What does 'home' feel like when you think of me?",
+    "What's the most romantic thing I've done without realizing it was romantic?",
+    "If our love had a color, what would it be and why?",
+    "What do you want us to be doing exactly 10 years from today?",
+    "When did you last catch yourself just staring at me?",
+    "Which dream of mine do you secretly root for the hardest?",
+    "What part of our story would you never, ever change?",
+    "What's a promise you want to make me today?",
+    "What's your favorite photo of us, and why that one?",
+    "What's something small I did this week that made your heart squeeze?",
+    "If you wrote me a love letter right now, what would the first line be?",
+    "What's a place we've never been that you want to fall in love with together?",
+    "What did you think our first kiss would be like — and how was the real one better?",
+    "What's one thing you hope we still do together when we're 80?"
+  ],
+  spicy: [
+    "What am I wearing when you find me completely irresistible?",
+    "What's one kiss from me you still think about?",
+    "Describe our best kiss ever in exactly three words.",
+    "Where's the most adventurous place you'd want to make out with me?",
+    "What's your favorite way I touch you?",
+    "What's one thing I do in public that secretly drives you a little crazy?",
+    "If tonight had no rules, how would you want it to start?",
+    "Which outfit of mine would you like to see more often… on the floor?",
+    "What's a fantasy date night you've never told me about?",
+    "Slow dance in the dark or a shower together — pick one for tonight.",
+    "What compliment about your body do you never get tired of hearing from me?",
+    "What's the most attractive thing I do without even noticing?",
+    "A whisper in your ear or a text under the table — how should I flirt with you when we're out?",
+    "What's one thing you want more of from me this week? Kisses count.",
+    "Which is more dangerous: morning cuddles that go too far, or midnight ones?",
+    "Where is my most kissable spot? Point to it later.",
+    "If I planned a surprise 'date' that starts at 10pm, what should I include?",
+    "What's one small thing I could do tonight that would completely ruin your concentration?",
+    "Which memory of us do you think about when you miss me the most… physically?",
+    "Rate my flirting game from 1–10, then show me how it's done.",
+    "What's the first thing you noticed about my body?",
+    "If we had a whole rainy Sunday in bed, what's on the agenda?",
+    "What's something I wear that you consider a personal attack (in the best way)?",
+    "Kissing my neck or holding my waist — which one do you enjoy more?",
+    "What look do I give you that you can read instantly?"
+  ],
+  nasty: [
+    "What's one thing you've always wanted to try with me but never said out loud?",
+    "What's your favorite spot in our home… and be honest about why.",
+    "If we had a 'yes night' — neither of us can say no to a request — what's your first request?",
+    "What's something I do in bed that you'd like on repeat?",
+    "Truth: have you ever thought about me at a VERY inappropriate time? When?",
+    "We have the place to ourselves for exactly one hour, starting now. Go.",
+    "Lights on or lights off — and defend your answer.",
+    "What's the naughtiest thought you've had about me this week?",
+    "What should our code word be for 'we're leaving this party immediately'?",
+    "Which of my texts has ever made you blush in public?",
+    "What's one rule we should break tonight?",
+    "Set the scene perfectly: music, lighting, outfit. What are you picking?",
+    "What's something new you want to try this month? I'm taking notes.",
+    "A massage that starts innocent, or a kiss that doesn't — choose your opening move.",
+    "What's the hottest thing I've ever said to you? Quote it if you dare.",
+    "Where should my hands be right now, hypothetically speaking?",
+    "What's your favorite 'view' of me?",
+    "If we'd just met tonight, how would you seduce me?",
+    "What's one text I could send tomorrow that would completely derail your day?",
+    "Describe tonight's plans in exactly five words. Make them count.",
+    "What time of day am I at my most dangerous?",
+    "What's one thing I underestimate about my own effect on you?",
+    "Pick a movie scene you'd want to reenact with me — any genre.",
+    "What am I better at than I realize? Be specific.",
+    "Finish this sentence: 'Tonight, I want you to…'"
+  ],
+  ldr: [
+    "What's the FIRST thing we're doing when we're in the same room again?",
+    "If you could teleport to me for just 10 minutes right now, what would we do?",
+    "What do you miss most about me today? Pick exactly one thing.",
+    "Virtual date night: synced movie, cooking the same dinner, or online games — pick tonight's.",
+    "What song do you play when you miss me?",
+    "What's the hardest part of your day without me — and the easiest?",
+    "If I mailed you a care package tomorrow, what MUST be in it?",
+    "What's one thing you want to show me in your city next time I visit?",
+    "Describe your day today like a dramatic movie trailer.",
+    "What photo of us did you look at most recently?",
+    "When we reunite, are we more likely to cry, laugh, or make everyone at the airport uncomfortable?",
+    "What's something you're saving to tell me in person instead of over text?",
+    "Voice message or video call — what does your heart need tonight?",
+    "What do you hold or sleep with that reminds you of me? Be honest.",
+    "Plan our next visit in exactly 3 emojis. The other has to guess the itinerary.",
+    "What's one habit of mine you weirdly miss?",
+    "What's your favorite message I've ever sent you? Scroll back and quote it.",
+    "If the distance were a video game boss, what's today's difficulty rating and why?",
+    "What are we eating first when we're together again?",
+    "What's one thing this distance has taught you about us?"
+  ]
+};
+
+const MISSYOU = [
+  "Currently accepting applications for someone to steal the blanket. You're the only candidate. 🥺",
+  "Warning: thinking about you at dangerous levels today. Send backup (a selfie). 📸",
+  "My arms miss their job.",
+  "I saw something today and my first thought was you. This keeps happening. No complaints.",
+  "Weather report: 100% chance of missing you, scattered daydreams all afternoon. ⛅",
+  "Come here. That's it. That's the text.",
+  "You owe me approximately 1,000 hugs. Interest is accruing daily. 🧾",
+  "Just checked — still yours, still counting days. 🗓️",
+  "If missing you burned calories, I'd have abs by now.",
+  "Reminder: you're my favorite notification. Now send me one.",
+  "I'd walk 500 miles. But please just video call me first. 🎶",
+  "Tonight's plan: your voice + my blanket burrito. Non-negotiable.",
+  "Missing you is my cardio. 🏃",
+  "The bed committee has reviewed the situation and voted unanimously: it's too big without you.",
+  "Somewhere between 'I'm fine' and 'book the flight' — that's where I am today. ✈️"
+];
+
+const CHIPS = {
+  funny:    { label: "😂 Funny",    color: "#ffd166" },
+  romantic: { label: "💕 Romantic", color: "#ff7aa2" },
+  spicy:    { label: "🌶️ Spicy",   color: "#ff6b4a" },
+  nasty:    { label: "😈 After Dark", color: "#ff2e63" },
+  ldr:      { label: "💌 Long Distance", color: "#7ac7ff" }
+};
+
+// ---------------- STATE ----------------
+const EPOCH = new Date(2026, 6, 24); // Day 1 = July 24, 2026 (local time)
+let afterDark = false;
+let usedShuffle = [];
+let current = null;
+
+function mulberry32(seed) {
+  return function() {
+    seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function dayNumber() {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.max(1, Math.round((today - EPOCH) / 86400000) + 1);
+}
+
+function pools() {
+  return afterDark ? ["spicy", "nasty"] : ["funny", "romantic", "spicy", "nasty", "ldr"];
+}
+
+function flatPool() {
+  const cats = pools();
+  const out = [];
+  cats.forEach(c => BANK[c].forEach(q => out.push({ cat: c, text: q })));
+  return out;
+}
+
+function dailyQuestion() {
+  const pool = flatPool();
+  const seed = dayNumber() * 7919 + (afterDark ? 104729 : 0);
+  const rng = mulberry32(seed);
+  return pool[Math.floor(rng() * pool.length)];
+}
+
+function randomQuestion() {
+  const pool = flatPool();
+  if (usedShuffle.length >= pool.length) usedShuffle = [];
+  let pick;
+  let guard = 0;
+  do {
+    pick = pool[Math.floor(Math.random() * pool.length)];
+    guard++;
+  } while (guard < 60 && (usedShuffle.includes(pick.text) || (current && pick.text === current.text)));
+  usedShuffle.push(pick.text);
+  return pick;
+}
+
+// ---------------- TABS ----------------
+const SUBTITLES = { home: "Our Little Universe", game: "Question of the Day", soon: "The Game Lab" };
+const NAVIDS = { home: "navHome", game: "navGame", soon: "navSoon" };
+let activeTab = "home";
+
+function switchTab(name) {
+  activeTab = name;
+  ["home", "game", "soon"].forEach(t => {
+    document.getElementById("page-" + t).classList.toggle("active", t === name);
+    document.getElementById(NAVIDS[t]).classList.toggle("active", t === name);
+  });
+  document.getElementById("subtitle").textContent =
+    (name === "game" && afterDark) ? "After Dark Edition" : SUBTITLES[name];
+  window.scrollTo({ top: 0 });
+}
+document.getElementById("navHome").addEventListener("click", () => switchTab("home"));
+document.getElementById("navGame").addEventListener("click", () => switchTab("game"));
+document.getElementById("navSoon").addEventListener("click", () => switchTab("soon"));
+document.getElementById("teaserCard").addEventListener("click", () => switchTab("game"));
+
+// ---------------- GAME RENDER ----------------
+const elQ = document.getElementById("question");
+const elChip = document.getElementById("chip");
+const elHint = document.getElementById("hint");
+const toast = document.getElementById("toast");
+
+function styleChip(el, cat) {
+  const chip = CHIPS[cat];
+  el.textContent = chip.label;
+  el.style.borderColor = chip.color;
+  el.style.background = chip.color + "33";
+}
+
+function show(q, isDaily) {
+  current = q;
+  elQ.classList.add("swapping");
+  setTimeout(() => {
+    elQ.textContent = q.text;
+    styleChip(elChip, q.cat);
+    elQ.classList.remove("swapping");
+  }, 250);
+  elHint.textContent = isDaily
+    ? "Today's question is the same for both of you — no cheating, answer honestly 😌"
+    : "Bonus round! Hit the button again if you're feeling brave.";
+}
+
+function renderHeader() {
+  document.getElementById("daypill").innerHTML = "Day <b>" + dayNumber() + "</b>";
+  document.getElementById("datepill").textContent =
+    new Date().toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+  // home teaser
+  const savedDark = afterDark;
+  afterDark = false;
+  const dq = dailyQuestion();
+  afterDark = savedDark;
+  styleChip(document.getElementById("teaserChip"), dq.cat);
+  document.getElementById("teaserGo").textContent = "Day " + dayNumber() + " — tap to play →";
+}
+
+document.getElementById("shuffleBtn").addEventListener("click", (e) => {
+  show(randomQuestion(), false);
+  burst(e.clientX, e.clientY);
+});
+
+document.getElementById("darkBtn").addEventListener("click", (e) => {
+  afterDark = !afterDark;
+  document.body.classList.toggle("afterdark", afterDark);
+  e.target.classList.toggle("toggled", afterDark);
+  e.target.textContent = afterDark ? "🔥 After Dark: ON" : "🌶️ After Dark";
+  if (activeTab === "game") {
+    document.getElementById("subtitle").textContent = afterDark ? "After Dark Edition" : SUBTITLES.game;
+  }
+  usedShuffle = [];
+  show(dailyQuestion(), true);
+  if (afterDark) burst(e.clientX, e.clientY, ["🔥","😈","💋"]);
+});
+
+document.getElementById("copyBtn").addEventListener("click", async () => {
+  const text = (current ? current.text : "") + "  — Lucia ♥ Riu, Day " + dayNumber();
+  try {
+    await navigator.clipboard.writeText(text);
+    popToast("Copied! Send it 💌");
+  } catch {
+    popToast("Couldn't copy — long-press the question instead");
+  }
+});
+
+function popToast(msg) {
+  toast.textContent = msg;
+  toast.classList.add("show");
+  setTimeout(() => toast.classList.remove("show"), 2200);
+}
+
+// ---------------- ANNIVERSARY ----------------
+const ANNIVERSARY = new Date(2026, 5, 2); // June 2, 2026 💞
+
+function tickAnniversary() {
+  const now = new Date();
+  let ms = Math.max(0, now - ANNIVERSARY);
+  const d = Math.floor(ms / 86400000);
+  const h = Math.floor(ms / 3600000) % 24;
+  const m = Math.floor(ms / 60000) % 60;
+  const s = Math.floor(ms / 1000) % 60;
+  document.getElementById("togetherLine").innerHTML =
+    "💞 Together for <b>" + d + "</b>d <b>" + h + "</b>h <b>" + m + "</b>m <b>" + s + "</b>s";
+
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const thisYears = new Date(now.getFullYear(), 5, 2);
+  const bar = document.getElementById("annivBar");
+  const line = document.getElementById("annivLine");
+
+  if (today.getTime() === thisYears.getTime() && now.getFullYear() > 2026) {
+    line.innerHTML = "🎉 <b>HAPPY ANNIVERSARY #" + (now.getFullYear() - 2026) + "!!</b> 🎉";
+    bar.classList.add("party");
+    return;
+  }
+  bar.classList.remove("party");
+  const next = today >= thisYears ? new Date(now.getFullYear() + 1, 5, 2) : thisYears;
+  const annivNum = next.getFullYear() - ANNIVERSARY.getFullYear();
+  const days = Math.round((next - today) / 86400000);
+  line.innerHTML = "🎂 Anniversary #" + annivNum + " in <b>" + days + "</b> days — " +
+    next.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+}
+
+// ---------------- LDR / MILES APART ----------------
+const TZ_RIU   = { tz: "America/Los_Angeles", label: "San Francisco" };
+const TZ_LUCIA = { tz: "America/Phoenix",     label: "Phoenix" };
+let reunionDate = null;
+
+(function initReunion() {
+  try {
+    const m = location.hash.match(/reunion=(\d{4}-\d{2}-\d{2})/);
+    if (m) reunionDate = new Date(m[1] + "T00:00:00");
+  } catch (e) {}
+})();
+
+function fmtTime(tz) {
+  return new Intl.DateTimeFormat("en-US", {
+    hour: "2-digit", minute: "2-digit", hour12: false, timeZone: tz
+  }).format(new Date());
+}
+function tzOffsetHours(tz) {
+  const now = new Date();
+  const loc = new Date(now.toLocaleString("en-US", { timeZone: tz }));
+  return Math.round((loc - now) / 3600000 * 2) / 2;
+}
+
+function tickClocks() {
+  document.getElementById("timeRiu").textContent = fmtTime(TZ_RIU.tz);
+  document.getElementById("timeLucia").textContent = fmtTime(TZ_LUCIA.tz);
+  const diff = tzOffsetHours(TZ_LUCIA.tz) - tzOffsetHours(TZ_RIU.tz);
+  const el = document.getElementById("tzdiff");
+  if (diff === 0) el.textContent = "Same clock right now — zero excuses not to call 📞";
+  else el.textContent = "Lucia is " + Math.abs(diff) + "h " + (diff > 0 ? "ahead" : "behind") + " — plan those calls 📞";
+}
+
+function tickCountdown() {
+  const label = document.getElementById("cdLabel");
+  const box = document.getElementById("countdown");
+  if (!reunionDate) {
+    box.style.display = "none";
+    label.textContent = "Until we're together again — set the date!";
+    return;
+  }
+  const ms = reunionDate - new Date();
+  if (ms <= 0) {
+    box.style.display = "none";
+    label.textContent = "IT'S REUNION DAY!! 🎉💞";
+    return;
+  }
+  box.style.display = "flex";
+  label.textContent = "Until we're together again";
+  document.getElementById("cdD").textContent = Math.floor(ms / 86400000);
+  document.getElementById("cdH").textContent = Math.floor(ms / 3600000) % 24;
+  document.getElementById("cdM").textContent = Math.floor(ms / 60000) % 60;
+}
+
+const reunionInput = document.getElementById("reunionInput");
+document.getElementById("setDateBtn").addEventListener("click", () => {
+  reunionInput.style.display = "inline-block";
+  try { reunionInput.showPicker(); } catch (e) { reunionInput.focus(); }
+});
+reunionInput.addEventListener("change", () => {
+  if (!reunionInput.value) return;
+  reunionDate = new Date(reunionInput.value + "T00:00:00");
+  try { location.hash = "reunion=" + reunionInput.value; } catch (e) {}
+  reunionInput.style.display = "none";
+  document.getElementById("setDateBtn").textContent = "📅 Change the date";
+  tickCountdown();
+  popToast("Countdown set! 💞");
+});
+
+let lastMiss = -1;
+document.getElementById("missYouBtn").addEventListener("click", async () => {
+  let i;
+  do { i = Math.floor(Math.random() * MISSYOU.length); } while (i === lastMiss && MISSYOU.length > 1);
+  lastMiss = i;
+  const box = document.getElementById("missyou");
+  box.textContent = MISSYOU[i];
+  box.classList.add("show");
+  try {
+    await navigator.clipboard.writeText(MISSYOU[i]);
+    popToast("Copied — now go send it 💌");
+  } catch (e) {
+    popToast("Long-press to copy 💌");
+  }
+});
+
+// ---------------- EFFECTS ----------------
+function burst(x, y, set) {
+  const icons = set || ["💖","💘","✨","💕","💫"];
+  for (let i = 0; i < 8; i++) {
+    const s = document.createElement("span");
+    s.className = "burst";
+    s.textContent = icons[i % icons.length];
+    s.style.left = (x || innerWidth / 2) + "px";
+    s.style.top = (y || innerHeight / 2) + "px";
+    s.style.setProperty("--dx", (Math.random() * 220 - 110) + "px");
+    s.style.setProperty("--dy", (-60 - Math.random() * 160) + "px");
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 950);
+  }
+}
+
+function spawnHeart() {
+  const h = document.createElement("span");
+  h.className = "heart";
+  const set = afterDark ? ["🔥","😈","💋","❤️‍🔥"] : ["💖","💕","💘","🤍","💫"];
+  h.textContent = set[Math.floor(Math.random() * set.length)];
+  h.style.left = Math.random() * 100 + "vw";
+  h.style.fontSize = (14 + Math.random() * 18) + "px";
+  h.style.animationDuration = (7 + Math.random() * 8) + "s";
+  document.body.appendChild(h);
+  setTimeout(() => h.remove(), 16000);
+}
+
+// ---------------- INIT ----------------
+renderHeader();
+show(dailyQuestion(), true);
+if (reunionDate) document.getElementById("setDateBtn").textContent = "📅 Change the date";
+tickAnniversary();
+tickClocks();
+tickCountdown();
+setInterval(() => { tickAnniversary(); tickClocks(); tickCountdown(); }, 1000);
+setInterval(spawnHeart, 1400);
+for (let i = 0; i < 6; i++) setTimeout(spawnHeart, i * 350);
+
+// refresh at midnight so the daily question rolls over if the tab stays open
+setInterval(() => {
+  const q = dailyQuestion();
+  if (current && elHint.textContent.includes("same for both") && q.text !== current.text) {
+    renderHeader();
+    show(q, true);
+  }
+}, 60000);
+</script>
+</body>
+</html>
