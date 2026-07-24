@@ -52,6 +52,7 @@ out of each other's way.
 
 | Date | Who | Feature | Notes |
 |---|---|---|---|
+| 2026-07-24 | Riu | Journeys v6: edit, photo picker, album CORS fix | `jr-edit`/`jrPicker*`; `journeys.photo_guids` column (migrate_journey_photos.sql); first serverless function `api/album.js` |
 | 2026-07-24 | Riu | Journeys timeline (✈️ Trips tab) + Supabase backend | New tab, `jr*` prefix; Supabase REST (`journeys`/`settings`/`questions` tables), password + reunion date + question bank DB-backed with fallbacks; Apple Shared Album embeds. Setup: docs/SUPABASE.md |
 | 2026-07-24 | Riu | Word Duel (🔤 Duel tab) | Took over the Soon™ slot; `wd*` prefix; one-phone session game (PR #2) |
 | 2026-07-24 | Riu | Login page (lock screen) | Password = anniversary; added hash helpers |
@@ -90,6 +91,9 @@ prefix and list it here.
 (journeys feature owns the Supabase config constants; future Supabase
 features reuse them — see docs/SUPABASE.md). Supabase table names are
 global identifiers too: `journeys`, `settings`, `questions` are claimed.
+
+**Serverless endpoints (`api/`):** `album` (iCloud shared-album proxy,
+journeys feature). Claim new endpoint paths here before using them.
 
 **Note:** Word Duel uses live `Math.random()` (session state, one phone
 runs the game) — no seed offset claimed. Now that the DB exists (v5),

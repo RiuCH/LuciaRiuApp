@@ -84,7 +84,11 @@ and an offline phone then still agree on the day's question.
 The ✈️ Trips tab also embeds Apple Shared Albums: paste an album's public
 link into a journey and the app pulls thumbnails from iCloud's unofficial
 `sharedstreams` web API (the album needs "Public Website" ON). If that API
-ever breaks, the card falls back to an "Open album ↗" link.
+ever breaks, the card falls back to an "Open album ↗" link. iCloud sends
+no CORS headers, so the browser calls our own Vercel serverless proxy
+(`api/album.js`, same origin) which fetches the album server-side — the
+repo's first serverless function. Per-journey photo picks live in
+`journeys.photo_guids` (chosen in the in-app picker).
 
 Still to come (see ROADMAP): Google login (tightens the wide-open anon
 policies), Supabase Storage photo album, answer-and-compare, and Claude

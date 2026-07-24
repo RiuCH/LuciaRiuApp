@@ -26,7 +26,7 @@ falls back to the hardcoded copies and in-memory state ("local mode").
 
 | Table | Contents | App fallback when unreachable |
 |---|---|---|
-| `journeys` | timeline entries (place, dates, description, album link) | seed entry + in-memory adds |
+| `journeys` | timeline entries (place, dates, description, album link, chosen photo picks) | seed entry + in-memory adds |
 | `settings` | `lock_keys` (password), `reunion_date` (shared countdown) | hardcoded `LOCK_KEYS`, `#reunion=` hash param |
 | `questions` | the full question bank (`category`, `text`) | hardcoded `BANK` |
 
@@ -36,6 +36,14 @@ falls back to the hardcoded copies and in-memory state ("local mode").
   to the DB, so it appears on both phones.
 - **Add questions:** add them to `BANK` in `index.html` **and** re-run the
   seed (see below) so online and offline phones agree.
+
+## Migrations
+
+Projects set up before v6 need one-off migrations, run in the SQL editor:
+
+- `supabase/migrate_journey_photos.sql` — adds `journeys.photo_guids`
+  (the "pick which album photos show" feature). Fresh installs from
+  `schema.sql` already have it.
 
 ## Keeping questions in sync
 

@@ -11,6 +11,8 @@ June 2, 2026). Fun is a feature — keep the tone playful.
 
 1. **One file.** The entire app is `index.html` — inline CSS + JS, no build
    step, no dependencies, no frameworks. It must work by double-clicking it.
+   (Narrow exception per ROADMAP: Vercel serverless functions in `api/` —
+   enhancements only, the file must work without them.)
 2. **No localStorage / sessionStorage / cookies.** They break in the preview
    environments we use. State lives in memory or in URL-hash params —
    always via the `getHashParam`/`setHashParam` helpers so params coexist
@@ -47,8 +49,10 @@ June 2, 2026). Fun is a feature — keep the tone playful.
 - JOURNEYS block: `SUPABASE_URL`/`SUPABASE_ANON_KEY` config, `supa()` REST
   helper, `loadJourneys()`/`loadSettings()`/`loadQuestions()`, timeline
   render + add/delete, Apple Shared Album embed (`fetchICloudAlbum()`),
-  lightbox. Element prefix: `jr*`. Tables: `journeys`, `settings`,
-  `questions` (schema in `supabase/`, guide in docs/SUPABASE.md)
+  lightbox, edit form (`jrEditing`), photo picker (`jrPicker*`,
+  `journeys.photo_guids`). Element prefix: `jr*`. Tables: `journeys`,
+  `settings`, `questions` (schema in `supabase/`, guide in
+  docs/SUPABASE.md). Serverless: `api/album.js` (iCloud CORS proxy)
 - Lock screen: `#lock` overlay, password = anniversary date (DB
   `settings.lock_keys` when Supabase is up, `LOCK_KEYS` fallback),
   unlock persists via `#unlocked=1` hash param
