@@ -63,6 +63,10 @@ couple-app-dev), then run `./setup-claude.sh` to refresh `.claude/skills/`.
 - `docs/ARCHITECTURE.md` — how everything works in detail
 - `docs/ROADMAP.md` — agreed future plan (Supabase, Google login, photos,
   Claude API) and ideas backlog
+- `START-HERE-LUCIA.md` — Lucia's from-zero setup guide (Terminal, brew,
+  gh, SSH, Claude Code) + plain-English commit/PR/deploy explainer. If
+  Lucia (or any beginner) hits tooling trouble, walk them through it
+  patiently — assume zero dev knowledge.
 
 ## Workflow
 

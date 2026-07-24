@@ -16,13 +16,17 @@ no server. Open the file in a browser and that's the dev environment.
 You're a collaborator on this repo, which means you can build whatever you
 want into our app. You don't need to know the codebase — Claude does.
 
-**Vibe-coding setup (once):**
+**➡️ Never installed a developer tool before? Perfect. Follow
+[`START-HERE-LUCIA.md`](START-HERE-LUCIA.md)** — it goes from absolute
+zero (opening the Terminal for the first time) through installing
+everything, connecting to GitHub, and your first build with Claude,
+plus a plain-English explanation of how commits, PRs, and deploys work.
 
-1. Accept the GitHub invite, then clone this repo
-   (or download GitHub Desktop and clone from there — easiest).
-2. In the repo folder, run **`./setup-claude.sh`** once (Terminal:
-   `bash setup-claude.sh`). It copies our Claude skills into `.claude/skills/`
-   where Claude auto-discovers them.
+**Already set up? The short version:**
+
+1. Accept the GitHub invite, then clone this repo.
+2. In the repo folder, run **`bash setup-claude.sh`** once. It copies our
+   Claude skills into `.claude/skills/` where Claude auto-discovers them.
 3. Open **Claude** (desktop app → Cowork, or Claude Code in a terminal) and
    point it at this folder — connect the folder in Cowork, or `cd` into it
    and run `claude` in Claude Code.
