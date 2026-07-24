@@ -457,6 +457,15 @@
     transform: scale(1.02);
   }
   .jr-picker-note { font-size: 12px; color: var(--text-dim); min-height: 16px; margin-top: 4px; }
+  .jr-sort { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
+  .jr-sort .chip {
+    cursor: pointer;
+    font-size: 11px;
+    padding: 5px 12px;
+    opacity: 0.5;
+    transition: opacity 0.25s ease, box-shadow 0.25s ease;
+  }
+  .jr-sort .chip.sel { opacity: 1; box-shadow: 0 0 12px var(--accent-soft); }
 
   /* ------- word duel ------- */
   .wd-letters {
@@ -722,6 +731,12 @@
       <div class="ptitle">Every adventure, logged</div>
       <div style="font-size:17px; font-weight:600;">✈️ Us, but with luggage</div>
       <div class="jr-status" id="jrStatus"></div>
+      <div class="jr-sort" id="jrSort">
+        <span class="chip sel" data-sort="oldest">⏳ Oldest</span>
+        <span class="chip" data-sort="latest">🆕 Latest</span>
+        <span class="chip" data-sort="shortest">⚡ Shortest</span>
+        <span class="chip" data-sort="longest">🏝️ Longest</span>
+      </div>
       <div class="rowbtns"><button class="primary" id="jrAddBtn">➕ Add a journey</button></div>
     </div>
 
@@ -1401,6 +1416,30 @@ function fmtJourneyDates(start, end) {
   return s.toLocaleDateString(undefined, opts) + " → " + e.toLocaleDateString(undefined, opts);
 }
 
+// --- timeline sorting ---
+let jrSort = "oldest"; // view preference, session-only
+
+function jrDays(j) {
+  const s = new Date(j.start_date + "T00:00:00");
+  const e = new Date((j.end_date || j.start_date) + "T00:00:00");
+  return Math.round((e - s) / 86400000) + 1;
+}
+
+const JR_SORTS = {
+  oldest:   (a, b) => (a.start_date < b.start_date ? -1 : a.start_date > b.start_date ? 1 : 0),
+  latest:   (a, b) => JR_SORTS.oldest(b, a),
+  shortest: (a, b) => (jrDays(a) - jrDays(b)) || JR_SORTS.oldest(a, b),
+  longest:  (a, b) => (jrDays(b) - jrDays(a)) || JR_SORTS.oldest(a, b)
+};
+
+document.querySelectorAll("#jrSort .chip").forEach(ch => {
+  ch.addEventListener("click", () => {
+    jrSort = ch.dataset.sort;
+    document.querySelectorAll("#jrSort .chip").forEach(c => c.classList.toggle("sel", c === ch));
+    renderJourneys();
+  });
+});
+
 function renderJourneys() {
   const box = document.getElementById("jrTimeline");
   box.innerHTML = "";
@@ -1411,7 +1450,7 @@ function renderJourneys() {
     box.appendChild(empty);
     return;
   }
-  journeys.forEach(j => {
+  journeys.slice().sort(JR_SORTS[jrSort] || JR_SORTS.oldest).forEach(j => {
     const item = document.createElement("div");
     item.className = "jr-item";
     const card = document.createElement("div");
@@ -1433,7 +1472,9 @@ function renderJourneys() {
 
     const date = document.createElement("div");
     date.className = "jr-date";
-    date.textContent = fmtJourneyDates(j.start_date, j.end_date);
+    const days = jrDays(j);
+    date.textContent = fmtJourneyDates(j.start_date, j.end_date) +
+      (days > 1 ? " · " + days + " days" : "");
     card.appendChild(date);
 
     const place = document.createElement("div");

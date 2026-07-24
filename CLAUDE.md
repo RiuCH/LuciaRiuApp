@@ -49,7 +49,8 @@ June 2, 2026). Fun is a feature — keep the tone playful.
 - JOURNEYS block: `SUPABASE_URL`/`SUPABASE_ANON_KEY` config, `supa()` REST
   helper, `loadJourneys()`/`loadSettings()`/`loadQuestions()`, timeline
   render + add/delete, Apple Shared Album embed (`fetchICloudAlbum()`),
-  lightbox, edit form (`jrEditing`), photo picker (`jrPicker*`,
+  lightbox, sort chips (`jrSort`: oldest/latest/shortest/longest),
+  edit form (`jrEditing`), photo picker (`jrPicker*`,
   `journeys.photo_guids`). Element prefix: `jr*`. Tables: `journeys`,
   `settings`, `questions` (schema in `supabase/`, guide in
   docs/SUPABASE.md). Serverless: `api/album.js` (iCloud CORS proxy)
