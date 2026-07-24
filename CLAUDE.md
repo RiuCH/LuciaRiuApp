@@ -12,8 +12,9 @@ June 2, 2026). Fun is a feature — keep the tone playful.
 1. **One file.** The entire app is `index.html` — inline CSS + JS, no build
    step, no dependencies, no frameworks. It must work by double-clicking it.
 2. **No localStorage / sessionStorage / cookies.** They break in the preview
-   environments we use. State lives in memory or in URL-hash params
-   (see `#reunion=YYYY-MM-DD`).
+   environments we use. State lives in memory or in URL-hash params —
+   always via the `getHashParam`/`setHashParam` helpers so params coexist
+   (current: `#reunion=YYYY-MM-DD`, `#unlocked=1`).
 3. **The daily question must stay deterministic and shared.** It's picked by
    a seeded PRNG (`mulberry32`) keyed to days since July 24, 2026. Same date
    ⇒ same question on both phones with zero server. Any change to the
@@ -34,6 +35,10 @@ June 2, 2026). Fun is a feature — keep the tone playful.
 - Tabs: sections `#page-home`, `#page-game`, `#page-soon` + `switchTab()`
 - Game logic: `dailyQuestion()` (deterministic), `randomQuestion()` (shuffle)
 - Home widgets: `tickAnniversary()`, `tickClocks()`, `tickCountdown()`
+- Lock screen: `#lock` overlay, password = anniversary date (`LOCK_KEYS`),
+  unlock persists via `#unlocked=1` hash param
+- Hash-param helpers: `getHashParam()` / `setHashParam()` — the app's only
+  "storage"; never assign `location.hash` directly
 
 ## Skills
 
@@ -48,6 +53,11 @@ from `claude-skills/`, same content):
 If you're Claude and you can see this file: read all three skills now,
 before writing code.
 
+**Skills are living docs.** When a feature introduces a new tool, plugin,
+convention, seed offset, or reusable piece, update the relevant skill in
+`claude-skills/` in the same commit (see "Keep the skills in sync" in
+couple-app-dev), then run `./setup-claude.sh` to refresh `.claude/skills/`.
+
 ## Docs
 
 - `docs/ARCHITECTURE.md` — how everything works in detail
@@ -58,3 +68,11 @@ before writing code.
 
 edit `index.html` → open in browser to test → commit → push to `main`
 → Vercel deploys → both refresh their phones. That's the whole pipeline.
+
+## Parallel sessions
+
+Multiple Claude sessions may be building different features at once.
+**Before starting any feature: read `SESSIONS.md` and follow its protocol** —
+`git pull` first, register your session, claim your regions of `index.html`
+and any global identifiers (seed offsets, hash params, tab keys), and
+pull-before-push when you ship.
