@@ -27,7 +27,7 @@ falls back to the hardcoded copies and in-memory state ("local mode").
 | Table | Contents | App fallback when unreachable |
 |---|---|---|
 | `journeys` | timeline entries (place, dates, description, album link) | seed entry + in-memory adds |
-| `settings` | `lock_keys` (password), `reunion_date` (shared countdown) | hardcoded `LOCK_KEYS`, `#reunion=` hash param |
+| `settings` | `lock_keys` (password), `reunion_date` (shared countdown), `home_photo` (home photo: URL, upload data-URL, or `album:<link>`) | hardcoded `LOCK_KEYS`, `#reunion=` / `#photo=` hash params |
 | `questions` | the full question bank (`category`, `text`) | hardcoded `BANK` |
 
 - **Change the password:** Table editor → `settings` → edit the `lock_keys`
