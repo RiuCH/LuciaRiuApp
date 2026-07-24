@@ -36,11 +36,13 @@ June 2, 2026). Fun is a feature — keep the tone playful.
 - `CHIPS` — category labels/colors
 - Constants: `EPOCH` (day counter start), `ANNIVERSARY` (June 2, 2026),
   `TZ_RIU`/`TZ_LUCIA` (clock timezones)
-- Tabs: sections `#page-home`, `#page-game`, `#page-journeys`, `#page-soon`
+- Tabs: sections `#page-home`, `#page-game`, `#page-journeys`, `#page-duel`
   + `switchTab()`
 - Game logic: `dailyQuestion()` (deterministic), `randomQuestion()` (shuffle);
   pool comes from `QUESTION_SOURCE` (= `BANK`, swapped to the DB copy once
   `loadQuestions()` succeeds — content identical, so the pick doesn't change)
+- Word Duel: `WD_STARTS`/`WD_ENDS` (weighted letters), `WD_PENALTIES`
+  (funny/spicy/ldr), `wd*` functions — one-phone session game, live random
 - Home widgets: `tickAnniversary()`, `tickClocks()`, `tickCountdown()`
 - JOURNEYS block: `SUPABASE_URL`/`SUPABASE_ANON_KEY` config, `supa()` REST
   helper, `loadJourneys()`/`loadSettings()`/`loadQuestions()`, timeline

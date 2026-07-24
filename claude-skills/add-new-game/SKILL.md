@@ -5,9 +5,14 @@ description: Use when adding a new game or tab to the Lucia & Riu app (e.g. "Stu
 
 # Adding a new game tab
 
-The 🕹️ Soon™ tab (`#page-soon`) is the reserved slot — usually you'll
-replace its placeholder with the real game, or add a fourth tab if they
-want to keep the joke placeholder.
+The 🕹️ Soon™ placeholder slot was consumed by **Word Duel** (`#page-duel`,
+2026-07-24) — new games now add their own tab. Watch nav width at ~420px:
+four tabs fit, five probably won't; consider replacing/merging instead.
+
+Word Duel is also the reference implementation of a "one phone runs it
+during a call" game: live `Math.random()` is fine for those (no seed
+offset needed) because only one device generates state. Deterministic
+seeding is only required when BOTH phones must independently agree.
 
 ## Scaffold (5 steps, all in index.html)
 
@@ -27,7 +32,7 @@ want to keep the joke placeholder.
    NAVIDS.mygame = "navMygame";
    ```
    …and make sure `switchTab` iterates your tab (extend the
-   `["home","game","journeys","soon"]` array) and add the click listener
+   `["home","game","journeys","duel"]` array) and add the click listener
    like the others.
 4. **Teaser (optional but nice)** — add a tappable `.panel.teaser` card on
    Home that `switchTab`s to your game, like the Question of the Day teaser.

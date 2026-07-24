@@ -53,6 +53,7 @@ out of each other's way.
 | Date | Who | Feature | Notes |
 |---|---|---|---|
 | 2026-07-24 | Riu | Journeys timeline (✈️ Trips tab) + Supabase backend | New tab, `jr*` prefix; Supabase REST (`journeys`/`settings`/`questions` tables), password + reunion date + question bank DB-backed with fallbacks; Apple Shared Album embeds. Setup: docs/SUPABASE.md |
+| 2026-07-24 | Riu | Word Duel (🔤 Duel tab) | Took over the Soon™ slot; `wd*` prefix; one-phone session game (PR #2) |
 | 2026-07-24 | Riu | Login page (lock screen) | Password = anniversary; added hash helpers |
 
 ---
@@ -78,13 +79,18 @@ out of each other's way.
 | `home` | Home |
 | `game` | Question of the Day |
 | `journeys` | Journeys timeline |
-| `soon` | Placeholder / next game slot |
+| `duel` | Word Duel (took over the retired `soon` placeholder slot) |
 
 **Element id / CSS class prefixes:** `lock*` (login), `cd*` (countdown),
 `nav*` (nav buttons), `tick*` (home widget functions), `jr*` (journeys
-timeline). New features should pick their own short prefix and list it here.
+timeline), `wd*` (Word Duel). New features should pick their own short
+prefix and list it here.
 
 **Global constants / backends:** `SUPABASE_URL` + `SUPABASE_ANON_KEY`
 (journeys feature owns the Supabase config constants; future Supabase
 features reuse them — see docs/SUPABASE.md). Supabase table names are
-global identifiers too: `journeys` is claimed.
+global identifiers too: `journeys`, `settings`, `questions` are claimed.
+
+**Note:** Word Duel uses live `Math.random()` (session state, one phone
+runs the game) — no seed offset claimed. Now that the DB exists (v5),
+revisit if the duel becomes two-phone synced.
