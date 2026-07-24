@@ -32,8 +32,10 @@ June 2, 2026). Fun is a feature — keep the tone playful.
 - `CHIPS` — category labels/colors
 - Constants: `EPOCH` (day counter start), `ANNIVERSARY` (June 2, 2026),
   `TZ_RIU`/`TZ_LUCIA` (clock timezones)
-- Tabs: sections `#page-home`, `#page-game`, `#page-soon` + `switchTab()`
+- Tabs: sections `#page-home`, `#page-game`, `#page-duel` + `switchTab()`
 - Game logic: `dailyQuestion()` (deterministic), `randomQuestion()` (shuffle)
+- Word Duel: `WD_STARTS`/`WD_ENDS` (weighted letters), `WD_PENALTIES`
+  (funny/spicy/ldr), `wd*` functions — one-phone session game, live random
 - Home widgets: `tickAnniversary()`, `tickClocks()`, `tickCountdown()`
 - Lock screen: `#lock` overlay, password = anniversary date (`LOCK_KEYS`),
   unlock persists via `#unlocked=1` hash param

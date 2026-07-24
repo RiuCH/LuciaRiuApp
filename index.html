@@ -313,6 +313,45 @@
   @keyframes wiggle { 0%,100% { width: 1%; } 50% { width: 3%; } }
   .progress-label { font-size: 11px; color: var(--text-dim); letter-spacing: 1px; }
 
+  /* ------- word duel ------- */
+  .wd-letters {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+  }
+  .wd-letters .wd-l {
+    font-size: 62px;
+    color: var(--accent);
+    text-shadow: 0 0 26px var(--accent-soft);
+    min-width: 70px;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+  .wd-letters.swapping .wd-l { opacity: 0; transform: translateY(10px); }
+  .wd-letters .wd-arrow { font-size: 28px; color: var(--text-dim); }
+  .wd-sub { font-size: 13.5px; color: var(--text-dim); line-height: 1.55; max-width: 340px; }
+  .wd-sub b { color: var(--text); }
+  .wd-players { display: flex; flex-direction: column; gap: 10px; }
+  .wd-player {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: rgba(0,0,0,0.18);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 12px 14px;
+    transition: opacity 0.3s ease, border-color 0.3s ease;
+  }
+  .wd-player .wd-name { font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+  .wd-hearts { font-size: 15px; letter-spacing: 2px; }
+  .wd-lostbtn { padding: 8px 14px; font-size: 13px; }
+  .wd-player.wd-dead { opacity: 0.55; border-color: #ff2e63; }
+  .wd-modes { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
+  .wd-modes .chip { cursor: pointer; opacity: 0.5; transition: opacity 0.25s ease, box-shadow 0.25s ease; }
+  .wd-modes .chip.sel { opacity: 1; box-shadow: 0 0 14px var(--accent-soft); }
+
   /* ------- bottom nav ------- */
   .nav {
     position: fixed;
@@ -498,6 +537,12 @@
       <div class="go" id="teaserGo">Day 1 — tap to play →</div>
     </div>
 
+    <div class="panel teaser" id="wdTeaser">
+      <div class="ptitle">Feeling competitive?</div>
+      <div style="font-size: 17px; font-weight: 600;">🔤 Word Duel</div>
+      <div class="go">5 hearts each. Loser pays the price →</div>
+    </div>
+
   </section>
 
   <!-- ================= QUESTION GAME ================= -->
@@ -522,15 +567,59 @@
 
   </section>
 
-  <!-- ================= COMING SOON ================= -->
-  <section class="page" id="page-soon">
-    <div class="panel soonbox">
-      <div class="big">🕹️</div>
-      <h2>Stupid Game #2</h2>
-      <p>Under extremely serious construction. The developer (Riu) is accepting ideas, bribes, and kisses to speed things up.</p>
-      <div class="progress"><div class="fill"></div></div>
-      <div class="progress-label">DEVELOPMENT PROGRESS: 1%</div>
+  <!-- ================= WORD DUEL ================= -->
+  <section class="page" id="page-duel">
+
+    <div class="daybar">
+      <div class="pill">Round <b id="wdRound">1</b></div>
+      <div class="pill">💔 Lose 5 → pay the price</div>
     </div>
+
+    <div class="card" style="min-height: 210px; padding: 34px 24px 30px; gap: 16px;">
+      <div class="chip">🔤 Word Duel</div>
+      <div class="wd-letters" id="wdLetters">
+        <span class="wd-l" id="wdL1">?</span>
+        <span class="wd-arrow">➜</span>
+        <span class="wd-l" id="wdL2">?</span>
+      </div>
+      <div class="wd-sub" id="wdSub">Rolling the letters…</div>
+      <div class="btnrow" style="margin-top: 0;">
+        <button class="primary" id="wdReroll">🎲 New letters</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ptitle">Hearts — round loser taps their 💔</div>
+      <div class="wd-players">
+        <div class="wd-player" id="wdRowLucia">
+          <span class="wd-name">Lucia</span>
+          <span class="wd-hearts" id="wdHeartsLucia">❤️❤️❤️❤️❤️</span>
+          <button class="wd-lostbtn" id="wdLostLucia">I lost 💔</button>
+        </div>
+        <div class="wd-player" id="wdRowRiu">
+          <span class="wd-name">Riu</span>
+          <span class="wd-hearts" id="wdHeartsRiu">❤️❤️❤️❤️❤️</span>
+          <button class="wd-lostbtn" id="wdLostRiu">I lost 💔</button>
+        </div>
+      </div>
+      <div class="hint">One phone runs the duel while we're on a call — synced hearts arrive with the database 🔮</div>
+    </div>
+
+    <div class="panel" id="wdPenaltyPanel" style="display: none;">
+      <div class="ptitle">Judgment time</div>
+      <div style="font-size: 17px; font-weight: 600;" id="wdLoserLine">💀 Someone is out of hearts!</div>
+      <div class="wd-modes">
+        <span class="chip sel" data-mode="funny">😂 Funny</span>
+        <span class="chip" data-mode="spicy">🌶️ Spicy</span>
+        <span class="chip" data-mode="ldr">💌 Long Distance</span>
+      </div>
+      <div class="rowbtns">
+        <button class="primary" id="wdSpin">🎰 Spin the penalty</button>
+        <button id="wdRematch">💞 Rematch</button>
+      </div>
+      <div class="missyou" id="wdPenalty"></div>
+    </div>
+
   </section>
 </div>
 
@@ -538,7 +627,7 @@
 <nav class="nav">
   <button id="navHome" class="active">🏠 Home</button>
   <button id="navGame">💬 Daily Q</button>
-  <button id="navSoon">🕹️ Soon™</button>
+  <button id="navDuel">🔤 Duel</button>
 </nav>
 
 <div class="toast" id="toast">Copied!</div>
@@ -788,13 +877,13 @@ function randomQuestion() {
 }
 
 // ---------------- TABS ----------------
-const SUBTITLES = { home: "Our Little Universe", game: "Question of the Day", soon: "The Game Lab" };
-const NAVIDS = { home: "navHome", game: "navGame", soon: "navSoon" };
+const SUBTITLES = { home: "Our Little Universe", game: "Question of the Day", duel: "The Word Duel" };
+const NAVIDS = { home: "navHome", game: "navGame", duel: "navDuel" };
 let activeTab = "home";
 
 function switchTab(name) {
   activeTab = name;
-  ["home", "game", "soon"].forEach(t => {
+  ["home", "game", "duel"].forEach(t => {
     document.getElementById("page-" + t).classList.toggle("active", t === name);
     document.getElementById(NAVIDS[t]).classList.toggle("active", t === name);
   });
@@ -804,8 +893,9 @@ function switchTab(name) {
 }
 document.getElementById("navHome").addEventListener("click", () => switchTab("home"));
 document.getElementById("navGame").addEventListener("click", () => switchTab("game"));
-document.getElementById("navSoon").addEventListener("click", () => switchTab("soon"));
+document.getElementById("navDuel").addEventListener("click", () => switchTab("duel"));
 document.getElementById("teaserCard").addEventListener("click", () => switchTab("game"));
+document.getElementById("wdTeaser").addEventListener("click", () => switchTab("duel"));
 
 // ---------------- GAME RENDER ----------------
 const elQ = document.getElementById("question");
@@ -1023,6 +1113,145 @@ function spawnHeart() {
   setTimeout(() => h.remove(), 16000);
 }
 
+// ---------------- WORD DUEL ----------------
+// One phone runs the game during a call (DB sync comes later).
+// Letters are weighted toward playable combos: common starts × common ends.
+const WD_STARTS = "AAABBBCCCDDDEEEFFGGHHIIJKLLMMNNOOPPPRRRSSSSTTTUVWY";
+const WD_ENDS   = "AADDDEEEEGGGHHKKLLLMMNNNOOPPRRRSSSTTTTWYY";
+const WD_PENALTIES = {
+  funny: [
+    "Send a selfie making the ugliest face you can. It may legally be used as blackmail.",
+    "Talk in a terrible British accent for the next 5 minutes of the call. Cheerio.",
+    "Send a 3-sentence apology speech for losing — maximum drama, minimum dignity.",
+    "Change your phone wallpaper to a photo the winner picks. 24 hours minimum.",
+    "Sing the chorus of a song the winner chooses. Voice message. No excuses.",
+    "Do 10 pushups on camera. Form will be judged. Harshly.",
+    "The winner picks your profile picture for tomorrow. Choose your enemy wisely.",
+    "Speak only in questions for the next 3 minutes? Can you do it? Are you sure?",
+    "Send a voice message narrating your defeat like a nature documentary.",
+    "Draw a portrait of the winner in 60 seconds and send it. It will be framed. Emotionally."
+  ],
+  spicy: [
+    "Send the winner your most smoldering selfie. Effort is mandatory.",
+    "Give the winner one IOU kiss — redeemable anywhere, anytime, no refusing.",
+    "Describe your favorite thing about the winner's looks. In detail. Out loud. Now.",
+    "Whisper the next thing you say on the call. Whatever it is.",
+    "Send a flirty text so good it would've worked on you.",
+    "The winner picks your outfit for the next video call. Within reason. Barely.",
+    "Tell the winner exactly what you'd do if you were together right now. Start talking.",
+    "One genuine compliment about the winner every hour, next 3 hours. Set alarms.",
+    "Blow a kiss on camera. Make it embarrassingly cinematic.",
+    "Rate the winner's kissing skills out of 10, out loud, and defend the score."
+  ],
+  ldr: [
+    "You plan the entire next video date: theme, food, activity. Winner just shows up.",
+    "Write the winner a goodnight text so sweet it needs a warning label. Tonight.",
+    "Order or mail the winner one small surprise this week. Budget: love.",
+    "Make a 3-song playlist titled 'Sorry I Lost' and send it.",
+    "Good-morning selfie to the winner for the next 3 days. Set the alarm.",
+    "Match the winner's timezone for tomorrow's call — even the ugly hours.",
+    "Write 5 things we're doing at the next reunion. Send the list. It's binding.",
+    "The winner schedules one surprise call this week — you MUST pick up.",
+    "Photo-tour of your whole day tomorrow: minimum 5 pictures.",
+    "Count the days until the reunion in a voice message. Dramatically. With feeling."
+  ]
+};
+let wdHearts = { lucia: 5, riu: 5 };
+let wdRoundNum = 1;
+let wdOver = false;
+let wdMode = "funny";
+let wdLastPenalty = "";
+
+const wdLettersEl = document.getElementById("wdLetters");
+
+function wdRollLetters() {
+  wdLettersEl.classList.add("swapping");
+  setTimeout(() => {
+    const l1 = WD_STARTS[Math.floor(Math.random() * WD_STARTS.length)];
+    const l2 = WD_ENDS[Math.floor(Math.random() * WD_ENDS.length)];
+    document.getElementById("wdL1").textContent = l1;
+    document.getElementById("wdL2").textContent = l2;
+    document.getElementById("wdSub").innerHTML =
+      "First to say a word that <b>starts with " + l1 + "</b> and <b>ends with " + l2 +
+      "</b> wins the round. Proper words only — the other player is the judge 😌";
+    wdLettersEl.classList.remove("swapping");
+  }, 250);
+}
+
+function wdRenderHearts() {
+  ["lucia", "riu"].forEach(p => {
+    const cap = p === "lucia" ? "Lucia" : "Riu";
+    document.getElementById("wdHearts" + cap).textContent =
+      "❤️".repeat(wdHearts[p]) + "🖤".repeat(5 - wdHearts[p]);
+    document.getElementById("wdRow" + cap).classList.toggle("wd-dead", wdHearts[p] === 0);
+  });
+}
+
+function wdLoseHeart(loser, e) {
+  if (wdOver) return;
+  wdHearts[loser]--;
+  wdRenderHearts();
+  const name = loser === "lucia" ? "Lucia" : "Riu";
+  if (e) burst(e.clientX, e.clientY, ["💔", "🥀", "😵"]);
+  if (wdHearts[loser] === 0) { wdGameOver(loser); return; }
+  wdRoundNum++;
+  document.getElementById("wdRound").textContent = wdRoundNum;
+  popToast(name + " loses a heart 💔 " + wdHearts[loser] + " left!");
+  wdRollLetters();
+}
+
+function wdGameOver(loser) {
+  wdOver = true;
+  const name = loser === "lucia" ? "Lucia" : "Riu";
+  const panel = document.getElementById("wdPenaltyPanel");
+  panel.style.display = "block";
+  document.getElementById("wdLoserLine").textContent = "💀 " + name + " is out of hearts!";
+  document.getElementById("wdSpin").textContent = "🎰 Spin " + name + "'s penalty";
+  popToast(name + " is DEFEATED 😈 Time for judgment");
+  burst(innerWidth / 2, innerHeight / 2, ["💀", "😈", "⚡"]);
+  panel.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+function wdRematch() {
+  wdHearts = { lucia: 5, riu: 5 };
+  wdRoundNum = 1;
+  wdOver = false;
+  document.getElementById("wdRound").textContent = 1;
+  document.getElementById("wdPenaltyPanel").style.display = "none";
+  document.getElementById("wdPenalty").classList.remove("show");
+  wdRenderHearts();
+  wdRollLetters();
+  popToast("Hearts refilled — round 1 💞");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+document.getElementById("wdReroll").addEventListener("click", (e) => {
+  wdRollLetters();
+  burst(e.clientX, e.clientY);
+});
+document.getElementById("wdLostLucia").addEventListener("click", (e) => wdLoseHeart("lucia", e));
+document.getElementById("wdLostRiu").addEventListener("click", (e) => wdLoseHeart("riu", e));
+document.getElementById("wdSpin").addEventListener("click", (e) => {
+  const pool = WD_PENALTIES[wdMode];
+  let pick;
+  do { pick = pool[Math.floor(Math.random() * pool.length)]; }
+  while (pick === wdLastPenalty && pool.length > 1);
+  wdLastPenalty = pick;
+  const box = document.getElementById("wdPenalty");
+  box.textContent = pick;
+  box.classList.add("show");
+  burst(e.clientX, e.clientY, ["🎰", "😈", "✨"]);
+});
+document.getElementById("wdRematch").addEventListener("click", wdRematch);
+document.querySelectorAll(".wd-modes .chip").forEach(chip => {
+  chip.addEventListener("click", () => {
+    document.querySelectorAll(".wd-modes .chip").forEach(c => c.classList.remove("sel"));
+    chip.classList.add("sel");
+    wdMode = chip.dataset.mode;
+    document.getElementById("wdPenalty").classList.remove("show");
+  });
+});
+
 // ---------------- LOCK SCREEN ----------------
 // Password = our anniversary (June 2, 2026), typed almost any way:
 // 06/02/2026, 6/2/26, 060226, 0602, "june 2"... all accepted.
@@ -1076,6 +1305,8 @@ if (getHashParam("unlocked") === "1") {
 // ---------------- INIT ----------------
 renderHeader();
 show(dailyQuestion(), true);
+wdRollLetters();
+wdRenderHearts();
 if (reunionDate) document.getElementById("setDateBtn").textContent = "📅 Change the date";
 tickAnniversary();
 tickClocks();

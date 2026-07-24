@@ -42,7 +42,7 @@ out of each other's way.
 
 | Session | Who | Feature | Regions of index.html claimed | Status |
 |---|---|---|---|---|
-| _(none)_ | | | | |
+| 2026-07-24-wordduel | Riu | Word Duel game (branch `feature/word-duel`) | `page-soon` section (replaced by `page-duel`), nav button, TABS block (additive), `wd-` CSS block, WORD DUEL script block, home teaser | 🔃 PR open |
 
 <!-- Row template:
 | 2026-07-24-login | Riu | Login page | lock CSS block, lock HTML block, LOCK SCREEN script block | ✅ shipped |
@@ -76,8 +76,12 @@ out of each other's way.
 |---|---|
 | `home` | Home |
 | `game` | Question of the Day |
-| `soon` | Placeholder / next game slot |
+| `duel` | Word Duel (took over the retired `soon` placeholder slot) |
 
 **Element id / CSS class prefixes:** `lock*` (login), `cd*` (countdown),
-`nav*` (nav buttons), `tick*` (home widget functions). New features should
-pick their own short prefix and list it here.
+`nav*` (nav buttons), `tick*` (home widget functions), `wd*` (Word Duel).
+New features should pick their own short prefix and list it here.
+
+**Note:** Word Duel uses live `Math.random()` (session state, one phone
+runs the game) — no seed offset claimed. When the DB lands and the duel
+becomes two-phone synced, revisit.
