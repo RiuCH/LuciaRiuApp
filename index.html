@@ -313,6 +313,103 @@
   @keyframes wiggle { 0%,100% { width: 1%; } 50% { width: 3%; } }
   .progress-label { font-size: 11px; color: var(--text-dim); letter-spacing: 1px; }
 
+  /* ------- journeys timeline ------- */
+  .jr-status { font-size: 12px; color: var(--text-dim); margin-top: 8px; }
+  .jr-form input[type="text"], .jr-form input[type="url"], .jr-form textarea {
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text);
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 10px 12px;
+    width: 100%;
+    margin-bottom: 10px;
+    outline: none;
+    transition: border-color 0.3s ease;
+  }
+  .jr-form input:focus, .jr-form textarea:focus { border-color: var(--accent); }
+  .jr-form textarea { resize: vertical; }
+  .jr-dates { display: flex; gap: 10px; justify-content: flex-start; flex-wrap: wrap; margin-bottom: 10px; }
+  .jr-dates label { font-size: 12px; color: var(--text-dim); display: flex; align-items: center; gap: 6px; }
+  .jr-timeline { position: relative; text-align: left; padding-left: 24px; }
+  .jr-timeline::before {
+    content: "";
+    position: absolute;
+    left: 7px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: linear-gradient(var(--accent), var(--accent-soft));
+    border-radius: 2px;
+    opacity: 0.7;
+  }
+  .jr-item { position: relative; }
+  .jr-item::before {
+    content: "";
+    position: absolute;
+    left: -22px;
+    top: 24px;
+    width: 12px;
+    height: 12px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 12px var(--accent-soft);
+  }
+  .jr-card { text-align: left; }
+  .jr-date { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); font-weight: 700; padding-right: 40px; }
+  .jr-place { font-size: 18px; font-weight: 700; margin: 4px 0 2px; }
+  .jr-desc { font-size: 14px; color: var(--text-dim); line-height: 1.55; margin-top: 4px; white-space: pre-wrap; }
+  .jr-del {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 4px 10px;
+    font-size: 12px;
+    border-radius: 999px;
+    opacity: 0.5;
+  }
+  .jr-del:hover { opacity: 1; }
+  .jr-photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 12px; }
+  .jr-photos img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 1px solid var(--card-border);
+  }
+  .jr-photos .jr-more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--card-border);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .jr-note { font-size: 12px; color: var(--text-dim); margin-top: 10px; grid-column: 1 / -1; }
+  .jr-albumlink { display: inline-block; margin-top: 10px; font-size: 13px; font-weight: 600; color: var(--accent); text-decoration: none; }
+  .jr-empty { text-align: center; color: var(--text-dim); font-size: 14px; padding: 20px 0 6px; }
+  .jr-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(5,2,10,0.88);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    cursor: zoom-out;
+  }
+  .jr-lightbox.show { display: flex; }
+  .jr-lightbox img { max-width: 94vw; max-height: 84vh; border-radius: 16px; box-shadow: 0 24px 80px rgba(0,0,0,0.6); }
+
   /* ------- word duel ------- */
   .wd-letters {
     display: flex;
@@ -385,6 +482,10 @@
     background: var(--accent);
     color: #fff;
     box-shadow: 0 6px 18px var(--accent-soft);
+  }
+  /* four tabs need to fit on a ~420px phone */
+  @media (max-width: 460px) {
+    .nav button { padding: 10px 11px; font-size: 12px; }
   }
 
   .toast {
@@ -567,6 +668,33 @@
 
   </section>
 
+  <!-- ================= JOURNEYS ================= -->
+  <section class="page" id="page-journeys">
+    <div class="panel">
+      <div class="ptitle">Every adventure, logged</div>
+      <div style="font-size:17px; font-weight:600;">✈️ Us, but with luggage</div>
+      <div class="jr-status" id="jrStatus"></div>
+      <div class="rowbtns"><button class="primary" id="jrAddBtn">➕ Add a journey</button></div>
+    </div>
+
+    <div class="panel jr-form" id="jrForm" style="display:none; text-align:left;">
+      <div class="ptitle">New journey</div>
+      <input type="text" id="jrPlace" placeholder="📍 Where did we go?" maxlength="80">
+      <div class="jr-dates">
+        <label>From <input type="date" id="jrStart"></label>
+        <label>To <input type="date" id="jrEnd"></label>
+      </div>
+      <textarea id="jrDesc" rows="3" placeholder="What happened? (the version we can tell our parents)"></textarea>
+      <input type="url" id="jrAlbum" placeholder="🔗 Apple shared-album link (optional)">
+      <div class="rowbtns">
+        <button class="primary" id="jrSaveBtn">💾 Save journey</button>
+        <button id="jrCancelBtn">Cancel</button>
+      </div>
+    </div>
+
+    <div class="jr-timeline" id="jrTimeline"></div>
+  </section>
+
   <!-- ================= WORD DUEL ================= -->
   <section class="page" id="page-duel">
 
@@ -627,10 +755,12 @@
 <nav class="nav">
   <button id="navHome" class="active">🏠 Home</button>
   <button id="navGame">💬 Daily Q</button>
+  <button id="navJourneys">✈️ Trips</button>
   <button id="navDuel">🔤 Duel</button>
 </nav>
 
 <div class="toast" id="toast">Copied!</div>
+<div class="jr-lightbox" id="jrLightbox"><img id="jrLightboxImg" alt="journey photo, full size"></div>
 
 <script>
 // ---------------- QUESTION BANK ----------------
@@ -849,10 +979,14 @@ function pools() {
   return afterDark ? ["spicy", "nasty"] : ["funny", "romantic", "spicy", "nasty", "ldr"];
 }
 
+// The hardcoded BANK is the offline fallback; once Supabase answers,
+// loadQuestions() swaps this to the DB copy (same content ⇒ same daily pick).
+let QUESTION_SOURCE = BANK;
+
 function flatPool() {
   const cats = pools();
   const out = [];
-  cats.forEach(c => BANK[c].forEach(q => out.push({ cat: c, text: q })));
+  cats.forEach(c => QUESTION_SOURCE[c].forEach(q => out.push({ cat: c, text: q })));
   return out;
 }
 
@@ -877,13 +1011,13 @@ function randomQuestion() {
 }
 
 // ---------------- TABS ----------------
-const SUBTITLES = { home: "Our Little Universe", game: "Question of the Day", duel: "The Word Duel" };
-const NAVIDS = { home: "navHome", game: "navGame", duel: "navDuel" };
+const SUBTITLES = { home: "Our Little Universe", game: "Question of the Day", journeys: "Everywhere, Together", duel: "The Word Duel" };
+const NAVIDS = { home: "navHome", game: "navGame", journeys: "navJourneys", duel: "navDuel" };
 let activeTab = "home";
 
 function switchTab(name) {
   activeTab = name;
-  ["home", "game", "duel"].forEach(t => {
+  ["home", "game", "journeys", "duel"].forEach(t => {
     document.getElementById("page-" + t).classList.toggle("active", t === name);
     document.getElementById(NAVIDS[t]).classList.toggle("active", t === name);
   });
@@ -893,6 +1027,7 @@ function switchTab(name) {
 }
 document.getElementById("navHome").addEventListener("click", () => switchTab("home"));
 document.getElementById("navGame").addEventListener("click", () => switchTab("game"));
+document.getElementById("navJourneys").addEventListener("click", () => switchTab("journeys"));
 document.getElementById("navDuel").addEventListener("click", () => switchTab("duel"));
 document.getElementById("teaserCard").addEventListener("click", () => switchTab("game"));
 document.getElementById("wdTeaser").addEventListener("click", () => switchTab("duel"));
@@ -1063,6 +1198,7 @@ reunionInput.addEventListener("change", () => {
   if (!reunionInput.value) return;
   reunionDate = new Date(reunionInput.value + "T00:00:00");
   setHashParam("reunion", reunionInput.value);
+  saveReunion(reunionInput.value);
   reunionInput.style.display = "none";
   document.getElementById("setDateBtn").textContent = "📅 Change the date";
   tickCountdown();
@@ -1084,6 +1220,349 @@ document.getElementById("missYouBtn").addEventListener("click", async () => {
     popToast("Long-press to copy 💌");
   }
 });
+
+// ---------------- JOURNEYS (Supabase-backed timeline) ----------------
+// Setup guide: docs/SUPABASE.md. Leave both constants empty for "local mode":
+// the timeline still works, but adds live in memory only (gone on refresh,
+// never reach the other phone). Fill them in and journeys sync for real.
+const SUPABASE_URL = "https://kpoxnurehcggqgbkptrf.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtwb3hudXJlaGNnZ3FnYmtwdHJmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4NjQ2NzYsImV4cCI6MjEwMDQ0MDY3Nn0.pK8zXiJnB0iwxAmy2gGXMIE7rGAM6mkui3UbzM5KQAc"; // anon public key — ships in the page by design (RLS is the gate)
+
+const JOURNEYS_SEED = [
+  {
+    id: "seed-1",
+    place: "Where it all began 💞",
+    start_date: "2026-06-02",
+    end_date: null,
+    description: "Not a trip — the departure gate for all of them. The day we became us.",
+    album_url: ""
+  }
+];
+
+let journeys = [];
+const albumCache = {};
+
+function supaOn() { return SUPABASE_URL.length > 0 && SUPABASE_ANON_KEY.length > 0; }
+
+async function supa(path, opts) {
+  opts = opts || {};
+  const res = await fetch(SUPABASE_URL + "/rest/v1/" + path, {
+    method: opts.method || "GET",
+    headers: {
+      "apikey": SUPABASE_ANON_KEY,
+      "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+      "Content-Type": "application/json",
+      "Prefer": (opts.prefer ? opts.prefer + "," : "") + "return=representation"
+    },
+    body: opts.body ? JSON.stringify(opts.body) : undefined
+  });
+  if (!res.ok) throw new Error("Supabase said " + res.status);
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+// --- shared settings (lock password + reunion date live in the DB) ---
+const DB = { lockKeys: null };
+
+async function loadSettings() {
+  if (!supaOn()) return;
+  try {
+    const rows = await supa("settings?select=key,value");
+    const map = {};
+    rows.forEach(r => { map[r.key] = r.value; });
+    if (map.lock_keys) {
+      DB.lockKeys = map.lock_keys.split(",").map(s => s.trim()).filter(Boolean);
+    }
+    if (map.reunion_date) {
+      reunionDate = new Date(map.reunion_date + "T00:00:00");
+      document.getElementById("setDateBtn").textContent = "📅 Change the date";
+      tickCountdown();
+    }
+  } catch (e) { /* offline or not set up — fallbacks carry on */ }
+}
+
+async function saveReunion(val) {
+  if (!supaOn()) return;
+  try {
+    await supa("settings?on_conflict=key", {
+      method: "POST",
+      prefer: "resolution=merge-duplicates",
+      body: { key: "reunion_date", value: val }
+    });
+    popToast("Countdown synced — it's on both phones now 💞");
+  } catch (e) { /* hash param already saved it locally */ }
+}
+
+// --- question bank from the DB (BANK stays as the offline fallback) ---
+async function loadQuestions() {
+  if (!supaOn()) return;
+  try {
+    const rows = await supa("questions?select=id,category,text&order=id.asc");
+    if (!rows || !rows.length) return;
+    const bank = {};
+    rows.forEach(r => { (bank[r.category] = bank[r.category] || []).push(r.text); });
+    // only swap in a complete bank — a partial one would break determinism
+    if (Object.keys(CHIPS).every(c => bank[c] && bank[c].length)) {
+      QUESTION_SOURCE = bank;
+      renderHeader();
+      show(dailyQuestion(), true);
+    }
+  } catch (e) { /* fallback BANK keeps working */ }
+}
+
+function jrStatusLine(msg) { document.getElementById("jrStatus").textContent = msg; }
+
+async function loadJourneys() {
+  if (!supaOn()) {
+    journeys = JOURNEYS_SEED.slice();
+    jrStatusLine("Local mode — set up Supabase (docs/SUPABASE.md) so journeys sync to both phones");
+    renderJourneys();
+    return;
+  }
+  try {
+    journeys = await supa("journeys?select=*&order=start_date.asc");
+    jrStatusLine("Synced 💞 — you both see the same timeline");
+  } catch (e) {
+    if (!journeys.length) journeys = JOURNEYS_SEED.slice();
+    jrStatusLine("Couldn't reach Supabase — showing what we have (are we offline?)");
+  }
+  renderJourneys();
+}
+
+function fmtJourneyDates(start, end) {
+  const opts = { month: "short", day: "numeric", year: "numeric" };
+  const s = new Date(start + "T00:00:00");
+  if (!end || end === start) return s.toLocaleDateString(undefined, opts);
+  const e = new Date(end + "T00:00:00");
+  if (s.getFullYear() === e.getFullYear() && s.getMonth() === e.getMonth()) {
+    return s.toLocaleDateString(undefined, { month: "short", day: "numeric" }) +
+      "–" + e.getDate() + ", " + e.getFullYear();
+  }
+  return s.toLocaleDateString(undefined, opts) + " → " + e.toLocaleDateString(undefined, opts);
+}
+
+function renderJourneys() {
+  const box = document.getElementById("jrTimeline");
+  box.innerHTML = "";
+  if (!journeys.length) {
+    const empty = document.createElement("div");
+    empty.className = "jr-empty";
+    empty.textContent = "No journeys yet — add our first one ✈️";
+    box.appendChild(empty);
+    return;
+  }
+  journeys.forEach(j => {
+    const item = document.createElement("div");
+    item.className = "jr-item";
+    const card = document.createElement("div");
+    card.className = "panel jr-card";
+
+    const del = document.createElement("button");
+    del.className = "jr-del";
+    del.textContent = "✕";
+    del.title = "Delete this journey";
+    del.addEventListener("click", () => deleteJourney(j));
+    card.appendChild(del);
+
+    const date = document.createElement("div");
+    date.className = "jr-date";
+    date.textContent = fmtJourneyDates(j.start_date, j.end_date);
+    card.appendChild(date);
+
+    const place = document.createElement("div");
+    place.className = "jr-place";
+    place.textContent = j.place;
+    card.appendChild(place);
+
+    if (j.description) {
+      const desc = document.createElement("div");
+      desc.className = "jr-desc";
+      desc.textContent = j.description;
+      card.appendChild(desc);
+    }
+
+    if (j.album_url) {
+      const photos = document.createElement("div");
+      photos.className = "jr-photos";
+      card.appendChild(photos);
+      const link = document.createElement("a");
+      link.className = "jr-albumlink";
+      link.href = j.album_url;
+      link.target = "_blank";
+      link.rel = "noopener";
+      link.textContent = "Open album ↗";
+      card.appendChild(link);
+      hydrateAlbum(j.album_url, photos);
+    }
+
+    item.appendChild(card);
+    box.appendChild(item);
+  });
+}
+
+const jrForm = document.getElementById("jrForm");
+document.getElementById("jrAddBtn").addEventListener("click", () => {
+  jrForm.style.display = jrForm.style.display === "none" ? "block" : "none";
+});
+document.getElementById("jrCancelBtn").addEventListener("click", () => { jrForm.style.display = "none"; });
+
+document.getElementById("jrSaveBtn").addEventListener("click", async (e) => {
+  const place = document.getElementById("jrPlace").value.trim();
+  const start = document.getElementById("jrStart").value;
+  const end = document.getElementById("jrEnd").value || null;
+  const desc = document.getElementById("jrDesc").value.trim();
+  const album = document.getElementById("jrAlbum").value.trim();
+  if (!place) { popToast("Where did we go? Place is required 📍"); return; }
+  if (!start) { popToast("When was it? Start date is required 📅"); return; }
+  if (end && end < start) { popToast("We can't come home before we leave 🤨"); return; }
+  const row = { place: place, start_date: start, end_date: end, description: desc, album_url: album };
+  if (supaOn()) {
+    try {
+      await supa("journeys", { method: "POST", body: row });
+      await loadJourneys();
+      popToast("Journey saved — for both of us 💞");
+    } catch (err) {
+      popToast("Couldn't save to Supabase 😢 (" + err.message + ")");
+      return;
+    }
+  } else {
+    row.id = "local-" + Date.now();
+    journeys.push(row);
+    journeys.sort((a, b) => (a.start_date < b.start_date ? -1 : 1));
+    renderJourneys();
+    popToast("Added on this phone only — Supabase makes it permanent!");
+  }
+  ["jrPlace", "jrStart", "jrEnd", "jrDesc", "jrAlbum"].forEach(id => { document.getElementById(id).value = ""; });
+  jrForm.style.display = "none";
+  burst(e.clientX, e.clientY, ["✈️", "🧳", "📸", "💞"]);
+});
+
+async function deleteJourney(j) {
+  if (!confirm('Delete "' + j.place + '" from our timeline?')) return;
+  if (supaOn() && typeof j.id === "number") {
+    try { await supa("journeys?id=eq." + j.id, { method: "DELETE" }); }
+    catch (err) { popToast("Couldn't delete 😢 (" + err.message + ")"); return; }
+    await loadJourneys();
+  } else {
+    journeys = journeys.filter(x => x !== j);
+    renderJourneys();
+  }
+  popToast("Journey removed 🗑️");
+}
+
+// --- Apple Shared Album embed ---
+// Uses iCloud's (unofficial) public shared-album web API. Needs the album's
+// "Public Website" toggle ON in Photos. If Apple ever breaks it, or we're
+// offline, the card quietly falls back to the "Open album ↗" link.
+function icloudToken(url) {
+  const m = url.match(/#([A-Za-z0-9]{8,})/) || url.match(/sharedalbum\/([A-Za-z0-9]{8,})/);
+  return m ? m[1] : null;
+}
+
+function icloudPartition(token) {
+  const B62 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+  const n = token[0] === "A"
+    ? B62.indexOf(token[1])
+    : B62.indexOf(token[1]) * 62 + B62.indexOf(token[2]);
+  return String(n).padStart(2, "0");
+}
+
+async function icloudPost(host, token, endpoint, body, depth) {
+  const res = await fetch("https://" + host + "/" + token + "/sharedstreams/" + endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain" }, // avoids a CORS preflight iCloud won't answer
+    body: JSON.stringify(body)
+  });
+  const data = await res.json().catch(() => null);
+  // iCloud may answer "wrong shard, go here instead" — follow it (max 3 hops)
+  if (data && data["X-Apple-MMe-Host"] && (depth || 0) < 3) {
+    return icloudPost(data["X-Apple-MMe-Host"], token, endpoint, body, (depth || 0) + 1);
+  }
+  if (!res.ok || !data) throw new Error("iCloud said " + res.status);
+  return data;
+}
+
+function pickDerivative(derivs, wantThumb) {
+  let best = null;
+  Object.values(derivs || {}).forEach(d => {
+    if (!d || !d.checksum || !Number(d.width)) return;
+    if (!best) { best = d; return; }
+    if (wantThumb) {
+      if (Math.abs(Number(d.width) - 400) < Math.abs(Number(best.width) - 400)) best = d;
+    } else if (Number(d.width) > Number(best.width)) {
+      best = d;
+    }
+  });
+  return best;
+}
+
+async function fetchICloudAlbum(url) {
+  const token = icloudToken(url);
+  if (!token) throw new Error("not an iCloud shared-album link");
+  if (albumCache[token]) return albumCache[token];
+  const host = "p" + icloudPartition(token) + "-sharedstreams.icloud.com";
+  const stream = await icloudPost(host, token, "webstream", { streamCtag: null });
+  const photos = (stream.photos || [])
+    .filter(p => p && p.mediaAssetType !== "video")
+    .slice(0, 24);
+  const guids = photos.map(p => p.photoGuid);
+  const assets = guids.length
+    ? await icloudPost(host, token, "webasseturls", { photoGuids: guids })
+    : { items: {} };
+  const urlFor = c => {
+    const it = assets.items && assets.items[c];
+    return it ? "https://" + it.url_location + it.url_path : null;
+  };
+  const out = photos.map(p => {
+    const thumb = pickDerivative(p.derivatives, true);
+    const full = pickDerivative(p.derivatives, false);
+    return {
+      thumb: thumb && urlFor(thumb.checksum),
+      full: (full && urlFor(full.checksum)) || (thumb && urlFor(thumb.checksum))
+    };
+  }).filter(p => p.thumb);
+  albumCache[token] = out;
+  return out;
+}
+
+async function hydrateAlbum(url, box) {
+  const note = document.createElement("div");
+  note.className = "jr-note";
+  note.textContent = "Loading photos… 📸";
+  box.appendChild(note);
+  try {
+    const photos = await fetchICloudAlbum(url);
+    box.innerHTML = "";
+    if (!photos.length) { box.remove(); return; }
+    photos.slice(0, 6).forEach(p => {
+      const img = document.createElement("img");
+      img.loading = "lazy";
+      img.src = p.thumb;
+      img.alt = "journey photo";
+      img.addEventListener("click", () => openLightbox(p.full));
+      box.appendChild(img);
+    });
+    if (photos.length > 6) {
+      const more = document.createElement("a");
+      more.className = "jr-more";
+      more.href = url;
+      more.target = "_blank";
+      more.rel = "noopener";
+      more.textContent = "+" + (photos.length - 6) + " ↗";
+      box.appendChild(more);
+    }
+  } catch (e) {
+    note.textContent = "Couldn't load photos here — tap “Open album ↗” below (is the album's Public Website on?)";
+  }
+}
+
+const jrLightbox = document.getElementById("jrLightbox");
+function openLightbox(src) {
+  if (!src) return;
+  document.getElementById("jrLightboxImg").src = src;
+  jrLightbox.classList.add("show");
+}
+jrLightbox.addEventListener("click", () => jrLightbox.classList.remove("show"));
 
 // ---------------- EFFECTS ----------------
 function burst(x, y, set) {
@@ -1281,7 +1760,8 @@ function unlock(celebrate) {
 function tryUnlock() {
   const digits = lockInput.value.replace(/\D/g, "");
   const text = lockInput.value.trim().toLowerCase();
-  const ok = LOCK_KEYS.includes(digits) ||
+  const keys = DB.lockKeys || LOCK_KEYS; // DB-managed password, hardcoded fallback
+  const ok = keys.includes(digits) ||
     (text.includes("jun") && /(^|\D)0?2(\D|$)/.test(text));
   if (ok) { unlock(true); return; }
   lockFails++;
@@ -1311,6 +1791,9 @@ if (reunionDate) document.getElementById("setDateBtn").textContent = "📅 Chang
 tickAnniversary();
 tickClocks();
 tickCountdown();
+loadJourneys();
+loadSettings();
+loadQuestions();
 setInterval(() => { tickAnniversary(); tickClocks(); tickCountdown(); }, 1000);
 setInterval(spawnHeart, 1400);
 for (let i = 0; i < 6; i++) setTimeout(spawnHeart, i * 350);

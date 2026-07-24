@@ -11,7 +11,14 @@ In `index.html`:
 - `BANK` — object with five arrays: `funny`, `romantic`, `spicy`, `nasty`, `ldr`
 - `MISSYOU` — flat array of miss-you message strings
 
-Add strings to the right array. That's the entire job — no other wiring.
+Add strings to the right array. Since v5 the live pool usually comes from
+the Supabase `questions` table (`QUESTION_SOURCE`), with `BANK` as the
+offline fallback — so after editing `BANK`, also sync the DB:
+run `python3 supabase/generate_seed.py`, then in the Supabase SQL editor
+`delete from questions;` and run the fresh `supabase/seed_questions.sql`
+(details in docs/SUPABASE.md). The two copies must stay identical, same
+order, or online and offline phones disagree on the daily question.
+`MISSYOU` needs no DB step.
 
 ## Category tone guide (match it!)
 

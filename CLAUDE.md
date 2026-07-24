@@ -23,6 +23,10 @@ June 2, 2026). Fun is a feature — keep the tone playful.
 4. **Both partners must run the same version.** Deploy = merge to `main`
    (Vercel redeploys automatically). Don't leave the app half-broken on main.
 5. Works offline, works on phones (test at ~420px wide), stays cute.
+6. **Supabase is an enhancement, never a dependency.** The app must fully
+   work with `SUPABASE_URL`/`SUPABASE_ANON_KEY` empty or the network down —
+   every DB-backed feature keeps a hardcoded/in-memory fallback (`BANK`,
+   `LOCK_KEYS`, hash params). Setup + conventions: docs/SUPABASE.md.
 
 ## Map of index.html
 
@@ -32,12 +36,21 @@ June 2, 2026). Fun is a feature — keep the tone playful.
 - `CHIPS` — category labels/colors
 - Constants: `EPOCH` (day counter start), `ANNIVERSARY` (June 2, 2026),
   `TZ_RIU`/`TZ_LUCIA` (clock timezones)
-- Tabs: sections `#page-home`, `#page-game`, `#page-duel` + `switchTab()`
-- Game logic: `dailyQuestion()` (deterministic), `randomQuestion()` (shuffle)
+- Tabs: sections `#page-home`, `#page-game`, `#page-journeys`, `#page-duel`
+  + `switchTab()`
+- Game logic: `dailyQuestion()` (deterministic), `randomQuestion()` (shuffle);
+  pool comes from `QUESTION_SOURCE` (= `BANK`, swapped to the DB copy once
+  `loadQuestions()` succeeds — content identical, so the pick doesn't change)
 - Word Duel: `WD_STARTS`/`WD_ENDS` (weighted letters), `WD_PENALTIES`
   (funny/spicy/ldr), `wd*` functions — one-phone session game, live random
 - Home widgets: `tickAnniversary()`, `tickClocks()`, `tickCountdown()`
-- Lock screen: `#lock` overlay, password = anniversary date (`LOCK_KEYS`),
+- JOURNEYS block: `SUPABASE_URL`/`SUPABASE_ANON_KEY` config, `supa()` REST
+  helper, `loadJourneys()`/`loadSettings()`/`loadQuestions()`, timeline
+  render + add/delete, Apple Shared Album embed (`fetchICloudAlbum()`),
+  lightbox. Element prefix: `jr*`. Tables: `journeys`, `settings`,
+  `questions` (schema in `supabase/`, guide in docs/SUPABASE.md)
+- Lock screen: `#lock` overlay, password = anniversary date (DB
+  `settings.lock_keys` when Supabase is up, `LOCK_KEYS` fallback),
   unlock persists via `#unlocked=1` hash param
 - Hash-param helpers: `getHashParam()` / `setHashParam()` — the app's only
   "storage"; never assign `location.hash` directly
@@ -63,7 +76,9 @@ couple-app-dev), then run `./setup-claude.sh` to refresh `.claude/skills/`.
 ## Docs
 
 - `docs/ARCHITECTURE.md` — how everything works in detail
-- `docs/ROADMAP.md` — agreed future plan (Supabase, Google login, photos,
+- `docs/SUPABASE.md` — backend setup (schema, keys, what lives in the DB,
+  question-seed regeneration, security honesty)
+- `docs/ROADMAP.md` — agreed future plan (Google login, photos,
   Claude API) and ideas backlog
 - `START-HERE-LUCIA.md` — Lucia's from-zero setup guide (Terminal, brew,
   gh, SSH, Claude Code) + plain-English commit/PR/deploy explainer. If

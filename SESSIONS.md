@@ -42,7 +42,7 @@ out of each other's way.
 
 | Session | Who | Feature | Regions of index.html claimed | Status |
 |---|---|---|---|---|
-| 2026-07-24-wordduel | Riu | Word Duel game (branch `feature/word-duel`) | `page-soon` section (replaced by `page-duel`), nav button, TABS block (additive), `wd-` CSS block, WORD DUEL script block, home teaser | 🔃 PR open |
+| _(none)_ | | | | |
 
 <!-- Row template:
 | 2026-07-24-login | Riu | Login page | lock CSS block, lock HTML block, LOCK SCREEN script block | ✅ shipped |
@@ -52,6 +52,8 @@ out of each other's way.
 
 | Date | Who | Feature | Notes |
 |---|---|---|---|
+| 2026-07-24 | Riu | Journeys timeline (✈️ Trips tab) + Supabase backend | New tab, `jr*` prefix; Supabase REST (`journeys`/`settings`/`questions` tables), password + reunion date + question bank DB-backed with fallbacks; Apple Shared Album embeds. Setup: docs/SUPABASE.md |
+| 2026-07-24 | Riu | Word Duel (🔤 Duel tab) | Took over the Soon™ slot; `wd*` prefix; one-phone session game (PR #2) |
 | 2026-07-24 | Riu | Login page (lock screen) | Password = anniversary; added hash helpers |
 
 ---
@@ -76,12 +78,19 @@ out of each other's way.
 |---|---|
 | `home` | Home |
 | `game` | Question of the Day |
+| `journeys` | Journeys timeline |
 | `duel` | Word Duel (took over the retired `soon` placeholder slot) |
 
 **Element id / CSS class prefixes:** `lock*` (login), `cd*` (countdown),
-`nav*` (nav buttons), `tick*` (home widget functions), `wd*` (Word Duel).
-New features should pick their own short prefix and list it here.
+`nav*` (nav buttons), `tick*` (home widget functions), `jr*` (journeys
+timeline), `wd*` (Word Duel). New features should pick their own short
+prefix and list it here.
+
+**Global constants / backends:** `SUPABASE_URL` + `SUPABASE_ANON_KEY`
+(journeys feature owns the Supabase config constants; future Supabase
+features reuse them — see docs/SUPABASE.md). Supabase table names are
+global identifiers too: `journeys`, `settings`, `questions` are claimed.
 
 **Note:** Word Duel uses live `Math.random()` (session state, one phone
-runs the game) — no seed offset claimed. When the DB lands and the duel
-becomes two-phone synced, revisit.
+runs the game) — no seed offset claimed. Now that the DB exists (v5),
+revisit if the duel becomes two-phone synced.

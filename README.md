@@ -1,7 +1,9 @@
 # Lucia ♥ Riu 💞
 
 Our own little couple app: a shared question every day, a together-clock,
-anniversary countdown, long-distance clocks, and (soon™) more stupid games.
+anniversary countdown, long-distance clocks, a timeline of every trip we
+take (with photos from our Apple shared albums), and (soon™) more stupid
+games.
 
 **▶ Live app: https://lucia-riu-app.vercel.app** — open it on your phone →
 Share → *Add to Home Screen*.
@@ -61,7 +63,10 @@ it's in the skills.)
 ## Docs
 
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — how one HTML file acts
-  like an app on two phones with no server
+  like an app on two phones with (almost) no server
+- [`docs/SUPABASE.md`](docs/SUPABASE.md) — the backend: 5-minute setup,
+  what syncs (journeys, reunion date, password, questions), and how to
+  change the app password
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — what we've shipped, what's next,
   and the plan for logins/photos/AI features
 
