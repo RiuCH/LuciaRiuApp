@@ -1135,8 +1135,8 @@ document.getElementById("missYouBtn").addEventListener("click", async () => {
 // Setup guide: docs/SUPABASE.md. Leave both constants empty for "local mode":
 // the timeline still works, but adds live in memory only (gone on refresh,
 // never reach the other phone). Fill them in and journeys sync for real.
-const SUPABASE_URL = "";      // e.g. "https://abcdefgh.supabase.co"
-const SUPABASE_ANON_KEY = ""; // Supabase → Settings → API → anon public key
+const SUPABASE_URL = "https://kpoxnurehcggqgbkptrf.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtwb3hudXJlaGNnZ3FnYmtwdHJmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4NjQ2NzYsImV4cCI6MjEwMDQ0MDY3Nn0.pK8zXiJnB0iwxAmy2gGXMIE7rGAM6mkui3UbzM5KQAc"; // anon public key — ships in the page by design (RLS is the gate)
 
 const JOURNEYS_SEED = [
   {
