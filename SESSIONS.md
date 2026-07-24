@@ -42,7 +42,7 @@ out of each other's way.
 
 | Session | Who | Feature | Regions of index.html claimed | Status |
 |---|---|---|---|---|
-| _(none)_ | | | | |
+| 2026-07-24-photo | Riu | Couple photo on home (branch `feature/couple-photo`) | `cp-` CSS block, photo panel HTML (top of home), COUPLE PHOTO script block, one additive line in `loadSettings()` | 🔃 PR open |
 
 <!-- Row template:
 | 2026-07-24-login | Riu | Login page | lock CSS block, lock HTML block, LOCK SCREEN script block | ✅ shipped |
@@ -66,13 +66,15 @@ out of each other's way.
 |---|---|
 | 0 | Question of the Day (normal) |
 | 104729 | Question of the Day (After Dark) |
-| _next free: 15485863, then any unlisted prime_ | |
+| 15485863 | Couple photo — Apple-album photo-of-the-day |
+| _next free: 32452843, then any unlisted prime_ | |
 
 **URL hash params** (via `getHashParam`/`setHashParam` only):
 | Param | Feature |
 |---|---|
 | `reunion` | Reunion countdown date |
 | `unlocked` | Login gate |
+| `photo` | Couple photo (link/album fallback when DB is off) |
 
 **Tabs** (`page-*` section ids + `NAVIDS`/`SUBTITLES` keys):
 | Tab key | Feature |
@@ -84,13 +86,15 @@ out of each other's way.
 
 **Element id / CSS class prefixes:** `lock*` (login), `cd*` (countdown),
 `nav*` (nav buttons), `tick*` (home widget functions), `jr*` (journeys
-timeline), `wd*` (Word Duel). New features should pick their own short
-prefix and list it here.
+timeline), `wd*` (Word Duel), `cp*` (couple photo). New features should
+pick their own short prefix and list it here.
 
 **Global constants / backends:** `SUPABASE_URL` + `SUPABASE_ANON_KEY`
 (journeys feature owns the Supabase config constants; future Supabase
 features reuse them — see docs/SUPABASE.md). Supabase table names are
 global identifiers too: `journeys`, `settings`, `questions` are claimed.
+Settings keys claimed: `lock_keys`, `reunion_date`, `home_photo` (couple
+photo: image URL, upload data-URL, or `album:<link>` for photo-of-the-day).
 
 **Serverless endpoints (`api/`):** `album` (iCloud shared-album proxy,
 journeys feature). Claim new endpoint paths here before using them.

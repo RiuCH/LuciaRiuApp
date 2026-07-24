@@ -26,7 +26,8 @@ session's claims, ask the user before proceeding.
    `getHashParam(name)` / `setHashParam(name, val)` helpers (top of the
    script) — they let multiple params coexist as `#a=1&b=2`. Never assign
    `location.hash` directly (it clobbers the other params).
-   Current hash params: `reunion` (countdown date), `unlocked` (login gate).
+   Current hash params: `reunion` (countdown date), `unlocked` (login gate),
+   `photo` (couple photo link when the DB is off).
 3. Anything "shared" between the two partners without a server must be
    **derived deterministically from the date** (see pattern below), because
    the app runs as two independent copies with no communication.

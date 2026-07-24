@@ -506,6 +506,56 @@
   .wd-modes .chip { cursor: pointer; opacity: 0.5; transition: opacity 0.25s ease, box-shadow 0.25s ease; }
   .wd-modes .chip.sel { opacity: 1; box-shadow: 0 0 14px var(--accent-soft); }
 
+  /* ------- couple photo (home hero) ------- */
+  .cp-panel { position: relative; }
+  .cp-gear {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 6px 10px;
+    font-size: 14px;
+    border-radius: 999px;
+    opacity: 0.55;
+    z-index: 2;
+  }
+  .cp-gear:hover { opacity: 1; }
+  .cp-frame {
+    border-radius: 18px;
+    overflow: hidden;
+    background: rgba(0,0,0,0.18);
+    border: 1px solid var(--card-border);
+  }
+  .cp-frame img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; }
+  .cp-empty {
+    aspect-ratio: 4 / 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: var(--text-dim);
+    font-size: 13.5px;
+    padding: 20px;
+    line-height: 1.5;
+  }
+  .cp-empty .big { font-size: 42px; }
+  .cp-caption { margin-top: 10px; font-size: 12.5px; color: var(--text-dim); letter-spacing: 0.4px; }
+  .cp-linkrow { display: flex; gap: 8px; margin-top: 10px; }
+  .cp-linkrow input {
+    flex: 1;
+    min-width: 0;
+    font-family: inherit;
+    font-size: 13.5px;
+    color: var(--text);
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 10px 12px;
+    outline: none;
+    transition: border-color 0.3s ease;
+  }
+  .cp-linkrow input:focus { border-color: var(--accent); }
+
   /* ------- bottom nav ------- */
   .nav {
     position: fixed;
@@ -649,6 +699,31 @@
 
   <!-- ================= HOME ================= -->
   <section class="page active" id="page-home">
+
+    <div class="panel cp-panel">
+      <button class="cp-gear" id="cpGear" title="Change our photo">⚙️</button>
+      <div class="ptitle">Us, in one picture</div>
+      <div class="cp-frame">
+        <img id="cpImg" alt="Lucia ♥ Riu" style="display:none">
+        <div class="cp-empty" id="cpEmpty">
+          <span class="big">📸</span>
+          <span>No photo yet — tap ⚙️ and give this spot a memory</span>
+        </div>
+      </div>
+      <div class="cp-caption" id="cpCaption">us. 💞</div>
+      <div id="cpOptions" style="display:none">
+        <div class="rowbtns">
+          <button id="cpUploadBtn">📁 Upload photo</button>
+          <button id="cpLinkBtn">🔗 Paste a link</button>
+        </div>
+        <div class="cp-linkrow" id="cpLinkRow" style="display:none">
+          <input type="url" id="cpLinkInput" placeholder="image link, or Apple shared-album link 🍎">
+          <button class="primary" id="cpLinkSave">Set 💞</button>
+        </div>
+        <div class="hint">An Apple shared-album link turns this into our photo-of-the-day 📆</div>
+        <input type="file" id="cpFile" accept="image/*" style="display:none">
+      </div>
+    </div>
 
     <div class="panel" id="annivBar">
       <div class="ptitle">Us, so far</div>
@@ -1353,6 +1428,7 @@ async function loadSettings() {
       document.getElementById("setDateBtn").textContent = "📅 Change the date";
       tickCountdown();
     }
+    if (map.home_photo) cpApply(map.home_photo); // couple-photo feature
   } catch (e) { /* offline or not set up — fallbacks carry on */ }
 }
 
@@ -1834,6 +1910,112 @@ function spawnHeart() {
   setTimeout(() => h.remove(), 16000);
 }
 
+// ---------------- COUPLE PHOTO (home hero) ----------------
+// One settings key: home_photo. The value is a direct image URL, a data:
+// URL from an upload, or "album:<link>" — an Apple shared-album whose
+// photo-of-the-day rotates deterministically (same photo on both phones).
+// Fallbacks per golden rule 6: #photo= hash param for links, session-only
+// for uploads when the DB is unreachable.
+const CP_OFFSET = 15485863; // claimed in SESSIONS.md
+
+function cpShow(src, caption) {
+  const img = document.getElementById("cpImg");
+  img.onerror = () => {
+    img.style.display = "none";
+    document.getElementById("cpEmpty").style.display = "flex";
+    document.getElementById("cpCaption").textContent = "that photo wouldn't load 🥲";
+  };
+  img.src = src;
+  img.style.display = "block";
+  document.getElementById("cpEmpty").style.display = "none";
+  document.getElementById("cpCaption").textContent = caption || "us. 💞";
+}
+
+async function cpApply(value) {
+  if (!value) return;
+  if (value.startsWith("album:")) {
+    try {
+      const photos = await fetchICloudAlbum(value.slice(6));
+      if (!photos.length) return;
+      const rng = mulberry32(dayNumber() * 7919 + CP_OFFSET);
+      const pick = photos[Math.floor(rng() * photos.length)];
+      cpShow(pick.full || pick.thumb, "photo of the day — from our album 🍎");
+    } catch (e) { /* album unreachable — keep whatever is showing */ }
+  } else {
+    cpShow(value);
+  }
+}
+
+async function cpSave(value) {
+  if (!value.startsWith("data:")) setHashParam("photo", encodeURIComponent(value));
+  if (!supaOn()) {
+    popToast(value.startsWith("data:")
+      ? "Set for this session — local mode can't keep uploads 🥲"
+      : "Photo saved on this device 💞");
+    return;
+  }
+  try {
+    await supa("settings?on_conflict=key", {
+      method: "POST",
+      prefer: "resolution=merge-duplicates",
+      body: { key: "home_photo", value: value }
+    });
+    popToast("Synced — it's on both phones now 💞");
+  } catch (e) {
+    popToast("Couldn't reach the DB — showing it here for now 🥲");
+  }
+}
+
+function cpHandleFile(file) {
+  if (!file || !file.type || !file.type.startsWith("image/")) return;
+  const fr = new FileReader();
+  fr.onload = () => {
+    const im = new Image();
+    im.onload = () => {
+      // downscale + compress so the settings row stays small
+      const MAX = 1000;
+      const scale = Math.min(1, MAX / Math.max(im.width, im.height));
+      const cv = document.createElement("canvas");
+      cv.width = Math.max(1, Math.round(im.width * scale));
+      cv.height = Math.max(1, Math.round(im.height * scale));
+      cv.getContext("2d").drawImage(im, 0, 0, cv.width, cv.height);
+      const data = cv.toDataURL("image/jpeg", 0.82);
+      cpShow(data);
+      cpSave(data);
+      burst(innerWidth / 2, 220, ["📸", "💞", "✨"]);
+    };
+    im.src = fr.result;
+  };
+  fr.readAsDataURL(file);
+}
+
+document.getElementById("cpGear").addEventListener("click", () => {
+  const box = document.getElementById("cpOptions");
+  box.style.display = box.style.display === "none" ? "block" : "none";
+});
+document.getElementById("cpUploadBtn").addEventListener("click", () => {
+  document.getElementById("cpFile").click();
+});
+document.getElementById("cpFile").addEventListener("change", (e) => {
+  cpHandleFile(e.target.files && e.target.files[0]);
+  e.target.value = "";
+});
+document.getElementById("cpLinkBtn").addEventListener("click", () => {
+  const row = document.getElementById("cpLinkRow");
+  row.style.display = row.style.display === "none" ? "flex" : "none";
+  if (row.style.display === "flex") document.getElementById("cpLinkInput").focus();
+});
+document.getElementById("cpLinkSave").addEventListener("click", () => {
+  const raw = document.getElementById("cpLinkInput").value.trim();
+  if (!/^https?:\/\//.test(raw)) { popToast("That doesn't look like a link 🤨"); return; }
+  const value = icloudToken(raw) ? "album:" + raw : raw;
+  cpApply(value);
+  cpSave(value);
+  document.getElementById("cpLinkInput").value = "";
+  document.getElementById("cpLinkRow").style.display = "none";
+  document.getElementById("cpOptions").style.display = "none";
+});
+
 // ---------------- WORD DUEL ----------------
 // One phone runs the game during a call (DB sync comes later).
 // Letters are weighted toward playable combos: common starts × common ends.
@@ -2029,6 +2211,11 @@ renderHeader();
 show(dailyQuestion(), true);
 wdRollLetters();
 wdRenderHearts();
+// couple photo: hash-param fallback first; loadSettings() overrides with the DB copy
+(function cpInit() {
+  const ph = getHashParam("photo");
+  if (ph) { try { cpApply(decodeURIComponent(ph)); } catch (e) {} }
+})();
 if (reunionDate) document.getElementById("setDateBtn").textContent = "📅 Change the date";
 tickAnniversary();
 tickClocks();
