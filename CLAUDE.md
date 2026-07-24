@@ -14,7 +14,7 @@ June 2, 2026). Fun is a feature — keep the tone playful.
 2. **No localStorage / sessionStorage / cookies.** They break in the preview
    environments we use. State lives in memory or in URL-hash params —
    always via the `getHashParam`/`setHashParam` helpers so params coexist
-   (current: `#reunion=YYYY-MM-DD`, `#unlocked=1`).
+   (current: `#reunion=YYYY-MM-DD`, `#unlocked=1`, `#photo=<url>`).
 3. **The daily question must stay deterministic and shared.** It's picked by
    a seeded PRNG (`mulberry32`) keyed to days since July 24, 2026. Same date
    ⇒ same question on both phones with zero server. Any change to the
@@ -43,6 +43,9 @@ June 2, 2026). Fun is a feature — keep the tone playful.
   `loadQuestions()` succeeds — content identical, so the pick doesn't change)
 - Word Duel: `WD_STARTS`/`WD_ENDS` (weighted letters), `WD_PENALTIES`
   (funny/spicy/ldr), `wd*` functions — one-phone session game, live random
+- Couple photo: `cp*` block — home hero image from `settings.home_photo`
+  (URL / upload data-URL / `album:<link>` = Apple-album photo-of-the-day,
+  seed offset 15485863); `#photo=` hash + session fallbacks
 - Home widgets: `tickAnniversary()`, `tickClocks()`, `tickCountdown()`
 - JOURNEYS block: `SUPABASE_URL`/`SUPABASE_ANON_KEY` config, `supa()` REST
   helper, `loadJourneys()`/`loadSettings()`/`loadQuestions()`, timeline
