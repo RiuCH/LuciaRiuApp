@@ -81,6 +81,12 @@ JOURNEYS block of `index.html`:
   and re-apply it in the SQL editor (see docs/SUPABASE.md) — the DB copy
   and hardcoded copy must stay identical or the daily pick diverges.
 
+**Serverless functions** live in `api/` (Vercel auto-deploys them with the
+static site — sanctioned by ROADMAP). Current: `api/album.js` (iCloud
+shared-album proxy; iCloud sends no CORS headers so the browser can't call
+it directly). The app must still degrade if a function is unreachable —
+they're an enhancement, like Supabase. The Claude API proxy will join it.
+
 External requests are still forbidden **except**: Supabase, and iCloud's
 `sharedstreams` endpoints (Apple Shared Album embeds in the Journeys tab).
 Both must degrade gracefully when unreachable.

@@ -37,6 +37,14 @@ falls back to the hardcoded copies and in-memory state ("local mode").
 - **Add questions:** add them to `BANK` in `index.html` **and** re-run the
   seed (see below) so online and offline phones agree.
 
+## Migrations
+
+Projects set up before v6 need one-off migrations, run in the SQL editor:
+
+- `supabase/migrate_journey_photos.sql` — adds `journeys.photo_guids`
+  (the "pick which album photos show" feature). Fresh installs from
+  `schema.sql` already have it.
+
 ## Keeping questions in sync
 
 `supabase/seed_questions.sql` is generated from `BANK` in `index.html` —

@@ -409,6 +409,63 @@
   }
   .jr-lightbox.show { display: flex; }
   .jr-lightbox img { max-width: 94vw; max-height: 84vh; border-radius: 16px; box-shadow: 0 24px 80px rgba(0,0,0,0.6); }
+  .jr-edit {
+    position: absolute;
+    top: 10px;
+    right: 46px;
+    padding: 4px 10px;
+    font-size: 12px;
+    border-radius: 999px;
+    opacity: 0.5;
+  }
+  .jr-edit:hover { opacity: 1; }
+  .jr-pickbtn { margin-left: 10px; padding: 6px 12px; font-size: 12.5px; }
+  .jr-picker {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(5,2,10,0.8);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  .jr-picker.show { display: flex; }
+  .jr-picker-box {
+    width: min(480px, 94vw);
+    max-height: 84vh;
+    overflow-y: auto;
+    margin-bottom: 0;
+  }
+  .jr-picker-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 10px 0 4px; }
+  .jr-picker-grid img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    opacity: 0.55;
+    transition: opacity 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  }
+  .jr-picker-grid img.sel {
+    opacity: 1;
+    border-color: var(--accent);
+    box-shadow: 0 0 10px var(--accent-soft);
+    transform: scale(1.02);
+  }
+  .jr-picker-note { font-size: 12px; color: var(--text-dim); min-height: 16px; margin-top: 4px; }
+  .jr-sort { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
+  .jr-sort .chip {
+    cursor: pointer;
+    font-size: 11px;
+    padding: 5px 12px;
+    opacity: 0.5;
+    transition: opacity 0.25s ease, box-shadow 0.25s ease;
+  }
+  .jr-sort .chip.sel { opacity: 1; box-shadow: 0 0 12px var(--accent-soft); }
 
   /* ------- word duel ------- */
   .wd-letters {
@@ -749,11 +806,17 @@
       <div class="ptitle">Every adventure, logged</div>
       <div style="font-size:17px; font-weight:600;">✈️ Us, but with luggage</div>
       <div class="jr-status" id="jrStatus"></div>
+      <div class="jr-sort" id="jrSort">
+        <span class="chip sel" data-sort="oldest">⏳ Oldest</span>
+        <span class="chip" data-sort="latest">🆕 Latest</span>
+        <span class="chip" data-sort="shortest">⚡ Shortest</span>
+        <span class="chip" data-sort="longest">🏝️ Longest</span>
+      </div>
       <div class="rowbtns"><button class="primary" id="jrAddBtn">➕ Add a journey</button></div>
     </div>
 
     <div class="panel jr-form" id="jrForm" style="display:none; text-align:left;">
-      <div class="ptitle">New journey</div>
+      <div class="ptitle" id="jrFormTitle">New journey</div>
       <input type="text" id="jrPlace" placeholder="📍 Where did we go?" maxlength="80">
       <div class="jr-dates">
         <label>From <input type="date" id="jrStart"></label>
@@ -836,6 +899,18 @@
 
 <div class="toast" id="toast">Copied!</div>
 <div class="jr-lightbox" id="jrLightbox"><img id="jrLightboxImg" alt="journey photo, full size"></div>
+<div class="jr-picker" id="jrPicker">
+  <div class="panel jr-picker-box">
+    <div class="ptitle">Pick the photos our timeline shows</div>
+    <div class="jr-picker-note" id="jrPickerNote">Loading album… 📸</div>
+    <div class="jr-picker-grid" id="jrPickerGrid"></div>
+    <div class="rowbtns">
+      <button class="primary" id="jrPickerSave">💾 Save picks</button>
+      <button id="jrPickerClear">Newest 6 instead</button>
+      <button id="jrPickerCancel">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <script>
 // ---------------- QUESTION BANK ----------------
@@ -1417,6 +1492,30 @@ function fmtJourneyDates(start, end) {
   return s.toLocaleDateString(undefined, opts) + " → " + e.toLocaleDateString(undefined, opts);
 }
 
+// --- timeline sorting ---
+let jrSort = "oldest"; // view preference, session-only
+
+function jrDays(j) {
+  const s = new Date(j.start_date + "T00:00:00");
+  const e = new Date((j.end_date || j.start_date) + "T00:00:00");
+  return Math.round((e - s) / 86400000) + 1;
+}
+
+const JR_SORTS = {
+  oldest:   (a, b) => (a.start_date < b.start_date ? -1 : a.start_date > b.start_date ? 1 : 0),
+  latest:   (a, b) => JR_SORTS.oldest(b, a),
+  shortest: (a, b) => (jrDays(a) - jrDays(b)) || JR_SORTS.oldest(a, b),
+  longest:  (a, b) => (jrDays(b) - jrDays(a)) || JR_SORTS.oldest(a, b)
+};
+
+document.querySelectorAll("#jrSort .chip").forEach(ch => {
+  ch.addEventListener("click", () => {
+    jrSort = ch.dataset.sort;
+    document.querySelectorAll("#jrSort .chip").forEach(c => c.classList.toggle("sel", c === ch));
+    renderJourneys();
+  });
+});
+
 function renderJourneys() {
   const box = document.getElementById("jrTimeline");
   box.innerHTML = "";
@@ -1427,7 +1526,7 @@ function renderJourneys() {
     box.appendChild(empty);
     return;
   }
-  journeys.forEach(j => {
+  journeys.slice().sort(JR_SORTS[jrSort] || JR_SORTS.oldest).forEach(j => {
     const item = document.createElement("div");
     item.className = "jr-item";
     const card = document.createElement("div");
@@ -1440,9 +1539,18 @@ function renderJourneys() {
     del.addEventListener("click", () => deleteJourney(j));
     card.appendChild(del);
 
+    const edit = document.createElement("button");
+    edit.className = "jr-edit";
+    edit.textContent = "✎";
+    edit.title = "Edit this journey";
+    edit.addEventListener("click", () => startEditJourney(j));
+    card.appendChild(edit);
+
     const date = document.createElement("div");
     date.className = "jr-date";
-    date.textContent = fmtJourneyDates(j.start_date, j.end_date);
+    const days = jrDays(j);
+    date.textContent = fmtJourneyDates(j.start_date, j.end_date) +
+      (days > 1 ? " · " + days + " days" : "");
     card.appendChild(date);
 
     const place = document.createElement("div");
@@ -1468,7 +1576,13 @@ function renderJourneys() {
       link.rel = "noopener";
       link.textContent = "Open album ↗";
       card.appendChild(link);
-      hydrateAlbum(j.album_url, photos);
+      const pickBtn = document.createElement("button");
+      pickBtn.className = "jr-pickbtn";
+      pickBtn.textContent = "🖼️ Pick photos";
+      pickBtn.title = "Choose which album photos the timeline shows";
+      pickBtn.addEventListener("click", () => openPicker(j));
+      card.appendChild(pickBtn);
+      hydrateAlbum(j.album_url, photos, j.photo_guids);
     }
 
     item.appendChild(card);
@@ -1477,10 +1591,35 @@ function renderJourneys() {
 }
 
 const jrForm = document.getElementById("jrForm");
+let jrEditing = null; // the journey being edited, or null when adding
+
+function resetJrForm() {
+  jrEditing = null;
+  document.getElementById("jrFormTitle").textContent = "New journey";
+  document.getElementById("jrSaveBtn").textContent = "💾 Save journey";
+  ["jrPlace", "jrStart", "jrEnd", "jrDesc", "jrAlbum"].forEach(id => { document.getElementById(id).value = ""; });
+  jrForm.style.display = "none";
+}
+
+function startEditJourney(j) {
+  jrEditing = j;
+  document.getElementById("jrFormTitle").textContent = "Edit journey";
+  document.getElementById("jrSaveBtn").textContent = "💾 Save changes";
+  document.getElementById("jrPlace").value = j.place || "";
+  document.getElementById("jrStart").value = j.start_date || "";
+  document.getElementById("jrEnd").value = j.end_date || "";
+  document.getElementById("jrDesc").value = j.description || "";
+  document.getElementById("jrAlbum").value = j.album_url || "";
+  jrForm.style.display = "block";
+  jrForm.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
 document.getElementById("jrAddBtn").addEventListener("click", () => {
-  jrForm.style.display = jrForm.style.display === "none" ? "block" : "none";
+  const wasHidden = jrForm.style.display === "none";
+  resetJrForm(); // always leave edit mode when toggling via the add button
+  if (wasHidden) jrForm.style.display = "block";
 });
-document.getElementById("jrCancelBtn").addEventListener("click", () => { jrForm.style.display = "none"; });
+document.getElementById("jrCancelBtn").addEventListener("click", resetJrForm);
 
 document.getElementById("jrSaveBtn").addEventListener("click", async (e) => {
   const place = document.getElementById("jrPlace").value.trim();
@@ -1494,22 +1633,31 @@ document.getElementById("jrSaveBtn").addEventListener("click", async (e) => {
   const row = { place: place, start_date: start, end_date: end, description: desc, album_url: album };
   if (supaOn()) {
     try {
-      await supa("journeys", { method: "POST", body: row });
+      if (jrEditing && typeof jrEditing.id === "number") {
+        await supa("journeys?id=eq." + jrEditing.id, { method: "PATCH", body: row });
+        popToast("Journey updated 💞");
+      } else {
+        await supa("journeys", { method: "POST", body: row });
+        popToast("Journey saved — for both of us 💞");
+      }
       await loadJourneys();
-      popToast("Journey saved — for both of us 💞");
     } catch (err) {
       popToast("Couldn't save to Supabase 😢 (" + err.message + ")");
       return;
     }
   } else {
-    row.id = "local-" + Date.now();
-    journeys.push(row);
+    if (jrEditing) {
+      Object.assign(jrEditing, row);
+      popToast("Updated on this phone only — Supabase makes it stick!");
+    } else {
+      row.id = "local-" + Date.now();
+      journeys.push(row);
+      popToast("Added on this phone only — Supabase makes it permanent!");
+    }
     journeys.sort((a, b) => (a.start_date < b.start_date ? -1 : 1));
     renderJourneys();
-    popToast("Added on this phone only — Supabase makes it permanent!");
   }
-  ["jrPlace", "jrStart", "jrEnd", "jrDesc", "jrAlbum"].forEach(id => { document.getElementById(id).value = ""; });
-  jrForm.style.display = "none";
+  resetJrForm();
   burst(e.clientX, e.clientY, ["✈️", "🧳", "📸", "💞"]);
 });
 
@@ -1572,15 +1720,12 @@ function pickDerivative(derivs, wantThumb) {
   return best;
 }
 
-async function fetchICloudAlbum(url) {
-  const token = icloudToken(url);
-  if (!token) throw new Error("not an iCloud shared-album link");
-  if (albumCache[token]) return albumCache[token];
+async function fetchAlbumDirect(token) {
   const host = "p" + icloudPartition(token) + "-sharedstreams.icloud.com";
   const stream = await icloudPost(host, token, "webstream", { streamCtag: null });
   const photos = (stream.photos || [])
     .filter(p => p && p.mediaAssetType !== "video")
-    .slice(0, 24);
+    .slice(0, 60);
   const guids = photos.map(p => p.photoGuid);
   const assets = guids.length
     ? await icloudPost(host, token, "webasseturls", { photoGuids: guids })
@@ -1589,19 +1734,40 @@ async function fetchICloudAlbum(url) {
     const it = assets.items && assets.items[c];
     return it ? "https://" + it.url_location + it.url_path : null;
   };
-  const out = photos.map(p => {
+  return photos.map(p => {
     const thumb = pickDerivative(p.derivatives, true);
     const full = pickDerivative(p.derivatives, false);
     return {
+      guid: p.photoGuid,
       thumb: thumb && urlFor(thumb.checksum),
       full: (full && urlFor(full.checksum)) || (thumb && urlFor(thumb.checksum))
     };
   }).filter(p => p.thumb);
-  albumCache[token] = out;
-  return out;
 }
 
-async function hydrateAlbum(url, box) {
+async function fetchAlbumViaProxy(token) {
+  const res = await fetch("/api/album?token=" + token);
+  if (!res.ok) throw new Error("proxy said " + res.status);
+  return (await res.json()).photos || [];
+}
+
+async function fetchICloudAlbum(url) {
+  const token = icloudToken(url);
+  if (!token) throw new Error("not an iCloud shared-album link");
+  if (albumCache[token]) return albumCache[token];
+  let photos;
+  try {
+    // our same-origin Vercel function (api/album.js) — iCloud sends no CORS
+    // headers, so browsers can't call it directly on the deployed site
+    photos = await fetchAlbumViaProxy(token);
+  } catch (e) {
+    photos = await fetchAlbumDirect(token); // fallback if the function is down
+  }
+  albumCache[token] = photos;
+  return photos;
+}
+
+async function hydrateAlbum(url, box, picksCsv) {
   const note = document.createElement("div");
   note.className = "jr-note";
   note.textContent = "Loading photos… 📸";
@@ -1610,7 +1776,10 @@ async function hydrateAlbum(url, box) {
     const photos = await fetchICloudAlbum(url);
     box.innerHTML = "";
     if (!photos.length) { box.remove(); return; }
-    photos.slice(0, 6).forEach(p => {
+    const picks = (picksCsv || "").split(",").filter(Boolean);
+    const chosen = picks.length ? photos.filter(p => picks.includes(p.guid)) : [];
+    const shown = chosen.length ? chosen : photos.slice(0, 6); // stale picks fall back to newest
+    shown.forEach(p => {
       const img = document.createElement("img");
       img.loading = "lazy";
       img.src = p.thumb;
@@ -1618,7 +1787,7 @@ async function hydrateAlbum(url, box) {
       img.addEventListener("click", () => openLightbox(p.full));
       box.appendChild(img);
     });
-    if (photos.length > 6) {
+    if (!chosen.length && photos.length > 6) {
       const more = document.createElement("a");
       more.className = "jr-more";
       more.href = url;
@@ -1631,6 +1800,79 @@ async function hydrateAlbum(url, box) {
     note.textContent = "Couldn't load photos here — tap “Open album ↗” below (is the album's Public Website on?)";
   }
 }
+
+// --- photo picker (choose which album photos the timeline shows) ---
+const jrPicker = document.getElementById("jrPicker");
+const jrPickerGrid = document.getElementById("jrPickerGrid");
+const jrPickerNote = document.getElementById("jrPickerNote");
+let jrPicking = null;
+let jrPickSel = [];
+
+async function openPicker(j) {
+  jrPicking = j;
+  jrPickSel = (j.photo_guids || "").split(",").filter(Boolean);
+  jrPickerGrid.innerHTML = "";
+  jrPickerNote.textContent = "Loading album… 📸";
+  jrPicker.classList.add("show");
+  try {
+    const photos = await fetchICloudAlbum(j.album_url);
+    if (!photos.length) { jrPickerNote.textContent = "The album looks empty 🤔"; return; }
+    jrPickerNote.textContent = jrPickSel.length
+      ? jrPickSel.length + " chosen — tap to change"
+      : "Tap the photos to show on our timeline";
+    photos.forEach(p => {
+      const img = document.createElement("img");
+      img.loading = "lazy";
+      img.src = p.thumb;
+      img.alt = "album photo";
+      if (jrPickSel.includes(p.guid)) img.classList.add("sel");
+      img.addEventListener("click", () => {
+        if (jrPickSel.includes(p.guid)) {
+          jrPickSel = jrPickSel.filter(g => g !== p.guid);
+          img.classList.remove("sel");
+        } else {
+          jrPickSel.push(p.guid);
+          img.classList.add("sel");
+        }
+        jrPickerNote.textContent = jrPickSel.length + " chosen";
+      });
+      jrPickerGrid.appendChild(img);
+    });
+  } catch (e) {
+    jrPickerNote.textContent = "Couldn't load the album — is its Public Website on?";
+  }
+}
+
+function closePicker() {
+  jrPicker.classList.remove("show");
+  jrPicking = null;
+}
+
+async function savePicks(csvOrNull) {
+  const j = jrPicking;
+  if (!j) return;
+  if (supaOn() && typeof j.id === "number") {
+    try {
+      await supa("journeys?id=eq." + j.id, { method: "PATCH", body: { photo_guids: csvOrNull } });
+    } catch (err) {
+      popToast("Couldn't save picks — run supabase/migrate_journey_photos.sql in the SQL editor first 🛠️");
+      return;
+    }
+    await loadJourneys();
+  } else {
+    j.photo_guids = csvOrNull;
+    renderJourneys();
+  }
+  closePicker();
+  popToast(csvOrNull ? "Photo picks saved 🖼️" : "Back to the newest 6 📸");
+}
+
+document.getElementById("jrPickerSave").addEventListener("click", () => {
+  if (!jrPickSel.length) { popToast("Pick at least one — or tap “Newest 6 instead”"); return; }
+  savePicks(jrPickSel.join(","));
+});
+document.getElementById("jrPickerClear").addEventListener("click", () => savePicks(null));
+document.getElementById("jrPickerCancel").addEventListener("click", closePicker);
 
 const jrLightbox = document.getElementById("jrLightbox");
 function openLightbox(src) {

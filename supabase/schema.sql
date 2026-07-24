@@ -9,7 +9,8 @@ create table if not exists journeys (
   start_date date not null,
   end_date date,
   description text,
-  album_url text
+  album_url text,
+  photo_guids text -- comma-separated picks from the shared album (v6)
 );
 
 -- shared key/value config: lock-screen password, reunion date, ...
