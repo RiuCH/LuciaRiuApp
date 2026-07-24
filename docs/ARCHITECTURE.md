@@ -58,11 +58,34 @@ The reunion date persists via URL hash (`#reunion=YYYY-MM-DD`), so it
 survives refresh only if the URL keeps the hash (bookmark/home-screen apps do).
 
 ## Constraints recap
-Single file · no build · no deps · no storage APIs · works offline ·
-works by double-clicking the file · both partners on same version.
+Single file · no build · no deps · no storage APIs · works offline
+(Supabase and iCloud calls degrade gracefully) · works by double-clicking
+the file · both partners on same version.
 
-## When a backend arrives (see ROADMAP)
-Supabase (Postgres + storage + auth) + Vercel serverless functions.
-That unlocks: real shared state (answer-and-compare, streaks, scores),
-photo album, Google login restricted to the two of them, and Claude API
-features (the key lives in a Vercel function, never in this file).
+## The backend (v5): Supabase, fallback-first
+
+The app now talks to Supabase via its plain REST API (PostgREST) with
+`fetch` — no SDK, so the single-file rule holds. Config = two constants in
+the JOURNEYS block (`SUPABASE_URL`, `SUPABASE_ANON_KEY`); when they're
+empty or the network fails, every feature falls back to the old
+no-server behavior. Setup: [SUPABASE.md](SUPABASE.md).
+
+| Table | Feeds | Fallback |
+|---|---|---|
+| `journeys` | ✈️ Trips timeline | seed entry + in-memory adds |
+| `settings` | lock password (`lock_keys`), shared reunion date (`reunion_date`) | `LOCK_KEYS` const, `#reunion=` hash |
+| `questions` | `QUESTION_SOURCE` for the daily game | hardcoded `BANK` |
+
+Determinism note: the daily pick is still seeded locally; the DB only
+supplies the pool. The seed SQL is generated from `BANK`
+(`supabase/generate_seed.py`) so both copies stay identical — an online
+and an offline phone then still agree on the day's question.
+
+The ✈️ Trips tab also embeds Apple Shared Albums: paste an album's public
+link into a journey and the app pulls thumbnails from iCloud's unofficial
+`sharedstreams` web API (the album needs "Public Website" ON). If that API
+ever breaks, the card falls back to an "Open album ↗" link.
+
+Still to come (see ROADMAP): Google login (tightens the wide-open anon
+policies), Supabase Storage photo album, answer-and-compare, and Claude
+API features via a Vercel serverless function.

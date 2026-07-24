@@ -6,6 +6,14 @@
   miss-you generator) → anniversary bar (together-clock since Jun 2 2026 +
   countdown, party mode on the day) → tabbed app (Home / Daily Q / Soon™) →
   GitHub + Vercel deploy: https://lucia-riu-app.vercel.app
+- **v5 (Jul 24 2026): Journeys timeline + Supabase backend.** New ✈️ Trips
+  tab: timeline of trips (place/dates/description), add/delete in-app,
+  Apple Shared Album photo grids embedded per journey (unofficial iCloud
+  web API, falls back to a link). First Supabase integration (plain REST,
+  no SDK): `journeys` table, `settings` (lock password + shared reunion
+  date), `questions` (the whole bank). Everything degrades gracefully to
+  the old hardcoded/in-memory behavior when Supabase is unreachable or not
+  configured. Setup: docs/SUPABASE.md.
 
 ## Next up (v5 candidates — pick one, keep PRs small)
 
@@ -13,9 +21,10 @@
    couple trivia, daily dare generator, emoji-story decoder. No backend
    needed if it follows the shared-daily pattern (see add-new-game skill).
 2. **Google login** 🔐 — Supabase Auth, allowlist exactly two emails
-   (Riu + Lucia). First feature that needs the backend. Replaces the
-   "public URL" privacy model with real auth.
-3. **Photo album** 📸 — Supabase Storage + a gallery tab. Needs login first.
+   (Riu + Lucia). The backend now exists (v5) with wide-open anon RLS
+   policies — this feature tightens them to just the two of us.
+3. **Photo album** 📸 — Supabase Storage + a gallery tab. Needs login
+   first. (Partial today: journeys embed Apple Shared Albums.)
 4. **Answer & compare** ✍️ — both type answers to the daily question, reveal
    together. Needs Supabase DB. This is the feature that makes the daily
    question 10x better, but do login first.

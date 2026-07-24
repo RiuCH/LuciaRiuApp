@@ -52,6 +52,7 @@ out of each other's way.
 
 | Date | Who | Feature | Notes |
 |---|---|---|---|
+| 2026-07-24 | Riu | Journeys timeline (✈️ Trips tab) + Supabase backend | New tab, `jr*` prefix; Supabase REST (`journeys`/`settings`/`questions` tables), password + reunion date + question bank DB-backed with fallbacks; Apple Shared Album embeds. Setup: docs/SUPABASE.md |
 | 2026-07-24 | Riu | Login page (lock screen) | Password = anniversary; added hash helpers |
 
 ---
@@ -76,8 +77,14 @@ out of each other's way.
 |---|---|
 | `home` | Home |
 | `game` | Question of the Day |
+| `journeys` | Journeys timeline |
 | `soon` | Placeholder / next game slot |
 
 **Element id / CSS class prefixes:** `lock*` (login), `cd*` (countdown),
-`nav*` (nav buttons), `tick*` (home widget functions). New features should
-pick their own short prefix and list it here.
+`nav*` (nav buttons), `tick*` (home widget functions), `jr*` (journeys
+timeline). New features should pick their own short prefix and list it here.
+
+**Global constants / backends:** `SUPABASE_URL` + `SUPABASE_ANON_KEY`
+(journeys feature owns the Supabase config constants; future Supabase
+features reuse them — see docs/SUPABASE.md). Supabase table names are
+global identifiers too: `journeys` is claimed.

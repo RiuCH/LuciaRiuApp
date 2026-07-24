@@ -56,12 +56,49 @@ different prime offset so features don't correlate:
 - Voice: playful, flirty, a little dramatic. Emojis welcome. British-serious
   tone is a bug.
 
+## The Supabase backend (v5) — fallback-first, always
+
+Shared state now syncs through Supabase via plain `fetch` against its REST
+API (PostgREST) — **no SDK** (single-file rule). Everything lives in the
+JOURNEYS block of `index.html`:
+
+- Config: `SUPABASE_URL` + `SUPABASE_ANON_KEY` constants. Empty = "local
+  mode"; the app must keep working fully (golden rule 6 in CLAUDE.md).
+- Helper: `supa(path, {method, body, prefer})` — returns parsed JSON,
+  throws on non-2xx. Upserts: `supa("settings?on_conflict=key", {method:
+  "POST", prefer: "resolution=merge-duplicates", body: {...}})`.
+- Tables: `journeys` (timeline), `settings` (key/value: `lock_keys`,
+  `reunion_date`), `questions` (the bank; feeds `QUESTION_SOURCE`).
+  Schema + seed in `supabase/`; setup guide in docs/SUPABASE.md.
+- **Every DB feature keeps its no-server fallback** (hardcoded const,
+  in-memory state, or hash param) and swallows fetch errors quietly —
+  offline is normal, not an error state.
+- New shared state? Prefer a `settings` key/value row; claim the key (and
+  any new table name) in SESSIONS.md. Render user-entered DB text with
+  `textContent`/DOM APIs, never `innerHTML` (XSS).
+- Editing `BANK`? Regenerate the seed (`python3 supabase/generate_seed.py`)
+  and re-apply it in the SQL editor (see docs/SUPABASE.md) — the DB copy
+  and hardcoded copy must stay identical or the daily pick diverges.
+
+External requests are still forbidden **except**: Supabase, and iCloud's
+`sharedstreams` endpoints (Apple Shared Album embeds in the Journeys tab).
+Both must degrade gracefully when unreachable.
+
+## Testing with the in-app browser (Claude sessions)
+
+The sandboxed preview server can't read `~/Desktop` (macOS folder
+protection). Copy `index.html` into the session scratchpad and serve it
+from there (see `.claude/launch.json` — re-copy after every edit), or just
+open the file in the user's real browser.
+
 ## The lock screen (login gate)
 
 `#lock` overlay + the LOCK SCREEN script block. Password = the anniversary,
-June 2 2026, accepted in any digit form (`LOCK_KEYS`) or as text
-("june 2"). Success sets `#unlocked=1` in the hash so refreshes skip the
-gate; wrong answers get escalating sass from `LOCK_SASS`. It's a cute gate,
+June 2 2026, accepted in any digit form or as text ("june 2"). The digit
+list comes from the DB (`settings.lock_keys`, editable in the Supabase
+table editor) with the hardcoded `LOCK_KEYS` as offline fallback. Success
+sets `#unlocked=1` in the hash so refreshes skip the gate; wrong answers
+get escalating sass from `LOCK_SASS`. It's a cute gate,
 not security — the answer is in the source. Keep new features BELOW it:
 everything else initializes normally whether locked or not, the overlay
 just covers it.
@@ -69,10 +106,10 @@ just covers it.
 ## Testing checklist before every commit
 
 - Open `index.html` in a browser (that IS the dev environment). No console
-  errors.
+  errors — including with Supabase unreachable (local mode must work).
 - Lock screen: wrong date shakes + sasses; `06/02/2026` (or "june 2")
   unlocks with hearts; reload with `#unlocked=1` skips straight in.
-- All three tabs switch; bottom nav highlights correctly.
+- All four tabs switch; bottom nav highlights correctly and fits at 420px.
 - Reload twice: daily question identical both times (determinism).
 - Toggle After Dark: only spicy/nasty appear; theme turns red; toggle back.
 - If you changed clocks/countdowns: check a simulated date (override `Date`

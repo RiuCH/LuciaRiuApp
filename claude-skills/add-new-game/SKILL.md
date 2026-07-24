@@ -27,7 +27,8 @@ want to keep the joke placeholder.
    NAVIDS.mygame = "navMygame";
    ```
    …and make sure `switchTab` iterates your tab (extend the
-   `["home","game","soon"]` array) and add the click listener like the others.
+   `["home","game","journeys","soon"]` array) and add the click listener
+   like the others.
 4. **Teaser (optional but nice)** — add a tappable `.panel.teaser` card on
    Home that `switchTab`s to your game, like the Question of the Day teaser.
 5. **Test** — open `index.html`, click every tab, check the browser console.
@@ -39,10 +40,12 @@ want to keep the joke placeholder.
   feature. The claimed-offset registry lives in `SESSIONS.md` (source of
   truth) — claim yours there before using it. Same date ⇒ both phones
   independently compute identical content.
-- **No cross-device state.** The phones can't talk to each other (until the
-  Supabase backend in docs/ROADMAP.md exists). Games must work as: both see
-  the same prompt → they talk/text/call → they play. Score-keeping across
-  days needs a backend — don't fake it with localStorage (forbidden).
+- **Cross-device state exists now, but is optional.** The Supabase backend
+  (v5, see docs/SUPABASE.md) can store shared game state — reuse the
+  `supa()` helper and claim any new table/settings key in SESSIONS.md.
+  BUT every game must still work with Supabase unconfigured/offline
+  (fallback-first, golden rule 6) — the shared-daily deterministic pattern
+  needs no server and is still the default. Never localStorage (forbidden).
 - **Session state is fine** (variables reset on refresh): current round,
   shuffle history, a score for tonight's session.
 - Reuse the house pieces: `.panel`, `.chip`, `popToast()`, `burst()`,
