@@ -1927,8 +1927,10 @@ async function fetchAlbumGuids(url, guids) {
   return photos;
 }
 
-// one-shot fetch of the first 60 items — kept for callers that want the
-// whole album at once (the couple-photo home hero uses this)
+// one-shot fetch of the first 60 photos — kept for callers that want the
+// whole album at once (the couple-photo hero seeds its photo-of-the-day
+// from this; videos are excluded so the pick is always an image and the
+// pool matches the pre-pagination behavior)
 async function fetchICloudAlbum(url) {
   const token = icloudToken(url);
   if (!token) throw new Error("not an iCloud shared-album link");
@@ -1941,6 +1943,7 @@ async function fetchICloudAlbum(url) {
     const meta = await directAlbumMeta(token);
     photos = await directResolve(token, meta.metas.slice(0, 60));
   }
+  photos = photos.filter(p => !p.video);
   albumCache[key] = photos;
   return photos;
 }
