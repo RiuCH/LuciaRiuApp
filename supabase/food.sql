@@ -23,11 +23,13 @@ create index if not exists food_photos_taken_at_idx on food_photos (taken_at des
 
 -- ---------- the tags ----------
 -- kind drives the "show me everything by …" groupings in the tab.
+-- (`city`/`country` replaced a single `place` kind on 2026-07-26 —
+--  supabase/food_split_place.sql migrates a project created before that.)
 create table if not exists food_tags (
   id bigint generated always as identity primary key,
   created_at timestamptz not null default now(),
   name text not null,
-  kind text not null default 'other'   -- restaurant | dish | place | other
+  kind text not null default 'other'   -- restaurant | dish | city | country | other
 );
 
 create unique index if not exists food_tags_name_kind_idx
