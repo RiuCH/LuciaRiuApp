@@ -15,9 +15,15 @@ out of each other's way.
    just keep it updated locally — commit if the work spans days).
 
 **While working:**
-- Stay inside the regions you claimed. Need to touch a shared spot
-  (`switchTab`, nav, `:root` CSS, INIT block)? Keep the edit minimal and
-  additive — append, don't restructure.
+- **The code is split by feature now (`js/*.js`, `css/*.css`), so claim
+  FILES, not line ranges.** Two sessions on different tabs no longer touch
+  the same file at all — that's the whole point. Shared files everyone
+  competes for: `index.html` (markup + tags), `js/core.js`,
+  `js/init.js`, `css/base.css`, `css/desktop.css`. Keep edits to those
+  minimal and additive — append, don't restructure.
+- A new file only exists once its `<link>`/`<script src>` tag is in
+  `index.html`, before `js/init.js`. Classic scripts only — an `import`
+  anywhere breaks double-click for everyone.
 - Claim any new global identifier in the Registry section BEFORE using it:
   seed offsets, hash params, tab names, element id prefixes.
 
@@ -42,7 +48,7 @@ out of each other's way.
 
 | Session | Who | Feature | Regions of index.html claimed | Status |
 |---|---|---|---|---|
-| 2026-07-24-desktop | Riu | Desktop/laptop layout (branch `feature/desktop-layout`) | trailing `@media (min-width:900px)` CSS block only + 3 markup hooks (`#homeClocks`, `#homeCd`, `.wd-scorepanel`) | 🔃 PR open |
+| 2026-07-24-modular | Riu | Split into per-feature files (branch `feature/modular-files`) | ALL of index.html — exclusive, nobody else should edit until merged | 🔃 PR open |
 
 <!-- Row template:
 | 2026-07-24-login | Riu | Login page | lock CSS block, lock HTML block, LOCK SCREEN script block | ✅ shipped |
@@ -52,7 +58,11 @@ out of each other's way.
 
 | Date | Who | Feature | Notes |
 |---|---|---|---|
+<<<<<<< HEAD
+| 2026-07-24 | Riu | Desktop/laptop layout | One trailing `@media (min-width:900px)` block (now `css/desktop.css`); hooks `#homeClocks`, `#homeCd`, `.wd-scorepanel` (PR #6) |
+=======
 | 2026-07-24 | Riu | Journeys v6.1: paged picker (24/page), videos in albums | `api/album` gained `page`/`per`/`guids` params; `jrPickerNav`, `jr-vwrap`/`jr-vbadge`; lightbox plays video; `fetchICloudAlbum()` kept as one-shot wrapper (couple-photo hero uses it) |
+>>>>>>> origin/main
 | 2026-07-24 | Riu | Couple photo on home (💞 hero) | `cp*` prefix; `settings.home_photo` (URL / upload data-URL / `album:<link>` photo-of-the-day, offset 15485863); `#photo=` fallback (PR #4) |
 | 2026-07-24 | Riu | Journeys v6: edit, photo picker, sort chips, album CORS fix | `jr-edit`/`jrPicker*`; `journeys.photo_guids` column (migrate_journey_photos.sql); first serverless function `api/album.js` |
 | 2026-07-24 | Riu | Journeys timeline (✈️ Trips tab) + Supabase backend | New tab, `jr*` prefix; Supabase REST (`journeys`/`settings`/`questions` tables), password + reunion date + question bank DB-backed with fallbacks; Apple Shared Album embeds. Setup: docs/SUPABASE.md |

@@ -1,0 +1,92 @@
+/* desktop.css — Lucia ♥ Riu
+   Laptop/desktop layout. Below 900px NOTHING here applies —
+   the mobile column above is the source of truth. */
+
+/* ================= DESKTOP / LAPTOP =================
+   Mobile stays the source of truth; everything below only widens the
+   layout once there's room. Nothing here changes behaviour — pure CSS. */
+@media (min-width: 900px) {
+  body { padding: 34px 34px 130px; }
+  .app { max-width: 1080px; }
+  header .names { font-size: 34px; }
+  header .sub { margin-bottom: 26px; font-size: 14px; }
+
+  /* ---- HOME: photo hero beside a stack of widgets ---- */
+  #page-home.active {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    grid-template-areas:
+      "photo anniv"
+      "photo clocks"
+      "photo cd"
+      "teaseq teased";
+    grid-auto-rows: min-content;
+    gap: 18px;
+    align-items: start;
+  }
+  #page-home .panel { margin-bottom: 0; }
+  #page-home .cp-panel   { grid-area: photo; }
+  #page-home #annivBar   { grid-area: anniv; }
+  #page-home #homeClocks { grid-area: clocks; }
+  #page-home #homeCd     { grid-area: cd; }
+  #page-home #teaserCard { grid-area: teaseq; }
+  #page-home #wdTeaser   { grid-area: teased; }
+
+  /* the photo is the centrepiece — let it fill its column */
+  #page-home .cp-panel { display: flex; flex-direction: column; align-self: stretch; }
+  #page-home .cp-frame { flex: 1; }
+  #page-home .cp-frame img,
+  #page-home .cp-empty { aspect-ratio: auto; height: 100%; min-height: 380px; }
+  .together { font-size: 20px; }
+  .clock .time { font-size: 32px; }
+  .cd-cell { width: 88px; padding: 12px 0; }
+  .cd-cell .num { font-size: 27px; }
+  /* teasers sit side by side — give them equal presence */
+  #page-home .teaser { display: flex; flex-direction: column; justify-content: center; min-height: 132px; }
+
+  /* ---- QUESTION OF THE DAY: roomier card, bigger type ---- */
+  #page-game.active, #page-journeys.active, #page-duel.active { margin: 0 auto; }
+  /* one question deserves the whole stage — centre it in the viewport */
+  #page-game.active {
+    max-width: 760px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: calc(100vh - 260px);
+  }
+  .card { padding: 52px 40px 46px; }
+  .question { font-size: 29px; max-width: 600px; }
+
+  /* ---- JOURNEYS: wider timeline, 4-up photo grid ---- */
+  #page-journeys.active { max-width: 880px; }
+  .jr-photos { grid-template-columns: repeat(4, 1fr); }
+
+  /* ---- WORD DUEL: letters beside the scoreboard ---- */
+  #page-duel.active {
+    max-width: 980px;
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    grid-template-areas:
+      "daybar daybar"
+      "letters hearts"
+      "letters penalty";
+    grid-auto-rows: min-content;
+    gap: 18px;
+    align-items: start;
+  }
+  #page-duel .daybar   { grid-area: daybar; margin-bottom: 0; }
+  #page-duel .card     { grid-area: letters; align-self: stretch; }
+  #page-duel .panel    { margin-bottom: 0; }
+  #page-duel .wd-scorepanel   { grid-area: hearts; }
+  #page-duel #wdPenaltyPanel  { grid-area: penalty; }
+  .wd-letters .wd-l { font-size: 76px; }
+
+  /* ---- NAV: a touch bigger, still the signature floating pill ---- */
+  .nav { bottom: 22px; padding: 7px; }
+  .nav button { padding: 11px 22px; font-size: 14px; }
+}
+
+/* Very wide screens: stop growing, just breathe */
+@media (min-width: 1500px) {
+  .app { max-width: 1180px; }
+}
