@@ -1,7 +1,8 @@
 // duel.js — Lucia ♥ Riu
 // Word Duel: letter-pair rounds, shared hearts, and the penalty roulette.
-// State lives in the `duel` table (one row) so both phones agree; with
-// Supabase off or unreachable it degrades to the old one-phone session game.
+// State lives in two rows of the existing `settings` table so both phones
+// agree with zero database setup; if Supabase is off or unreachable it
+// degrades to a one-phone session game and SAYS SO in the panel.
 
 // ---------------- WORD DUEL ----------------
 // Letters are weighted toward playable combos: common starts × common ends.
@@ -151,49 +152,112 @@ function wdOver() { return wdHearts.lucia === 0 || wdHearts.riu === 0; }
 function wdCap(p) { return p === "lucia" ? "Lucia" : "Riu"; }
 function wdOther(p) { return p === "lucia" ? "riu" : "lucia"; }
 
-// ---- Supabase plumbing (all of it optional — see golden rule 6) ----
-async function wdPush(patch) {
-  if (!supaOn()) return null;
+// ---- sync (all of it optional — see golden rule 6) ----
+// The whole game lives in two rows of the `settings` table that already
+// exists, so this needs NO database setup: the first write creates them.
+// (v7 used a dedicated `duel` table, which meant nothing synced until
+// someone remembered to run a migration — while the UI cheerfully claimed
+// hearts were shared. Never again: `wdSynced` now drives an honest status.)
+const WD_KEY = "duel_state";    // the shared game, as JSON
+const WD_FIRST = "duel_first";  // who answered first this round ("" = nobody yet)
+let wdSynced = null;            // null = unknown yet, true = sharing, false = alone
+
+function wdSnapshot() {
+  return {
+    hearts: wdHearts, round: wdRoundNum, l1: wdL.l1, l2: wdL.l2,
+    play: wdPlay, words: wdWords, pmode: wdPenaltyMode, penalty: wdPenaltyText
+  };
+}
+
+function wdSaveKey(key, value) {
+  return supa("settings?on_conflict=key", {
+    method: "POST", prefer: "resolution=merge-duplicates", body: { key, value }
+  });
+}
+
+// Push the whole snapshot. Two phones writing within the same round trip can
+// clobber each other, but actions here are seconds apart and the 2s poll
+// re-converges both sides, so it isn't worth a locking dance.
+async function wdPush() {
+  if (!supaOn()) { wdSynced = false; wdRenderWhoAmI(); return; }
   wdPushing = true;
   try {
-    const rows = await supa("duel?id=eq.1", {
-      method: "PATCH",
-      body: Object.assign({ updated_at: new Date().toISOString() }, patch)
-    });
-    return rows && rows[0];
+    await wdSaveKey(WD_KEY, JSON.stringify(wdSnapshot()));
+    wdSynced = true;
   } catch (e) {
-    return null;
+    wdSynced = false;
   } finally {
     wdPushing = false;
+    wdRenderWhoAmI();
   }
 }
 
-function wdApply(row) {
-  if (!row) return;
-  wdHearts = { lucia: row.hearts_lucia, riu: row.hearts_riu };
-  wdRoundNum = row.round;
-  wdPlay = row.play_mode || "say";
-  wdWords = { lucia: row.word_lucia, riu: row.word_riu };
-  wdFirstBy = row.first_by;
-  // guard against a row still holding a pre-v7.1 flavour name
-  wdPenaltyMode = WD_PENALTIES[row.penalty_mode] ? row.penalty_mode : "ldr";
-  wdPenaltyText = row.penalty || "";
-  if (row.l1 && row.l2) { wdL = { l1: row.l1, l2: row.l2 }; }
+// A fresh round clears the claim back to "" so the next submit can win it.
+async function wdResetFirst() {
+  wdFirstBy = null;
+  if (!supaOn()) return;
+  try { await wdSaveKey(WD_FIRST, ""); } catch (e) { wdSynced = false; }
+}
+
+// The race, settled by Postgres rather than by two phone clocks: this PATCH
+// only matches while the value is still empty, so exactly one submit can win.
+// If the row doesn't exist yet (very first round ever) we create it as ours.
+async function wdClaimFirst() {
+  const rows = await supa("settings?key=eq." + WD_FIRST + "&value=eq.", {
+    method: "PATCH", body: { value: wdMe }
+  });
+  if (rows && rows.length) return true;
+  const existing = await supa("settings?key=eq." + WD_FIRST + "&select=value");
+  if (!existing || !existing.length) { await wdSaveKey(WD_FIRST, wdMe); return true; }
+  return existing[0].value === wdMe;
+}
+
+function wdApply(state, firstBy) {
+  if (state) {
+    if (state.hearts) wdHearts = state.hearts;
+    if (state.round) wdRoundNum = state.round;
+    if (state.l1 && state.l2) wdL = { l1: state.l1, l2: state.l2 };
+    wdPlay = state.play || "say";
+    wdWords = state.words || { lucia: null, riu: null };
+    wdPenaltyMode = WD_PENALTIES[state.pmode] ? state.pmode : "ldr";
+    wdPenaltyText = state.penalty || "";
+  }
+  wdFirstBy = firstBy || null;
+  // don't yank the keyboard out from under someone mid-word
+  const typing = document.activeElement === wdWordInput;
+  if (!typing) wdWordInput.value = wdWords[wdMe] || "";
   wdRenderAll();
 }
 
 async function wdPull() {
   if (!supaOn() || wdPushing) return;
   try {
-    const rows = await supa("duel?id=eq.1&select=*");
-    if (rows && rows[0]) wdApply(rows[0]);
-  } catch (e) { /* offline — keep playing locally */ }
+    const rows = await supa("settings?key=in.(" + WD_KEY + "," + WD_FIRST + ")&select=key,value");
+    const map = {};
+    (rows || []).forEach(r => { map[r.key] = r.value; });
+    let state = null;
+    if (map[WD_KEY]) { try { state = JSON.parse(map[WD_KEY]); } catch (e) {} }
+    wdSynced = true;
+    wdApply(state, map[WD_FIRST] || null);
+  } catch (e) {
+    wdSynced = false;      // offline — keep playing locally, but say so
+    wdRenderWhoAmI();
+  }
 }
 
-// Poll only while the duel is on screen; cheap enough at this cadence and it
-// keeps both phones honest without a realtime SDK (which the no-SDK rule bars).
-setInterval(() => { if (activeTab === "duel") wdPull(); }, 2500);
+// Poll while the duel is on screen. 2s is brisk enough that a fresh letter
+// pair lands on the other phone almost immediately, without a realtime SDK
+// (which the no-SDK rule bars anyway).
+setInterval(() => { if (activeTab === "duel") wdPull(); }, 2000);
 TAB_HOOKS.duel = wdPull;
+
+// Phones throttle (or freeze) timers in a backgrounded tab, so after a lock
+// screen or an app switch the poll can be minutes stale. Catch up the moment
+// we're looked at again.
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && activeTab === "duel") wdPull();
+});
+window.addEventListener("focus", () => { if (activeTab === "duel") wdPull(); });
 
 // ---- rendering ----
 function wdRenderLetters(animate) {
@@ -286,9 +350,13 @@ function wdRenderPenalty() {
 function wdRenderWhoAmI() {
   document.querySelectorAll("#wdWhoAmI .chip").forEach(c =>
     c.classList.toggle("sel", c.dataset.me === wdMe));
-  document.getElementById("wdSyncHint").textContent = supaOn()
-    ? "Hearts are shared — you'll both see the same score 💞"
-    : "Local mode — this phone keeps score on its own (set up Supabase to share it)";
+  // Say what's actually true. The old version promised sharing unconditionally,
+  // which hid the fact that nothing was syncing at all.
+  document.getElementById("wdSyncHint").textContent =
+    !supaOn()        ? "Local mode — this phone keeps score on its own"
+    : wdSynced === false ? "⚠️ Can't reach the database — this phone is playing alone"
+    : wdSynced === true  ? "Shared 💞 hearts, letters and answers land on both phones"
+    : "Connecting…";
 }
 
 function wdRenderAll() {
@@ -315,7 +383,8 @@ function wdRollLetters(bumpRound) {
   wdRenderHearts();
   wdRenderRace();
   if (bumpRound) {
-    wdPush({ l1: wdL.l1, l2: wdL.l2, round: wdRoundNum, word_lucia: null, word_riu: null, first_by: null });
+    wdPush();
+    wdResetFirst();   // fresh round: nobody has answered yet
   }
 }
 
@@ -331,7 +400,7 @@ function wdLoseHeart(loser, e) {
   }
   wdRenderAll();
   if (wdOver()) document.getElementById("wdPenaltyPanel").scrollIntoView({ behavior: "smooth", block: "center" });
-  wdPush({ hearts_lucia: wdHearts.lucia, hearts_riu: wdHearts.riu });
+  wdPush();
 }
 
 async function wdSubmitWord() {
@@ -347,29 +416,22 @@ async function wdSubmitWord() {
   wdRenderRace();
 
   if (!supaOn()) { wdFirstBy = wdFirstBy || wdMe; wdRenderRace(); return; }
-  // Let Postgres settle the race: this only matches while first_by is still
-  // null, so whoever's write lands first wins — no clock comparison needed.
   wdPushing = true;
   try {
-    const claim = await supa("duel?id=eq.1&first_by=is.null", {
-      method: "PATCH",
-      body: { first_by: wdMe, [col]: word, updated_at: new Date().toISOString() }
-    });
-    if (claim && claim.length) {
-      wdFirstBy = wdMe;
-      popToast("First! ⚡");
-    } else {
-      await supa("duel?id=eq.1", { method: "PATCH", body: { [col]: word, updated_at: new Date().toISOString() } });
-      popToast("Submitted — " + wdCap(wdOther(wdMe)) + " beat you to it ⚡");
-    }
+    const won = await wdClaimFirst();
+    wdFirstBy = wdFirstBy || (won ? wdMe : wdOther(wdMe));
+    await wdSaveKey(WD_KEY, JSON.stringify(wdSnapshot()));
+    wdSynced = true;
+    popToast(won ? "First! ⚡" : "Submitted — " + wdCap(wdOther(wdMe)) + " beat you to it ⚡");
   } catch (e) {
     // DB unreachable: fall back to this phone deciding the race, same as local mode
     wdFirstBy = wdFirstBy || wdMe;
+    wdSynced = false;
     popToast("Couldn't sync that one — it still counts here 💞");
   } finally {
     wdPushing = false;
   }
-  wdRenderRace();
+  wdRenderAll();
 }
 
 function wdRematch() {
@@ -383,10 +445,8 @@ function wdRematch() {
   wdRenderAll();
   popToast("Hearts refilled — round 1 💞");
   window.scrollTo({ top: 0, behavior: "smooth" });
-  wdPush({
-    hearts_lucia: 5, hearts_riu: 5, round: 1, penalty: null,
-    l1: wdL.l1, l2: wdL.l2, word_lucia: null, word_riu: null, first_by: null
-  });
+  wdPush();
+  wdResetFirst();
 }
 
 // ---- wiring ----
@@ -407,7 +467,7 @@ document.getElementById("wdSpin").addEventListener("click", (e) => {
   wdPenaltyText = pick;
   wdRenderPenalty();
   burst(e.clientX, e.clientY, ["🎰", "😈", "✨"]);
-  wdPush({ penalty: pick });
+  wdPush();
 });
 document.getElementById("wdRematch").addEventListener("click", wdRematch);
 
@@ -416,7 +476,7 @@ document.querySelectorAll(".wd-modes:not(.wd-playmodes) .chip").forEach(chip => 
     wdPenaltyMode = chip.dataset.mode;
     wdPenaltyText = "";
     wdRenderPenalty();
-    wdPush({ penalty_mode: wdPenaltyMode, penalty: null });
+    wdPush();
   });
 });
 document.querySelectorAll("#wdPlayModes .chip").forEach(chip => {
@@ -424,7 +484,7 @@ document.querySelectorAll("#wdPlayModes .chip").forEach(chip => {
     wdPlay = chip.dataset.play;
     wdRenderLetters(false);
     wdRenderRace();
-    wdPush({ play_mode: wdPlay });
+    wdPush();
   });
 });
 document.querySelectorAll("#wdWhoAmI .chip").forEach(chip => {

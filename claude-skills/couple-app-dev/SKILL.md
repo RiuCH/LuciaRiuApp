@@ -122,8 +122,13 @@ JOURNEYS block of `index.html`:
 - New shared state? Prefer a `settings` key/value row; claim the key (and
   any new table name) in SESSIONS.md. For state both phones *write*
   concurrently, let Postgres arbitrate instead of comparing clocks — the
-  duel's "who answered first" uses a PATCH filtered on `first_by=is.null`,
-  so only the first writer matches. Poll on a timer guarded by
+  duel's "who answered first" PATCHes `settings?key=eq.duel_first&value=eq.`
+  so only the first writer matches. **Prefer a `settings` row to a new
+  table**: a new table needs a migration run by hand, and the duel shipped
+  once needing one that never got run — it silently synced nothing while
+  the UI claimed otherwise. If a feature can't work until someone runs SQL,
+  it will eventually be found broken. Surface real sync state in the UI
+  rather than assuming success. Poll on a timer guarded by
   `activeTab === "<tab>"`; there's no realtime SDK (no-SDK rule). Render user-entered DB text with
   `textContent`/DOM APIs, never `innerHTML` (XSS).
 - Editing `BANK`? Regenerate the seed (`python3 supabase/generate_seed.py`)
