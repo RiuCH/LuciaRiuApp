@@ -29,6 +29,7 @@ loadJourneys().then(() => {
   if (window.requestIdleCallback) requestIdleCallback(warm, { timeout: 3000 });
   else setTimeout(warm, 1200);
 });
+fdRenderFold();
 loadSettings();
 loadQuestions();
 setInterval(() => { tickAnniversary(); tickClocks(); tickCountdown(); }, 1000);

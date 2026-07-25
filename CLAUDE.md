@@ -118,7 +118,11 @@ can reference anything.
   city/country tags via OpenStreetMap. `taken_at` holds a **wall clock**
   (rendered in UTC), never an instant — see the comment in `fdExifDate`.
   Deleting a photo removes the row AND the stored file; deleting a tag
-  (✕ in the tag catalogue) unlinks it everywhere but keeps the photos
+  (✕ in the tag catalogue) unlinks it everywhere but keeps the photos.
+  Tag kinds: restaurant · dish · **city · country** · other (city+country
+  replaced a single `place` kind — `js/food.js` still shows any leftover
+  `place` tag under City, and `supabase/food_split_place.sql` migrates it).
+  The Find & organise panel folds (`fdOrganiseOpen`, memory only)
 - 🎮 Games tab (key `duel`, nav "🎮 Games") holds TWO games behind a chooser:
   Word Duel and 20 Questions. `gamesShow(which)` in `js/twenty.js` swaps
   `#gameDuel`/`#game20q` and sets `gamesPick` (declared in `js/core.js`),

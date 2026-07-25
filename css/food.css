@@ -2,6 +2,25 @@
    🍜 Food: the upload/organise panels, the month-rail timeline, the photo
    grid, and the tag lightbox. Mobile is the source of truth. */
 
+.fd-fold {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  backdrop-filter: none;
+  cursor: pointer;
+  padding: 2px 0 10px;
+  /* .ptitle already sets the small-caps look; keep it and drop the button chrome */
+}
+.fd-fold:hover { transform: none; background: transparent; opacity: 0.85; }
+.fd-chev { font-size: 10px; opacity: 0.8; }
+/* collapsed: shrink the island to just its title bar */
+.panel.fd-folded { padding: 12px 18px; }
+.panel.fd-folded .fd-fold { padding: 0; }
+
 .fd-status { font-size: 12px; color: var(--text-dim); margin-bottom: 4px; }
 .fd-progress {
   margin-top: 10px;
