@@ -29,6 +29,7 @@ falls back to the hardcoded copies and in-memory state ("local mode").
 | `journeys` | timeline entries (place, dates, description, album link) | seed entry + in-memory adds |
 | `settings` | `lock_keys` (password), `reunion_date` (shared countdown), `home_photo` (home photo: URL, upload data-URL, or `album:<link>`) | hardcoded `LOCK_KEYS`, `#reunion=` / `#photo=` hash params |
 | `questions` | the full question bank (`category`, `text`) | hardcoded `BANK` |
+| `album_cache` | slimmed iCloud shared-album metadata, keyed by album token — written and read by `api/album.js`, never by the browser | fetch straight from iCloud (correct, just slow) |
 
 - **Change the password:** Table editor → `settings` → edit the `lock_keys`
   value (comma-separated list of accepted typings).
@@ -41,6 +42,9 @@ falls back to the hardcoded copies and in-memory state ("local mode").
 
 Projects set up before v6 need one-off migrations, run in the SQL editor:
 
+- `supabase/album_cache.sql` — adds the `album_cache` table (v6.3). Until
+  you run it, the app still works — album metadata is simply fetched from
+  iCloud every time, which is the ~50s wait it exists to remove.
 - `supabase/migrate_journey_photos.sql` — adds `journeys.photo_guids`
   (the "pick which album photos show" feature). Fresh installs from
   `schema.sql` already have it.
@@ -58,6 +62,25 @@ python3 supabase/generate_seed.py     # rewrites seed_questions.sql from index.h
 #   delete from questions;
 #   (paste the new seed_questions.sql)
 ```
+
+## Why `album_cache` exists
+
+iCloud's `webstream` endpoint returns metadata for *every* photo in a shared
+album and is punishingly slow — **50 seconds** for our 365-photo "SF trip"
+album, versus ~1s for `webasseturls`, the call that mints the actual image
+links. `api/album.js` needs `webstream` only for the guid list and the
+derivative checksums, and that barely changes, so it's cached in three tiers:
+
+1. **warm instance memory** — instant
+2. **`album_cache` in Supabase** — ~100ms, and unlike memory it survives the
+   cold starts that a two-person app hits constantly
+3. **iCloud** — ~50s, only on a genuinely first-ever fetch
+
+Anything already cached is served immediately and refreshed in the background
+after an hour. Only the slim fields are stored (guid, media type, derivative
+checksums/sizes) — **never the signed asset URLs**, which expire and are
+re-minted per request, so a stale cache can never produce a broken image.
+The trade-off: a photo added to the album may take up to an hour to appear.
 
 ## Security, honestly
 

@@ -76,29 +76,101 @@ function pickVideoDerivative(p) {
 // on a cold instance waits. Asset URLs are still fetched fresh every time, so
 // nothing served to the browser is ever an expired link. The one trade-off is
 // that photos added to the album in the last META_TTL may not appear yet.
-const META_TTL_MS = 15 * 60 * 1000;
-const metaCache = new Map(); // token -> { at, photos, name, refreshing }
+const META_TTL_MS = 60 * 60 * 1000;   // refresh in the background after an hour
+const metaCache = new Map();          // token -> { at, photos, name, refreshing }
+
+// Supabase gives the cache a home that survives cold starts. Env vars win so
+// the keys can be rotated in the Vercel dashboard; the literals are the same
+// public anon credentials the client already ships (see docs/SUPABASE.md).
+const SB_URL = process.env.SUPABASE_URL || "https://kpoxnurehcggqgbkptrf.supabase.co";
+const SB_KEY = process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtwb3hudXJlaGNnZ3FnYmtwdHJmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4NjQ2NzYsImV4cCI6MjEwMDQ0MDY3Nn0.pK8zXiJnB0iwxAmy2gGXMIE7rGAM6mkui3UbzM5KQAc";
+
+// Store only what the response builder reads — guid, media type and the
+// derivative checksums/sizes. Never the signed asset URLs: those expire, and
+// webasseturls re-issues them on every request anyway.
+function slimPhoto(p) {
+  const derivatives = {};
+  Object.entries(p.derivatives || {}).forEach(([k, d]) => {
+    if (d && d.checksum) {
+      derivatives[k] = { checksum: d.checksum, width: d.width, height: d.height, fileSize: d.fileSize };
+    }
+  });
+  return { photoGuid: p.photoGuid, mediaAssetType: p.mediaAssetType, derivatives };
+}
+
+async function sbFetch(path, opts) {
+  return fetch(`${SB_URL}/rest/v1/${path}`, {
+    method: (opts && opts.method) || "GET",
+    headers: {
+      apikey: SB_KEY,
+      Authorization: `Bearer ${SB_KEY}`,
+      "Content-Type": "application/json",
+      ...(opts && opts.prefer ? { Prefer: opts.prefer } : {})
+    },
+    body: opts && opts.body ? JSON.stringify(opts.body) : undefined
+  });
+}
+
+async function sbReadMeta(token) {
+  const res = await sbFetch(`album_cache?token=eq.${encodeURIComponent(token)}&select=name,photos,fetched_at`);
+  if (!res.ok) throw new Error(`supabase ${res.status}`);
+  const rows = await res.json();
+  if (!rows || !rows.length) return null;
+  const r = rows[0];
+  return { at: new Date(r.fetched_at).getTime(), photos: r.photos || [], name: r.name || "" };
+}
+
+async function sbWriteMeta(token, entry) {
+  await sbFetch("album_cache?on_conflict=token", {
+    method: "POST",
+    prefer: "resolution=merge-duplicates,return=minimal",
+    body: {
+      token,
+      name: entry.name,
+      photos: entry.photos,
+      fetched_at: new Date(entry.at).toISOString()
+    }
+  });
+}
 
 async function fetchMeta(token) {
   const host = `p${partition(token)}-sharedstreams.icloud.com`;
   const stream = await icloudPost(host, token, "webstream", { streamCtag: null });
-  return { at: Date.now(), photos: (stream.photos || []).filter(Boolean), name: stream.streamName || "" };
+  const entry = {
+    at: Date.now(),
+    photos: (stream.photos || []).filter(Boolean).map(slimPhoto),
+    name: stream.streamName || ""
+  };
+  metaCache.set(token, entry);
+  sbWriteMeta(token, entry).catch(() => {}); // cache miss next time, nothing worse
+  return entry;
 }
 
+function refreshInBackground(token, hit) {
+  if (hit.refreshing) return;
+  hit.refreshing = true;
+  fetchMeta(token).catch(() => { hit.refreshing = false; }); // keep serving what we have
+}
+
+// Three tiers, each only reached when the one above misses: warm instance
+// memory (instant) → Supabase (~100ms, survives cold starts) → iCloud (~50s).
+// Anything already cached is served immediately and refreshed in the
+// background, so only a genuinely first-ever fetch makes someone wait.
 async function albumMeta(token) {
   const hit = metaCache.get(token);
   if (hit) {
-    if (Date.now() - hit.at > META_TTL_MS && !hit.refreshing) {
-      hit.refreshing = true;
-      fetchMeta(token)
-        .then(fresh => metaCache.set(token, fresh))
-        .catch(() => { hit.refreshing = false; }); // keep serving what we have
-    }
+    if (Date.now() - hit.at > META_TTL_MS) refreshInBackground(token, hit);
     return hit;
   }
-  const fresh = await fetchMeta(token);
-  metaCache.set(token, fresh);
-  return fresh;
+  try {
+    const row = await sbReadMeta(token);
+    if (row && row.photos.length) {
+      metaCache.set(token, row);
+      if (Date.now() - row.at > META_TTL_MS) refreshInBackground(token, row);
+      return row;
+    }
+  } catch (e) { /* DB is an enhancement — fall through to iCloud */ }
+  return fetchMeta(token);
 }
 
 export default async function handler(req, res) {
