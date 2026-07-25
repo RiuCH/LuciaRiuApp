@@ -7,9 +7,11 @@ description: Use when adding, editing, or removing questions in the daily questi
 
 ## Where
 
-In `index.html`:
-- `BANK` — object with five arrays: `funny`, `romantic`, `spicy`, `nasty`, `ldr`
-- `MISSYOU` — flat array of miss-you message strings
+- `BANK` — in `js/questions.js`: 345 prompts across the 11 category arrays
+  listed under "Category tone guide" below (`funny`, `romantic`, `spicy`,
+  `nasty`, `ldr`, `deep`, `filthy`, `dareapart`, `dareapartx`,
+  `daretogether`, `daretogetherx`)
+- `MISSYOU` — in `js/home.js`: flat array of miss-you message strings
 
 Add strings to the right array. Since v5 the live pool usually comes from
 the Supabase `questions` table (`QUESTION_SOURCE`), with `BANK` as the

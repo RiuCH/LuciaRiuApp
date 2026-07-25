@@ -19,6 +19,7 @@
 <link rel="stylesheet" href="css/journeys.css">
 <link rel="stylesheet" href="css/duel.css">
 <link rel="stylesheet" href="css/twenty.css">
+<link rel="stylesheet" href="css/cycle.css">
 <link rel="stylesheet" href="css/desktop.css">
 </head>
 <body>
@@ -35,7 +36,8 @@
 
 <div class="app">
   <header>
-    <div class="names">Lucia <span class="amp">♥</span> Riu</div>
+    <!-- the ♥ is also the quiet door: long-press it (js/core.js) -->
+    <div class="names">Lucia <span class="amp" id="secretHeart">♥</span> Riu</div>
     <div class="sub" id="subtitle">Our Little Universe</div>
   </header>
 
@@ -343,6 +345,61 @@
       </div>
     </div>
   </section>
+
+  <!-- ================= MOON (the quiet one) =================
+       Deliberately absent from <nav>: you get here by long-pressing the ♥
+       in the header, or with #moon=1. Obscurity, not security — same as
+       the lock screen, the source is public. -->
+  <section class="page" id="page-cycle">
+
+    <div class="daybar">
+      <div class="pill" id="cyCycleDay">Cycle day —</div>
+      <div class="pill" id="cyNextPill">Next 🌙 —</div>
+    </div>
+
+    <div class="panel cy-calpanel">
+      <button class="cy-close" id="cyClose" title="Back home">✕</button>
+      <div class="cy-monthbar">
+        <button class="cy-nav" id="cyPrev" title="Previous month">‹</button>
+        <div class="cy-monthlbl" id="cyMonthLbl">…</div>
+        <button class="cy-nav" id="cyNext" title="Next month">›</button>
+      </div>
+      <div class="rowbtns" style="margin-top:0; margin-bottom:12px;">
+        <button class="cy-nowbtn" id="cyNow">📆 Today</button>
+      </div>
+      <div class="cy-dow">
+        <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span>
+        <span>Thu</span><span>Fri</span><span>Sat</span>
+      </div>
+      <div class="cy-grid" id="cyGrid"></div>
+      <div class="cy-legend">
+        <span><i class="cy-sw cy-sw-period"></i> logged 🌙</span>
+        <span><i class="cy-sw cy-sw-pred"></i> predicted</span>
+        <span><i class="cy-sw cy-sw-fert"></i> fertile-ish</span>
+        <span>💞 us</span>
+      </div>
+    </div>
+
+    <div class="panel cy-daypanel" id="cyDayPanel">
+      <div class="ptitle" id="cyDayTitle">Tap a day</div>
+      <div class="cy-daymarks" id="cyDayMarks">…and mark what happened on it 😌</div>
+      <div class="rowbtns" id="cyDayBtns"></div>
+    </div>
+
+    <div class="panel" id="cyMoonPanel">
+      <div class="ptitle">Her rhythm</div>
+      <div class="cy-stats" id="cyMoonStats"></div>
+      <div class="hint" id="cyMoonHint"></div>
+    </div>
+
+    <div class="panel" id="cyUsPanel">
+      <div class="ptitle">Us, by the numbers</div>
+      <div class="cy-stats" id="cyUsStats"></div>
+      <div class="cy-record" id="cyRecordLine"></div>
+      <div class="hint" id="cySyncHint">Connecting…</div>
+    </div>
+
+  </section>
 </div>
 
 <!-- ================= NAV ================= -->
@@ -384,6 +441,7 @@
 <script src="js/journeys.js"></script>
 <script src="js/duel.js"></script>
 <script src="js/twenty.js"></script>
+<script src="js/cycle.js"></script>
 <script src="js/lock.js"></script>
 <script src="js/init.js"></script>
 </body>
