@@ -408,7 +408,23 @@
     cursor: zoom-out;
   }
   .jr-lightbox.show { display: flex; }
-  .jr-lightbox img { max-width: 94vw; max-height: 84vh; border-radius: 16px; box-shadow: 0 24px 80px rgba(0,0,0,0.6); }
+  .jr-lightbox img, .jr-lightbox video { max-width: 94vw; max-height: 84vh; border-radius: 16px; box-shadow: 0 24px 80px rgba(0,0,0,0.6); }
+  .jr-vwrap { position: relative; display: block; }
+  .jr-vbadge {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #fff;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+    pointer-events: none;
+  }
+  .jr-picker-nav { gap: 10px; align-items: center; justify-content: center; margin-top: 10px; }
+  .jr-picker-nav button { padding: 8px 16px; font-size: 13px; }
+  .jr-picker-nav button:disabled { opacity: 0.35; pointer-events: none; }
+  .jr-picker-pagelbl { font-size: 12px; color: var(--text-dim); letter-spacing: 1px; }
   .jr-edit {
     position: absolute;
     top: 10px;
@@ -898,12 +914,17 @@
 </nav>
 
 <div class="toast" id="toast">Copied!</div>
-<div class="jr-lightbox" id="jrLightbox"><img id="jrLightboxImg" alt="journey photo, full size"></div>
+<div class="jr-lightbox" id="jrLightbox"><img id="jrLightboxImg" alt="journey photo, full size"><video id="jrLightboxVid" controls playsinline style="display:none"></video></div>
 <div class="jr-picker" id="jrPicker">
   <div class="panel jr-picker-box">
     <div class="ptitle">Pick the photos our timeline shows</div>
     <div class="jr-picker-note" id="jrPickerNote">Loading album… 📸</div>
     <div class="jr-picker-grid" id="jrPickerGrid"></div>
+    <div class="jr-picker-nav" id="jrPickerNav" style="display:none">
+      <button id="jrPickerPrev">‹ Prev</button>
+      <span class="jr-picker-pagelbl" id="jrPickerPageLbl"></span>
+      <button id="jrPickerNext">Next ›</button>
+    </div>
     <div class="rowbtns">
       <button class="primary" id="jrPickerSave">💾 Save picks</button>
       <button id="jrPickerClear">Newest 6 instead</button>
@@ -1720,13 +1741,42 @@ function pickDerivative(derivs, wantThumb) {
   return best;
 }
 
-async function fetchAlbumDirect(token) {
+// Album media comes through api/album.js (iCloud sends no CORS headers,
+// so browsers can't call sharedstreams directly) in pages of ALBUM_PER,
+// with a direct-iCloud fallback if the function is unreachable. Videos are
+// included: poster-frame thumb, `video: true`, `full` = playable mp4.
+const ALBUM_PER = 24;
+
+async function albumApi(token, params) {
+  const res = await fetch("/api/album?token=" + token + params);
+  if (!res.ok) throw new Error("proxy said " + res.status);
+  return res.json();
+}
+
+async function directAlbumMeta(token) {
+  const key = token + "|meta";
+  if (albumCache[key]) return albumCache[key];
   const host = "p" + icloudPartition(token) + "-sharedstreams.icloud.com";
   const stream = await icloudPost(host, token, "webstream", { streamCtag: null });
-  const photos = (stream.photos || [])
-    .filter(p => p && p.mediaAssetType !== "video")
-    .slice(0, 60);
-  const guids = photos.map(p => p.photoGuid);
+  const out = { host, metas: (stream.photos || []).filter(Boolean) };
+  albumCache[key] = out;
+  return out;
+}
+
+function isVideoItem(p) { return p.mediaAssetType === "video"; }
+
+function pickVideoDerivative(p) {
+  let best = null;
+  Object.entries(p.derivatives || {}).forEach(([k, d]) => {
+    if (k === "PosterFrame" || !d || !d.checksum) return;
+    if (!best || Number(d.width) > Number(best.width)) best = d;
+  });
+  return best;
+}
+
+async function directResolve(token, metas) {
+  const { host } = await directAlbumMeta(token);
+  const guids = metas.map(p => p.photoGuid);
   const assets = guids.length
     ? await icloudPost(host, token, "webasseturls", { photoGuids: guids })
     : { items: {} };
@@ -1734,7 +1784,13 @@ async function fetchAlbumDirect(token) {
     const it = assets.items && assets.items[c];
     return it ? "https://" + it.url_location + it.url_path : null;
   };
-  return photos.map(p => {
+  return metas.map(p => {
+    if (isVideoItem(p)) {
+      const poster = (p.derivatives || {}).PosterFrame;
+      const vid = pickVideoDerivative(p);
+      const thumb = poster && urlFor(poster.checksum);
+      return { guid: p.photoGuid, thumb: thumb, full: (vid && urlFor(vid.checksum)) || thumb, video: true };
+    }
     const thumb = pickDerivative(p.derivatives, true);
     const full = pickDerivative(p.derivatives, false);
     return {
@@ -1745,26 +1801,76 @@ async function fetchAlbumDirect(token) {
   }).filter(p => p.thumb);
 }
 
-async function fetchAlbumViaProxy(token) {
-  const res = await fetch("/api/album?token=" + token);
-  if (!res.ok) throw new Error("proxy said " + res.status);
-  return (await res.json()).photos || [];
+async function fetchAlbumPage(url, page) {
+  const token = icloudToken(url);
+  if (!token) throw new Error("not an iCloud shared-album link");
+  const key = token + "|p" + page;
+  if (albumCache[key]) return albumCache[key];
+  let data;
+  try {
+    data = await albumApi(token, "&page=" + page + "&per=" + ALBUM_PER);
+  } catch (e) {
+    const meta = await directAlbumMeta(token);
+    data = {
+      photos: await directResolve(token, meta.metas.slice((page - 1) * ALBUM_PER, page * ALBUM_PER)),
+      total: meta.metas.length,
+      pages: Math.max(1, Math.ceil(meta.metas.length / ALBUM_PER)),
+      page: page
+    };
+  }
+  albumCache[key] = data;
+  return data;
 }
 
+async function fetchAlbumGuids(url, guids) {
+  const token = icloudToken(url);
+  if (!token) throw new Error("not an iCloud shared-album link");
+  const key = token + "|g" + guids.join(",");
+  if (albumCache[key]) return albumCache[key];
+  let photos;
+  try {
+    photos = (await albumApi(token, "&guids=" + guids.join(","))).photos || [];
+  } catch (e) {
+    const meta = await directAlbumMeta(token);
+    photos = await directResolve(token, meta.metas.filter(p => guids.includes(p.photoGuid)));
+  }
+  albumCache[key] = photos;
+  return photos;
+}
+
+// one-shot fetch of the first 60 items — kept for callers that want the
+// whole album at once (the couple-photo home hero uses this)
 async function fetchICloudAlbum(url) {
   const token = icloudToken(url);
   if (!token) throw new Error("not an iCloud shared-album link");
-  if (albumCache[token]) return albumCache[token];
+  const key = token + "|all";
+  if (albumCache[key]) return albumCache[key];
   let photos;
   try {
-    // our same-origin Vercel function (api/album.js) — iCloud sends no CORS
-    // headers, so browsers can't call it directly on the deployed site
-    photos = await fetchAlbumViaProxy(token);
+    photos = (await albumApi(token, "&page=1&per=60")).photos || [];
   } catch (e) {
-    photos = await fetchAlbumDirect(token); // fallback if the function is down
+    const meta = await directAlbumMeta(token);
+    photos = await directResolve(token, meta.metas.slice(0, 60));
   }
-  albumCache[token] = photos;
+  albumCache[key] = photos;
   return photos;
+}
+
+function mediaThumb(p, onClick) {
+  const img = document.createElement("img");
+  img.loading = "lazy";
+  img.src = p.thumb;
+  img.alt = p.video ? "journey video" : "journey photo";
+  if (onClick) img.addEventListener("click", onClick);
+  if (!p.video) return { el: img, img: img };
+  const wrap = document.createElement("span");
+  wrap.className = "jr-vwrap";
+  wrap.appendChild(img);
+  const badge = document.createElement("span");
+  badge.className = "jr-vbadge";
+  badge.textContent = "▶";
+  wrap.appendChild(badge);
+  return { el: wrap, img: img };
 }
 
 async function hydrateAlbum(url, box, picksCsv) {
@@ -1773,27 +1879,25 @@ async function hydrateAlbum(url, box, picksCsv) {
   note.textContent = "Loading photos… 📸";
   box.appendChild(note);
   try {
-    const photos = await fetchICloudAlbum(url);
-    box.innerHTML = "";
-    if (!photos.length) { box.remove(); return; }
     const picks = (picksCsv || "").split(",").filter(Boolean);
-    const chosen = picks.length ? photos.filter(p => picks.includes(p.guid)) : [];
-    const shown = chosen.length ? chosen : photos.slice(0, 6); // stale picks fall back to newest
-    shown.forEach(p => {
-      const img = document.createElement("img");
-      img.loading = "lazy";
-      img.src = p.thumb;
-      img.alt = "journey photo";
-      img.addEventListener("click", () => openLightbox(p.full));
-      box.appendChild(img);
-    });
-    if (!chosen.length && photos.length > 6) {
+    let shown = [];
+    let moreCount = 0;
+    if (picks.length) shown = await fetchAlbumGuids(url, picks); // exactly the picks
+    if (!shown.length) { // no picks (or stale ones) — newest 6
+      const pg = await fetchAlbumPage(url, 1);
+      if (!pg.photos.length) { box.remove(); return; }
+      shown = pg.photos.slice(0, 6);
+      moreCount = Math.max(0, pg.total - shown.length);
+    }
+    box.innerHTML = "";
+    shown.forEach(p => box.appendChild(mediaThumb(p, () => openLightbox(p)).el));
+    if (moreCount > 0) {
       const more = document.createElement("a");
       more.className = "jr-more";
       more.href = url;
       more.target = "_blank";
       more.rel = "noopener";
-      more.textContent = "+" + (photos.length - 6) + " ↗";
+      more.textContent = "+" + moreCount + " ↗";
       box.appendChild(more);
     }
   } catch (e) {
@@ -1805,43 +1909,72 @@ async function hydrateAlbum(url, box, picksCsv) {
 const jrPicker = document.getElementById("jrPicker");
 const jrPickerGrid = document.getElementById("jrPickerGrid");
 const jrPickerNote = document.getElementById("jrPickerNote");
+const jrPickerNav = document.getElementById("jrPickerNav");
 let jrPicking = null;
 let jrPickSel = [];
+let jrPickPage = 1;
+let jrPickPages = 1;
+let jrPickRender = 0; // guards against overlapping page renders
+
+function jrPickerCount(total) {
+  jrPickerNote.textContent = (total ? total + " in the album · " : "") +
+    (jrPickSel.length ? jrPickSel.length + " chosen" : "tap to choose");
+}
+
+async function renderPickerPage() {
+  const seq = ++jrPickRender;
+  jrPickerGrid.innerHTML = "";
+  jrPickerNav.style.display = "none";
+  jrPickerNote.textContent = "Loading album… 📸";
+  const pg = await fetchAlbumPage(jrPicking.album_url, jrPickPage);
+  if (seq !== jrPickRender) return; // a newer render superseded this one
+  if (!pg.total) { jrPickerNote.textContent = "The album looks empty 🤔"; return; }
+  jrPickPages = pg.pages;
+  if (pg.pages > 1) {
+    jrPickerNav.style.display = "flex";
+    document.getElementById("jrPickerPageLbl").textContent = "page " + pg.page + " / " + pg.pages;
+    document.getElementById("jrPickerPrev").disabled = pg.page <= 1;
+    document.getElementById("jrPickerNext").disabled = pg.page >= pg.pages;
+  }
+  jrPickerCount(pg.total);
+  pg.photos.forEach(p => {
+    const m = mediaThumb(p, null);
+    if (jrPickSel.includes(p.guid)) m.img.classList.add("sel");
+    m.img.addEventListener("click", () => {
+      if (jrPickSel.includes(p.guid)) {
+        jrPickSel = jrPickSel.filter(g => g !== p.guid);
+        m.img.classList.remove("sel");
+      } else {
+        jrPickSel.push(p.guid);
+        m.img.classList.add("sel");
+      }
+      jrPickerCount(pg.total);
+    });
+    jrPickerGrid.appendChild(m.el);
+  });
+}
 
 async function openPicker(j) {
   jrPicking = j;
   jrPickSel = (j.photo_guids || "").split(",").filter(Boolean);
-  jrPickerGrid.innerHTML = "";
-  jrPickerNote.textContent = "Loading album… 📸";
+  jrPickPage = 1;
   jrPicker.classList.add("show");
   try {
-    const photos = await fetchICloudAlbum(j.album_url);
-    if (!photos.length) { jrPickerNote.textContent = "The album looks empty 🤔"; return; }
-    jrPickerNote.textContent = jrPickSel.length
-      ? jrPickSel.length + " chosen — tap to change"
-      : "Tap the photos to show on our timeline";
-    photos.forEach(p => {
-      const img = document.createElement("img");
-      img.loading = "lazy";
-      img.src = p.thumb;
-      img.alt = "album photo";
-      if (jrPickSel.includes(p.guid)) img.classList.add("sel");
-      img.addEventListener("click", () => {
-        if (jrPickSel.includes(p.guid)) {
-          jrPickSel = jrPickSel.filter(g => g !== p.guid);
-          img.classList.remove("sel");
-        } else {
-          jrPickSel.push(p.guid);
-          img.classList.add("sel");
-        }
-        jrPickerNote.textContent = jrPickSel.length + " chosen";
-      });
-      jrPickerGrid.appendChild(img);
-    });
+    await renderPickerPage();
   } catch (e) {
+    jrPickerGrid.innerHTML = "";
     jrPickerNote.textContent = "Couldn't load the album — is its Public Website on?";
   }
 }
+
+document.getElementById("jrPickerPrev").addEventListener("click", () => {
+  if (jrPickPage > 1) { jrPickPage--; renderPickerPage().catch(() => {}); }
+});
+document.getElementById("jrPickerNext").addEventListener("click", () => {
+  if (jrPickPage >= jrPickPages) return;
+  jrPickPage++;
+  renderPickerPage().catch(() => {});
+});
 
 function closePicker() {
   jrPicker.classList.remove("show");
@@ -1875,12 +2008,30 @@ document.getElementById("jrPickerClear").addEventListener("click", () => savePic
 document.getElementById("jrPickerCancel").addEventListener("click", closePicker);
 
 const jrLightbox = document.getElementById("jrLightbox");
-function openLightbox(src) {
-  if (!src) return;
-  document.getElementById("jrLightboxImg").src = src;
+const jrLightboxImg = document.getElementById("jrLightboxImg");
+const jrLightboxVid = document.getElementById("jrLightboxVid");
+
+function openLightbox(p) {
+  if (typeof p === "string") p = { full: p }; // tolerate plain-URL callers
+  if (!p || !p.full) return;
+  const isVid = !!p.video;
+  jrLightboxImg.style.display = isVid ? "none" : "block";
+  jrLightboxVid.style.display = isVid ? "block" : "none";
+  if (isVid) {
+    jrLightboxVid.src = p.full;
+    jrLightboxVid.poster = p.thumb || "";
+    jrLightboxVid.play().catch(() => {});
+  } else {
+    jrLightboxImg.src = p.full;
+  }
   jrLightbox.classList.add("show");
 }
-jrLightbox.addEventListener("click", () => jrLightbox.classList.remove("show"));
+jrLightbox.addEventListener("click", (e) => {
+  if (e.target === jrLightboxVid) return; // let the video controls work
+  jrLightbox.classList.remove("show");
+  jrLightboxVid.pause();
+  jrLightboxVid.removeAttribute("src");
+});
 
 // ---------------- EFFECTS ----------------
 function burst(x, y, set) {

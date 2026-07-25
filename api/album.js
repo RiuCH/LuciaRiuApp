@@ -1,9 +1,13 @@
 // Vercel serverless proxy for Apple Shared Albums.
 // iCloud's sharedstreams API sends no CORS headers, so browsers can't call
-// it directly — this endpoint does the fetch server-side and returns
-// { photos: [{guid, thumb, full}], name } for the app (same origin, no CORS).
-// First serverless function in the repo — sanctioned by docs/ROADMAP.md
-// ("serverless functions when needed"); the app still degrades to an
+// it directly — this endpoint does the fetch server-side (same origin).
+//
+//   GET /api/album?token=X&page=2&per=24   → one page of media + counts
+//   GET /api/album?token=X&guids=a,b,c     → just those items (photo picks)
+//
+// Response: { photos: [{guid, thumb, full, video?}], total, page, per,
+// pages, name }. Videos are included with their PosterFrame as the thumb
+// and the largest video rendition as `full`. The app still degrades to an
 // "Open album" link if this endpoint is unreachable.
 
 const B62 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -35,9 +39,12 @@ async function icloudPost(host, token, endpoint, body, depth = 0) {
   return data;
 }
 
-function pickDerivative(derivs, wantThumb) {
+const isVideo = p => p.mediaAssetType === "video";
+
+function pickImageDerivative(p, wantThumb) {
+  if (isVideo(p)) return (p.derivatives || {}).PosterFrame || null;
   let best = null;
-  for (const d of Object.values(derivs || {})) {
+  for (const d of Object.values(p.derivatives || {})) {
     if (!d || !d.checksum || !Number(d.width)) continue;
     if (!best) { best = d; continue; }
     if (wantThumb) {
@@ -49,19 +56,35 @@ function pickDerivative(derivs, wantThumb) {
   return best;
 }
 
+function pickVideoDerivative(p) {
+  let best = null;
+  for (const [key, d] of Object.entries(p.derivatives || {})) {
+    if (key === "PosterFrame" || !d || !d.checksum) continue;
+    if (!best || Number(d.width) > Number(best.width)) best = d;
+  }
+  return best;
+}
+
 export default async function handler(req, res) {
-  const token = String((req.query && req.query.token) || "");
+  const q = req.query || {};
+  const token = String(q.token || "");
   if (!/^[A-Za-z0-9]{8,40}$/.test(token)) {
     res.status(400).json({ error: "bad token" });
     return;
   }
+  const per = Math.min(60, Math.max(1, parseInt(q.per, 10) || 24));
+  const page = Math.max(1, parseInt(q.page, 10) || 1);
+  const wantGuids = String(q.guids || "").split(",").filter(Boolean).slice(0, 100);
   try {
     const host = `p${partition(token)}-sharedstreams.icloud.com`;
     const stream = await icloudPost(host, token, "webstream", { streamCtag: null });
-    const photos = (stream.photos || [])
-      .filter(p => p && p.mediaAssetType !== "video")
-      .slice(0, 60);
-    const guids = photos.map(p => p.photoGuid);
+    const all = (stream.photos || []).filter(Boolean);
+    const total = all.length;
+    const pages = Math.max(1, Math.ceil(total / per));
+    const subset = wantGuids.length
+      ? all.filter(p => wantGuids.includes(p.photoGuid))
+      : all.slice((page - 1) * per, page * per);
+    const guids = subset.map(p => p.photoGuid);
     const assets = guids.length
       ? await icloudPost(host, token, "webasseturls", { photoGuids: guids })
       : { items: {} };
@@ -69,18 +92,19 @@ export default async function handler(req, res) {
       const it = assets.items && assets.items[c];
       return it ? `https://${it.url_location}${it.url_path}` : null;
     };
-    const out = photos.map(p => {
-      const t = pickDerivative(p.derivatives, true);
-      const f = pickDerivative(p.derivatives, false);
-      return {
-        guid: p.photoGuid,
-        thumb: t && urlFor(t.checksum),
-        full: (f && urlFor(f.checksum)) || (t && urlFor(t.checksum)),
-      };
+    const out = subset.map(p => {
+      const t = pickImageDerivative(p, true);
+      const thumb = t && urlFor(t.checksum);
+      if (isVideo(p)) {
+        const v = pickVideoDerivative(p);
+        return { guid: p.photoGuid, thumb, full: (v && urlFor(v.checksum)) || thumb, video: true };
+      }
+      const f = pickImageDerivative(p, false);
+      return { guid: p.photoGuid, thumb, full: (f && urlFor(f.checksum)) || thumb };
     }).filter(p => p.thumb);
     // asset URLs are short-lived signed links — cache briefly only
     res.setHeader("Cache-Control", "s-maxage=300, stale-while-revalidate=600");
-    res.status(200).json({ photos: out, name: stream.streamName || "" });
+    res.status(200).json({ photos: out, total, page, per, pages, name: stream.streamName || "" });
   } catch (e) {
     res.status(e.status === 404 ? 404 : 502).json({ error: String(e.message || e) });
   }
