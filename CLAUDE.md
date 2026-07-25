@@ -81,7 +81,9 @@ can reference anything.
 - `BANK` — 345 prompts in 11 categories: funny, romantic, spicy, nasty, ldr,
   deep, filthy, dareapart, dareapartx, daretogether, daretogetherx. Home's
   Question of the Day only ever draws from the sweet three (`QOTD_CATS` =
-  funny + romantic + ldr); everything adult lives behind the Play tab
+  funny + romantic + ldr); everything adult lives behind the Talk · Flirt ·
+  Dare tab, whose nav button reads a deliberately innocuous **"🎭 Talk"**
+  (the tab key is still `tfd`)
 - `MISSYOU` — miss-you text generator strings
 - `CHIPS` — category labels/colors
 - Constants: `EPOCH` (day counter start), `ANNIVERSARY` (June 2, 2026),
@@ -125,6 +127,7 @@ can reference anything.
   (`start:len`) + `settings.love_log` (`date:count`), no migration needed;
   deliberately never written to the URL hash. **Hidden, not private** — the
   repo is public, same honesty as the lock screen
+- Couple photo: `cp*` block — home hero image from `settings.home_photo`
   (URL / upload data-URL / `album:<link>` = Apple-album photo-of-the-day,
   seed offset 15485863); `#photo=` hash + session fallbacks
 - Home widgets: `tickAnniversary()`, `tickClocks()`, `tickCountdown()`

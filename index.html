@@ -152,6 +152,7 @@
     <div class="btnrow">
       <button class="primary" id="tfdAgain" style="display:none">🎲 Another</button>
       <button id="tfdCopy">📋 Copy</button>
+      <button id="tfdRestart">🔄 Start over</button>
     </div>
 
   </section>
@@ -229,6 +230,8 @@
 
       <div class="btnrow" style="margin-top: 0;">
         <button class="primary" id="wdReroll">🎲 New letters</button>
+        <!-- restart wipes the score on BOTH phones, so it asks twice -->
+        <button id="wdRestart">🔄 Restart</button>
       </div>
     </div>
 
@@ -284,6 +287,8 @@
         <div class="rowbtns">
           <button class="primary" id="q20Start">🧠 I'll think of something</button>
           <button id="q20Again" style="display:none">🔄 Play again</button>
+          <!-- always available, unlike Play again; asks twice (shared state) -->
+          <button id="q20Restart">🔄 Restart</button>
         </div>
 
         <div id="q20SetupBox" style="display:none">
@@ -405,7 +410,7 @@
 <!-- ================= NAV ================= -->
 <nav class="nav">
   <button id="navHome" class="active">🏠 Home</button>
-  <button id="navTfd">🎭 Play</button>
+  <button id="navTfd">🎭 Talk</button>
   <button id="navJourneys">✈️ Trips</button>
   <button id="navDuel">🎮 Games</button>
 </nav>

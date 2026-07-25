@@ -147,7 +147,22 @@ window.addEventListener("focus", () => {
 
 // ---------------- who's who ----------------
 // Shares the Word Duel's `#me` hash param so you only ever pick a side once.
+
+// Is a round actually in progress? "over" still shows the board, but the game
+// is done, so re-picking a side then is harmless.
+function q20Started() {
+  return q20.phase === "asking" ||
+         (q20.phase === "setup" && !!q20.thinker) ||
+         q20.asked.length > 0;
+}
+
 function q20SetMe(who) {
+  if (who === wdMe) return;
+  // one identity across the whole Games tab — see wdSideLocked() in js/duel.js
+  if (typeof wdSideLocked === "function" && wdSideLocked()) {
+    popToast("No swapping mid-game 😌 Hit 🔄 Restart if you picked wrong");
+    return;
+  }
   wdMe = who;
   setHashParam("me", who);
   if (typeof wdRenderWhoAmI === "function") wdRenderWhoAmI();
@@ -236,9 +251,37 @@ function q20Answer(answer, e) {
   document.getElementById(id).addEventListener("click", (e) => q20Answer(answer, e));
 });
 
-document.getElementById("q20Again").addEventListener("click", () => {
+function q20Fresh() {
   q20 = { phase: "setup", thinker: null, word: "", asked: [], pending: null, result: null, reveal: false };
   q20Push();
+}
+
+document.getElementById("q20Again").addEventListener("click", q20Fresh);
+
+// Restart, but available at ANY point — "Play again" only appears once a round
+// is over, which leaves no way out of a game you've lost interest in. It clears
+// the SHARED row, so like the duel's it arms on the first tap and commits on
+// the second; a stray thumb shouldn't bin the other phone's game.
+let q20RestartArmed = null;
+const q20RestartBtn = document.getElementById("q20Restart");
+
+function q20DisarmRestart() {
+  clearTimeout(q20RestartArmed);
+  q20RestartArmed = null;
+  q20RestartBtn.textContent = "🔄 Restart";
+  q20RestartBtn.classList.remove("toggled");
+}
+
+q20RestartBtn.addEventListener("click", () => {
+  if (q20RestartArmed) {
+    q20DisarmRestart();
+    q20Fresh();
+    popToast("Fresh game 🔄 somebody think of something");
+    return;
+  }
+  q20RestartBtn.textContent = "Sure? Wipes both 💔";
+  q20RestartBtn.classList.add("toggled");
+  q20RestartArmed = setTimeout(q20DisarmRestart, 3500);
 });
 
 // ---------------- rendering ----------------
@@ -289,8 +332,8 @@ function q20Render() {
   const iAmThinker = q20IamThinker();
   const iAmGuesser = q20IamGuesser();
 
-  document.querySelectorAll("#q20WhoAmI .chip").forEach(c =>
-    c.classList.toggle("sel", c.dataset.me === wdMe));
+  // paints BOTH games' rows — they share `#me`, so they must agree (js/duel.js)
+  if (typeof renderWhoAmIRows === "function") renderWhoAmIRows();
 
   // whose turn it is, in words
   const roleLine =

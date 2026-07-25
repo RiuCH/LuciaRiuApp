@@ -135,17 +135,27 @@ header .sub {
 .daybar {
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 16px;
   font-size: 13px;
   color: var(--text-dim);
 }
+/* Status text, not controls. These used to be bordered rounded pills, which
+   gave them the same silhouette as the nav buttons — so the Word Duel's
+   "Round 1 / 💔 Lose 5" read as two tabs you could tap. Flat text can't. */
 .daybar .pill {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 999px;
-  padding: 6px 14px;
-  backdrop-filter: blur(8px);
+  padding: 0;
+  background: none;
+  border: 0;
+  backdrop-filter: none;
+  letter-spacing: 0.5px;
+}
+/* the outlines used to do the separating; a middot does it now */
+.daybar .pill + .pill::before {
+  content: "·";
+  margin-right: 10px;
+  opacity: 0.45;
 }
 .daybar .pill b { color: var(--text); font-weight: 600; }
 

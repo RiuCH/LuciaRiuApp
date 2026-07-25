@@ -54,9 +54,9 @@ conversation (no homework).
 | Surface | Draws from |
 |---|---|
 | Home — Question of the Day | `QOTD_CATS`: funny + romantic + ldr |
-| Play — 💬 Talk | apart: deep + romantic + ldr · together: deep + romantic + funny |
-| Play — 😏 Flirt | spicy + nasty + filthy (both modes) |
-| Play — 🔥 Dare | apart: dareapart(+x) · together: daretogether(+x) |
+| 🎭 Talk tab — 💬 Talk deck | apart: deep + romantic + ldr · together: deep + romantic + funny |
+| 🎭 Talk tab — 😏 Flirt deck | spicy + nasty + filthy (both modes) |
+| 🎭 Talk tab — 🔥 Dare deck | apart: dareapart(+x) · together: daretogether(+x) |
 
 **Home is the always-visible page — keep it sweet.** Anything explicit goes
 in a Play-tab category, never in `QOTD_CATS`. Don't rename categories;
