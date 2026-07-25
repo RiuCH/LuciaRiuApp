@@ -13,7 +13,9 @@
   --text: #fdf3f7;
   --text-dim: rgba(253, 243, 247, 0.62);
 }
-body.afterdark {
+/* matches both <html> and <body> — the root needs the theme vars too so the
+   canvas colour below follows After Dark (js/questions.js toggles both) */
+.afterdark {
   --bg1: #0d0208;
   --bg2: #2b040f;
   --bg3: #560a1f;
@@ -21,7 +23,13 @@ body.afterdark {
   --accent-soft: rgba(255, 46, 99, 0.28);
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
-html { height: 100%; }
+html {
+  height: 100%;
+  /* The root's background paints the entire canvas, including the strip iOS
+     rubber-bands into past the top/bottom of the page. Without it that strip
+     falls back to the browser's white. */
+  background-color: var(--bg1);
+}
 body {
   min-height: 100%;
   font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;

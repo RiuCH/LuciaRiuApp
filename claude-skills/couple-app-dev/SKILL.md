@@ -67,7 +67,13 @@ different prime offset so features don't correlate:
 
 ## Style conventions
 
-- Theme via CSS variables in `:root`; After Dark overrides in `body.afterdark`.
+- Theme via CSS variables in `:root`; After Dark overrides in `.afterdark`,
+  and **both `<html>` and `<body>` carry that class** (js/questions.js
+  toggles both). `<html>` needs the vars because its `background-color`
+  paints the canvas — the strip iOS rubber-bands into past the top/bottom
+  of the page. Leave that rule alone or the overscroll flashes white; the
+  `theme-color` meta (tinting the phone's status bar) is swapped in the
+  same handler.
 - Panels: `.panel` (glassmorphism card). Games get full `.card` treatment.
 - Buttons: `.primary` for the main action, `.toggled` for on-state.
 - Feedback: `popToast("...")` for confirmations, `burst(x, y, [emojis])`

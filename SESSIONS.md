@@ -63,6 +63,7 @@ out of each other's way.
 <<<<<<< HEAD
 | 2026-07-24 | Riu | Desktop/laptop layout | One trailing `@media (min-width:900px)` block (now `css/desktop.css`); hooks `#homeClocks`, `#homeCd`, `.wd-scorepanel` (PR #6) |
 =======
+| 2026-07-25 | Riu | Fix white overscroll strip on iOS | `html` now owns a themed `background-color` (canvas colour); `.afterdark` class toggles on `<html>` + `<body>`; `theme-color` meta follows the theme |
 | 2026-07-24 | Riu | Journeys v6.1: paged picker (24/page), videos in albums | `api/album` gained `page`/`per`/`guids` params; `jrPickerNav`, `jr-vwrap`/`jr-vbadge`; lightbox plays video; `fetchICloudAlbum()` kept as one-shot wrapper (couple-photo hero uses it) |
 >>>>>>> origin/main
 | 2026-07-24 | Riu | Couple photo on home (💞 hero) | `cp*` prefix; `settings.home_photo` (URL / upload data-URL / `album:<link>` photo-of-the-day, offset 15485863); `#photo=` fallback (PR #4) |

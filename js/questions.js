@@ -246,6 +246,10 @@ document.getElementById("shuffleBtn").addEventListener("click", (e) => {
 document.getElementById("darkBtn").addEventListener("click", (e) => {
   afterDark = !afterDark;
   document.body.classList.toggle("afterdark", afterDark);
+  // <html> too: it owns the canvas colour behind iOS's overscroll bounce
+  document.documentElement.classList.toggle("afterdark", afterDark);
+  const themeMeta = document.getElementById("themeColor");
+  if (themeMeta) themeMeta.content = afterDark ? "#0d0208" : "#1a0b2e";
   e.target.classList.toggle("toggled", afterDark);
   e.target.textContent = afterDark ? "🔥 After Dark: ON" : "🌶️ After Dark";
   if (activeTab === "game") {
