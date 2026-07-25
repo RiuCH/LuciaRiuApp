@@ -19,7 +19,7 @@
       "photo anniv"
       "photo clocks"
       "photo cd"
-      "teaseq teased";
+      "qotd teased";
     grid-auto-rows: min-content;
     gap: 18px;
     align-items: start;
@@ -29,7 +29,7 @@
   #page-home #annivBar   { grid-area: anniv; }
   #page-home #homeClocks { grid-area: clocks; }
   #page-home #homeCd     { grid-area: cd; }
-  #page-home #teaserCard { grid-area: teaseq; }
+  #page-home #qotdCard   { grid-area: qotd; }
   #page-home #wdTeaser   { grid-area: teased; }
 
   /* the photo is the centrepiece — let it fill its column */
@@ -44,18 +44,12 @@
   /* teasers sit side by side — give them equal presence */
   #page-home .teaser { display: flex; flex-direction: column; justify-content: center; min-height: 132px; }
 
-  /* ---- QUESTION OF THE DAY: roomier card, bigger type ---- */
-  #page-game.active, #page-journeys.active, #page-duel.active { margin: 0 auto; }
-  /* one question deserves the whole stage — centre it in the viewport */
-  #page-game.active {
-    max-width: 760px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    min-height: calc(100vh - 260px);
-  }
+  /* ---- TALK · FLIRT · DARE: roomier card, bigger type ---- */
+  #page-tfd.active, #page-journeys.active, #page-duel.active { margin: 0 auto; }
+  #page-tfd.active { max-width: 780px; }
   .card { padding: 52px 40px 46px; }
-  .question { font-size: 29px; max-width: 600px; }
+  .tfd-text { font-size: 27px; }
+  #page-home .qotd-q { font-size: 20px; }
 
   /* ---- JOURNEYS: wider timeline, 4-up photo grid ---- */
   #page-journeys.active { max-width: 880px; }
