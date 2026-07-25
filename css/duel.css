@@ -78,6 +78,9 @@
 .wd-whoami-lbl { font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); }
 .wd-whoami .chip { cursor: pointer; opacity: 0.45; transition: opacity 0.25s ease, box-shadow 0.25s ease; }
 .wd-whoami .chip.sel { opacity: 1; box-shadow: 0 0 14px var(--accent-soft); }
+/* the side you DIDN'T pick, once the game is under way — no swapping mid-match.
+   Left clickable on purpose so the tap can explain itself in a toast. */
+.wd-whoami .chip.wd-fixed { opacity: 0.2; cursor: not-allowed; }
 .wd-player.wd-me { border-color: var(--accent); }
 
 /* the flavour of the drawn penalty (funny / spicy / nasty) */

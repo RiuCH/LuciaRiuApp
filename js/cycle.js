@@ -396,7 +396,6 @@ function cyRenderStats() {
     moon.appendChild(cyStat(day > 0 ? "Day " + day : "—", "of her cycle"));
     moon.appendChild(cyStat(cyAvgCycle() + "d", "average cycle"));
     moon.appendChild(cyStat(cyAvgLen() + "d", "average period"));
-    moon.appendChild(cyStat(cyPeriods.length, "logged"));
 
     document.getElementById("cyCycleDay").textContent = day > 0 ? "Cycle day " + day : "Cycle day —";
     document.getElementById("cyNextPill").textContent =

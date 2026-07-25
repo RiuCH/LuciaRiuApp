@@ -149,6 +149,18 @@ const wdLettersEl = document.getElementById("wdLetters");
 const wdWordInput = document.getElementById("wdWordInput");
 
 function wdOver() { return wdHearts.lucia === 0 || wdHearts.riu === 0; }
+// Has this game actually got going? Reads the SHARED state, so once either
+// phone plays a round both sides are considered underway.
+function wdStarted() {
+  return wdRoundNum > 1 || wdHearts.lucia < 5 || wdHearts.riu < 5 ||
+         !!wdWords.lucia || !!wdWords.riu;
+}
+// You may pick a side freely until the game starts; after that you're stuck
+// with it, so nobody can swap into the other's identity mid-match. Restart is
+// the way out if you tapped the wrong name. Note this only bites once wdMe is
+// set — otherwise a game started on one phone would lock the other one out of
+// ever choosing.
+function wdSideLocked() { return !!wdMe && wdStarted(); }
 function wdCap(p) { return p === "lucia" ? "Lucia" : "Riu"; }
 function wdOther(p) { return p === "lucia" ? "riu" : "lucia"; }
 
@@ -348,8 +360,14 @@ function wdRenderPenalty() {
 }
 
 function wdRenderWhoAmI() {
-  document.querySelectorAll("#wdWhoAmI .chip").forEach(c =>
-    c.classList.toggle("sel", c.dataset.me === wdMe));
+  const locked = wdSideLocked();
+  document.querySelectorAll("#wdWhoAmI .chip").forEach(c => {
+    c.classList.toggle("sel", c.dataset.me === wdMe);
+    // dimmed, but still clickable — the handler explains why it won't budge
+    c.classList.toggle("wd-fixed", locked && c.dataset.me !== wdMe);
+  });
+  document.querySelector(".wd-whoami-lbl").textContent =
+    locked ? "Playing as (locked in)" : "I'm playing as";
   // Say what's actually true. The old version promised sharing unconditionally,
   // which hid the fact that nothing was syncing at all.
   document.getElementById("wdSyncHint").textContent =
@@ -489,9 +507,36 @@ document.querySelectorAll("#wdPlayModes .chip").forEach(chip => {
 });
 document.querySelectorAll("#wdWhoAmI .chip").forEach(chip => {
   chip.addEventListener("click", () => {
+    if (chip.dataset.me === wdMe) return;
+    if (wdSideLocked()) {
+      popToast("No swapping mid-game 😌 Hit 🔄 Restart if you picked wrong");
+      return;
+    }
     wdMe = chip.dataset.me;
     setHashParam("me", wdMe);   // survives refresh, no localStorage needed
     wdRenderAll();
     popToast("You're playing as " + wdCap(wdMe) + " 💞");
   });
+});
+
+
+// ---- restart ----
+// Always available, unlike 💞 Rematch which only appears once someone is out
+// of hearts. It resets the shared game, so a stray tap would wipe the other
+// phone's score too — hence the second tap to confirm.
+let wdRestartArmed = null;
+const wdRestartBtn = document.getElementById("wdRestart");
+
+function wdDisarmRestart() {
+  clearTimeout(wdRestartArmed);
+  wdRestartArmed = null;
+  wdRestartBtn.textContent = "🔄 Restart";
+  wdRestartBtn.classList.remove("toggled");
+}
+
+wdRestartBtn.addEventListener("click", () => {
+  if (wdRestartArmed) { wdDisarmRestart(); wdRematch(); return; }
+  wdRestartBtn.textContent = "Sure? Wipes both 💔";
+  wdRestartBtn.classList.add("toggled");
+  wdRestartArmed = setTimeout(wdDisarmRestart, 3500);
 });

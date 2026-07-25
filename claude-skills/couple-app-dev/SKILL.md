@@ -97,9 +97,20 @@ card twice), and remember growing the pool reshuffles every future day.
   deck contents, `hotMode`, the `.hot` theme class, the `theme-color` meta,
   the subtitle and the chip states, so they can never disagree. Never flip
   `hotMode`/`tfdTogether` by hand.
-- Keep adult content on the Play tab. Home is the always-visible page and
+- Keep adult content on the Talk · Flirt · Dare tab (`tfd`). Its nav button
+  reads a deliberately innocuous **"🎭 Talk"** over the adult decks — don't
+  "fix" it to something more suggestive. Home is the always-visible page and
   its Question of the Day draws from `QOTD_CATS` only — don't widen that
   pool to the spicy/filthy/dare categories.
+- Games get a restart, and it's always reachable — not hidden behind an
+  end state. Word Duel's `🔄 Restart` arms on the first tap and commits on
+  the second (it wipes the score on BOTH phones, so a stray tap mustn't);
+  Talk · Flirt · Dare's `🔄 Start over` is local, so it just goes.
+- Anything identifying you as one partner locks once a shared game is under
+  way — the duel's "I'm playing as" freezes after the first heart or word
+  (`wdSideLocked()`), so nobody can swap into the other's side mid-match.
+  Restart is the escape hatch, and the chip stays clickable so the tap can
+  explain itself in a toast rather than just going dead.
 - Panels: `.panel` (glassmorphism card). Games get full `.card` treatment.
 - Buttons: `.primary` for the main action, `.toggled` for on-state.
 - Feedback: `popToast("...")` for confirmations, `burst(x, y, [emojis])`

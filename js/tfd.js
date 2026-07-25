@@ -37,6 +37,7 @@ const TFD_DECKS = {
 let tfdTogether = false;   // ✈️ Apart is the default — that's the usual state
 let tfdDeck = null;        // which deck is showing
 let tfdCurrent = null;     // the prompt on screen
+let tfdSwapTimer = null;   // the card's mid-swap repaint, so restart can cancel it
 const tfdRecent = { talk: [], flirt: [], dare: [] }; // per-deck repeat guard
 
 function tfdPool(key) {
@@ -71,7 +72,8 @@ function tfdShow(key, e) {
 
   const card = document.getElementById("tfdCard");
   card.classList.add("swapping");
-  setTimeout(() => {
+  clearTimeout(tfdSwapTimer);
+  tfdSwapTimer = setTimeout(() => {
     document.getElementById("tfdText").textContent = prompt.text;
     styleChip(document.getElementById("tfdChip"), prompt.cat);
     document.getElementById("tfdBlurb").textContent = TFD_DECKS[key].blurb;
@@ -123,6 +125,31 @@ function tfdSetMode(together, e) {
 document.querySelectorAll("#tfdDistance button").forEach(btn => {
   btn.addEventListener("click", (e) => tfdSetMode(btn.dataset.distance === "together", e));
 });
+
+// ---- start over ----
+// Nothing here is shared (one phone runs this tab during a call), so unlike
+// the duel's Restart this needs no confirmation — it only clears what's on
+// this screen: the card goes back to "pick a deck" and every deck forgets
+// what it's already dealt, so the no-repeat guard starts fresh too.
+function tfdRestart() {
+  clearTimeout(tfdSwapTimer);        // don't let a mid-swap repaint undo this
+  tfdDeck = null;
+  tfdCurrent = null;
+  Object.keys(tfdRecent).forEach(k => { tfdRecent[k].length = 0; });
+
+  document.querySelectorAll("#tfdPicker button").forEach(b => b.classList.remove("sel"));
+  const chip = document.getElementById("tfdChip");
+  chip.textContent = "🎭 Pick a deck";
+  chip.style.borderColor = "";       // styleChip() sets these inline
+  chip.style.background = "";
+  const card = document.getElementById("tfdCard");
+  card.classList.remove("swapping");
+  document.getElementById("tfdText").textContent = "Talk, Flirt or Dare — tap one and we're playing.";
+  document.getElementById("tfdBlurb").textContent = "Three decks. One phone. No takebacks.";
+  document.getElementById("tfdAgain").style.display = "none";
+  popToast("Fresh decks 🔄 nothing's been dealt yet");
+}
+document.getElementById("tfdRestart").addEventListener("click", tfdRestart);
 
 document.getElementById("tfdCopy").addEventListener("click", async () => {
   if (!tfdCurrent) { popToast("Pick a deck first 😌"); return; }
