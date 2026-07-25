@@ -2,8 +2,7 @@
 // Boot order. Loaded LAST: every function it calls is already defined.
 
 // ---------------- INIT ----------------
-renderHeader();
-show(dailyQuestion(), true);
+qotdRender();
 wdRollLetters(false);   // local letters so the duel works offline…
 wdRenderAll();
 wdPull();               // …then adopt the shared row if Supabase is up
@@ -29,11 +28,7 @@ setInterval(() => { tickAnniversary(); tickClocks(); tickCountdown(); }, 1000);
 setInterval(spawnHeart, 1400);
 for (let i = 0; i < 6; i++) setTimeout(spawnHeart, i * 350);
 
-// refresh at midnight so the daily question rolls over if the tab stays open
+// roll the home question over at midnight if the tab is left open
 setInterval(() => {
-  const q = dailyQuestion();
-  if (current && elHint.textContent.includes("same for both") && q.text !== current.text) {
-    renderHeader();
-    show(q, true);
-  }
+  if (qotdCurrent && dailyQuestion().text !== qotdCurrent.text) qotdRender();
 }, 60000);

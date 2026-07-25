@@ -66,15 +66,35 @@ Same date ⇒ same seed ⇒ same pick on both phones. Reuse this for any new
 different prime offset so features don't correlate:
 `mulberry32(dayNumber() * 7919 + YOUR_OFFSET)`.
 
+**If the feature shouldn't repeat, deal a deck instead of drawing.** A
+single seeded draw per day *will* land on the same item two days running
+(~5×/year on a 135-item pool) and leaves items unseen for years — that's the
+birthday problem, not a bug in the PRNG. `dailyQuestion()` in
+`js/questions.js` is the reference: shuffle the whole pool with
+`shuffledOrder(n, offset + cycle * 7919)`, deal `day % n`, and swap the
+first two cards when a new cycle would open on the previous cycle's last.
+Copy that shape rather than reinventing it.
+
+Two gotchas if you build one: bake any anti-repeat fix-up into the deck for
+*every* day of the cycle (applying it only on the boundary day deals that
+card twice), and remember growing the pool reshuffles every future day.
+
 ## Style conventions
 
-- Theme via CSS variables in `:root`; After Dark overrides in `.afterdark`,
-  and **both `<html>` and `<body>` carry that class** (js/questions.js
-  toggles both). `<html>` needs the vars because its `background-color`
-  paints the canvas — the strip iOS rubber-bands into past the top/bottom
-  of the page. Leave that rule alone or the overscroll flashes white; the
-  `theme-color` meta (tinting the phone's status bar) is swapped in the
-  same handler.
+- Theme via CSS variables in `:root`; the hot (Together-mode) palette
+  overrides them in `.hot`, and **both `<html>` and `<body>` carry that
+  class** (js/tfd.js toggles both). `<html>` needs the vars because its
+  `background-color` paints the canvas — the strip iOS rubber-bands into
+  past the top/bottom of the page. Leave that rule alone or the overscroll
+  flashes white; the `theme-color` meta (tinting the phone's status bar) is
+  swapped in the same handler.
+- Talk · Flirt · Dare has ONE switch, `tfdSetMode(together)` — it owns the
+  deck contents, `hotMode`, the `.hot` theme class, the `theme-color` meta,
+  the subtitle and the chip states, so they can never disagree. Never flip
+  `hotMode`/`tfdTogether` by hand.
+- Keep adult content on the Play tab. Home is the always-visible page and
+  its Question of the Day draws from `QOTD_CATS` only — don't widen that
+  pool to the spicy/filthy/dare categories.
 - Panels: `.panel` (glassmorphism card). Games get full `.card` treatment.
 - Buttons: `.primary` for the main action, `.toggled` for on-state.
 - Feedback: `popToast("...")` for confirmations, `burst(x, y, [emojis])`

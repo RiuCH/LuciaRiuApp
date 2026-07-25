@@ -22,7 +22,9 @@ function setHashParam(name, val) {
 
 // ---------------- STATE ----------------
 const EPOCH = new Date(2026, 6, 24); // Day 1 = July 24, 2026 (local time)
-let afterDark = false;
+// Together mode (js/tfd.js) runs the app hot: red palette, filthier hearts.
+// Apart is the default.
+let hotMode = false;
 
 function mulberry32(seed) {
   return function() {
@@ -41,8 +43,8 @@ function dayNumber() {
 
 
 // ---------------- TABS ----------------
-const SUBTITLES = { home: "Our Little Universe", game: "Question of the Day", journeys: "Everywhere, Together", duel: "The Word Duel" };
-const NAVIDS = { home: "navHome", game: "navGame", journeys: "navJourneys", duel: "navDuel" };
+const SUBTITLES = { home: "Our Little Universe", tfd: "Talk · Flirt · Dare", journeys: "Everywhere, Together", duel: "The Word Duel" };
+const NAVIDS = { home: "navHome", tfd: "navTfd", journeys: "navJourneys", duel: "navDuel" };
 let activeTab = "home";
 
 // A tab can register work that must only run once it's actually on screen —
@@ -53,20 +55,19 @@ const TAB_HOOKS = {};
 
 function switchTab(name) {
   activeTab = name;
-  ["home", "game", "journeys", "duel"].forEach(t => {
+  ["home", "tfd", "journeys", "duel"].forEach(t => {
     document.getElementById("page-" + t).classList.toggle("active", t === name);
     document.getElementById(NAVIDS[t]).classList.toggle("active", t === name);
   });
   document.getElementById("subtitle").textContent =
-    (name === "game" && afterDark) ? "After Dark Edition" : SUBTITLES[name];
+    (name === "tfd" && hotMode) ? "Together Edition" : SUBTITLES[name];
   window.scrollTo({ top: 0 });
   if (TAB_HOOKS[name]) TAB_HOOKS[name]();
 }
 document.getElementById("navHome").addEventListener("click", () => switchTab("home"));
-document.getElementById("navGame").addEventListener("click", () => switchTab("game"));
+document.getElementById("navTfd").addEventListener("click", () => switchTab("tfd"));
 document.getElementById("navJourneys").addEventListener("click", () => switchTab("journeys"));
 document.getElementById("navDuel").addEventListener("click", () => switchTab("duel"));
-document.getElementById("teaserCard").addEventListener("click", () => switchTab("game"));
 document.getElementById("wdTeaser").addEventListener("click", () => switchTab("duel"));
 
 
@@ -98,7 +99,7 @@ function burst(x, y, set) {
 function spawnHeart() {
   const h = document.createElement("span");
   h.className = "heart";
-  const set = afterDark ? ["🔥","😈","💋","❤️‍🔥"] : ["💖","💕","💘","🤍","💫"];
+  const set = hotMode ? ["🔥","😈","💋","❤️‍🔥"] : ["💖","💕","💘","🤍","💫"];
   h.textContent = set[Math.floor(Math.random() * set.length)];
   h.style.left = Math.random() * 100 + "vw";
   h.style.fontSize = (14 + Math.random() * 18) + "px";

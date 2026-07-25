@@ -15,6 +15,7 @@
 
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/home.css">
+<link rel="stylesheet" href="css/tfd.css">
 <link rel="stylesheet" href="css/journeys.css">
 <link rel="stylesheet" href="css/duel.css">
 <link rel="stylesheet" href="css/desktop.css">
@@ -103,11 +104,14 @@
       <div class="missyou" id="missyou"></div>
     </div>
 
-    <div class="panel teaser" id="teaserCard">
-      <div class="ptitle">Today's game</div>
-      <div style="font-size: 17px; font-weight: 600;">💬 Question of the Day</div>
-      <div style="margin-top:8px"><span class="chip" id="teaserChip">😂 Funny</span></div>
-      <div class="go" id="teaserGo">Day 1 — tap to play →</div>
+    <div class="panel qotd" id="qotdCard">
+      <div class="ptitle">Question of the day</div>
+      <div class="qotd-chiprow"><span class="chip" id="qotdChip">😂 Funny</span></div>
+      <div class="qotd-q" id="qotdText">Loading today's question…</div>
+      <div class="qotd-foot">
+        <span id="qotdDay">Day 1</span>
+        <button id="qotdCopy">📋 Copy</button>
+      </div>
     </div>
 
     <div class="panel teaser" id="wdTeaser">
@@ -118,25 +122,34 @@
 
   </section>
 
-  <!-- ================= QUESTION GAME ================= -->
-  <section class="page" id="page-game">
+  <!-- ================= TALK · FLIRT · DARE ================= -->
+  <section class="page" id="page-tfd">
 
-    <div class="daybar">
-      <div class="pill" id="daypill">Day <b>1</b></div>
-      <div class="pill" id="datepill"></div>
+    <div class="panel tfd-modes">
+      <div class="ptitle">Where are we tonight?</div>
+      <div class="tfd-seg" id="tfdDistance">
+        <button data-distance="apart" class="chip sel">✈️ Apart</button>
+        <button data-distance="together" class="chip">💞 Together</button>
+      </div>
+      <div class="hint" id="tfdHint">Apart mode: every one of these works from 1,800 miles away ✈️</div>
     </div>
 
-    <div class="card">
-      <div class="chip" id="chip">😂 Funny</div>
-      <div class="question" id="question">Loading today's question…</div>
+    <div class="tfd-picker" id="tfdPicker">
+      <button data-deck="talk" id="tfdTalk">💬<span>Talk</span></button>
+      <button data-deck="flirt" id="tfdFlirt">😏<span>Flirt</span></button>
+      <button data-deck="dare" id="tfdDare">🔥<span>Dare</span></button>
+    </div>
+
+    <div class="card tfd-card" id="tfdCard">
+      <div class="chip" id="tfdChip">🎭 Pick a deck</div>
+      <div class="tfd-text" id="tfdText">Talk, Flirt or Dare — tap one and we're playing.</div>
+      <div class="tfd-blurb" id="tfdBlurb">Three decks. One phone. No takebacks.</div>
     </div>
 
     <div class="btnrow">
-      <button class="primary" id="shuffleBtn">🎲 Give us another</button>
-      <button id="darkBtn">🌶️ After Dark</button>
-      <button id="copyBtn">📋 Copy</button>
+      <button class="primary" id="tfdAgain" style="display:none">🎲 Another</button>
+      <button id="tfdCopy">📋 Copy</button>
     </div>
-    <div class="hint" id="hint">Today's question is the same for both of you — no cheating, answer honestly 😌</div>
 
   </section>
 
@@ -252,7 +265,7 @@
 <!-- ================= NAV ================= -->
 <nav class="nav">
   <button id="navHome" class="active">🏠 Home</button>
-  <button id="navGame">💬 Daily Q</button>
+  <button id="navTfd">🎭 Play</button>
   <button id="navJourneys">✈️ Trips</button>
   <button id="navDuel">🔤 Duel</button>
 </nav>
@@ -284,6 +297,7 @@
 <script src="js/supabase.js"></script>
 <script src="js/questions.js"></script>
 <script src="js/home.js"></script>
+<script src="js/tfd.js"></script>
 <script src="js/journeys.js"></script>
 <script src="js/duel.js"></script>
 <script src="js/lock.js"></script>

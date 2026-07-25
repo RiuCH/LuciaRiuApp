@@ -24,11 +24,12 @@ June 2, 2026). Fun is a feature — keep the tone playful.
    always via the `getHashParam`/`setHashParam` helpers so params coexist
    (current: `#reunion=YYYY-MM-DD`, `#unlocked=1`, `#photo=<url>`,
    `#me=lucia|riu`).
-3. **The daily question must stay deterministic and shared.** It's picked by
-   a seeded PRNG (`mulberry32`) keyed to days since July 24, 2026. Same date
-   ⇒ same question on both phones with zero server. Any change to the
-   question pool changes which question a given day shows — that's fine,
-   but never replace the mechanism with `Math.random()`.
+3. **The daily question must stay deterministic and shared.** The pool is
+   shuffled by a seeded PRNG (`mulberry32`) into a *deck* and dealt one per
+   day since July 24, 2026, so every question comes up once before any
+   repeat. Same date ⇒ same question on both phones with zero server. Any
+   change to the pool reshuffles the deck (a given day's question changes) —
+   that's fine, but never replace the mechanism with `Math.random()`.
 4. **Both partners must run the same version.** Deploy = merge to `main`
    (Vercel redeploys automatically). Don't leave the app half-broken on main.
 5. Works offline, works on phones (test at ~420px wide), stays cute.
@@ -46,12 +47,14 @@ class="page">` tabs, the nav, and the `<link>`/`<script src>` tags.
 |---|---|
 | `css/base.css` | theme vars, layout shell, `.panel`/`.card`/`.chip`/buttons, Daily Q page, nav, toast, burst, lock screen |
 | `css/home.css` | anniversary, clocks, countdown, teasers, couple photo |
+| `css/tfd.css` | Talk · Flirt · Dare: mode switches, deck buttons, prompt card |
 | `css/journeys.css` | timeline, journey cards, photo grid, lightbox, picker |
 | `css/duel.css` | letter pair, hearts, penalty modes |
 | `css/desktop.css` | the whole `@media (min-width: 900px)` layout |
 | `js/core.js` | hash params, `EPOCH`/`afterDark`, `mulberry32`, `dayNumber`, `switchTab`, `popToast`, `burst`, hearts |
 | `js/supabase.js` | `SUPABASE_*` config, `supa()`, `loadSettings()`, `saveReunion()`, `loadQuestions()` |
-| `js/questions.js` | `BANK`, `CHIPS`, `QUESTION_SOURCE`, `dailyQuestion()`, game-page render |
+| `js/questions.js` | `BANK` (11 prompt categories), `CHIPS`, `QUESTION_SOURCE`, the seeded daily deck (`dailyQuestion()`) |
+| `js/tfd.js` | Talk · Flirt · Dare tab: the three decks, Together/Apart mode (`tfd*`) |
 | `js/home.js` | `MISSYOU`, anniversary/clock/countdown ticks, couple photo (`cp*`) |
 | `js/journeys.js` | timeline CRUD + sort, iCloud album, lightbox (`jr*`) |
 | `js/duel.js` | Word Duel (`wd*`) |
@@ -67,14 +70,25 @@ can reference anything.
 ### Details worth knowing
 
 - CSS: `:root` variables = theme; `body.afterdark` = red After Dark theme
-- `BANK` — question object, 5 categories: funny, romantic, spicy, nasty, ldr
+- `BANK` — 345 prompts in 11 categories: funny, romantic, spicy, nasty, ldr,
+  deep, filthy, dareapart, dareapartx, daretogether, daretogetherx. Home's
+  Question of the Day only ever draws from the sweet three (`QOTD_CATS` =
+  funny + romantic + ldr); everything adult lives behind the Play tab
 - `MISSYOU` — miss-you text generator strings
 - `CHIPS` — category labels/colors
 - Constants: `EPOCH` (day counter start), `ANNIVERSARY` (June 2, 2026),
   `TZ_RIU`/`TZ_LUCIA` (clock timezones)
-- Tabs: sections `#page-home`, `#page-game`, `#page-journeys`, `#page-duel`
+- Tabs: sections `#page-home`, `#page-tfd`, `#page-journeys`, `#page-duel`
   + `switchTab()`
-- Game logic: `dailyQuestion()` (deterministic), `randomQuestion()` (shuffle);
+- Question of the Day: a card on **Home** (`qotd*` in `js/home.js`), not a
+  tab. One per day, same on both phones, unchanged by refresh
+- Talk · Flirt · Dare (`#page-tfd`): three decks, live `Math.random()` draws
+  (one phone during a call — no seed needed). One switch: 💞 Together vs
+  ✈️ Apart, which picks the deck contents AND runs the app hot (`hotMode`
+  + `.hot` class on `<html>`+`<body>`). Filthy prompts are in the decks, not
+  behind a separate After Dark tier
+- Daily logic: `dailyQuestion()` (seeded deck, no repeats until the pool is
+  exhausted — `shuffledOrder`/`deckForCycle`);
   pool comes from `QUESTION_SOURCE` (= `BANK`, swapped to the DB copy once
   `loadQuestions()` succeeds — content identical, so the pick doesn't change)
 - Word Duel: `WD_STARTS`/`WD_ENDS` (weighted letters), `WD_PENALTIES`

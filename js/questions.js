@@ -1,6 +1,8 @@
 // questions.js — Lucia ♥ Riu
-// Question of the Day: the hardcoded BANK (offline fallback), category
-// chips, the deterministic daily pick, and the game page rendering.
+// The prompt bank (offline fallback for the Supabase `questions` table),
+// category chips, and the deterministic Question of the Day dealt to the
+// home page. The Talk · Flirt · Dare tab draws from the same bank — see
+// js/tfd.js.
 
 // ---------------- QUESTION BANK ----------------
 const BANK = {
@@ -39,7 +41,17 @@ const BANK = {
     "What's a hill I would absolutely die on for no good reason?",
     "If I had to be haunted by a ghost, what kind of ghost would annoy me the most?",
     "What do you think I was like at age seven?",
-    "Which household object understands me on a spiritual level?"
+    "Which household object understands me on a spiritual level?",
+    "What's the most unhinged thing I'd do for free food?",
+    "If I hosted a podcast, what would it be about and who would actually listen?",
+    "What's my most embarrassing main-character moment?",
+    "Describe my sense of style as a newspaper headline.",
+    "Which of my habits would make a dangerous drinking game?",
+    "What's the pettiest thing I've ever been genuinely upset about?",
+    "If I ran for office, what's my campaign slogan — and my inevitable scandal?",
+    "Which chore do I treat like an Olympic event?",
+    "If my life had subtitles, what would they say when I'm hungry?",
+    "What's the worst gift someone could give me, and how badly would I fake loving it?"
   ],
   romantic: [
     "What was the exact moment you knew you were falling for me?",
@@ -71,7 +83,17 @@ const BANK = {
     "If you wrote me a love letter right now, what would the first line be?",
     "What's a place we've never been that you want to fall in love with together?",
     "What did you think our first kiss would be like — and how was the real one better?",
-    "What's one thing you hope we still do together when we're 80?"
+    "What's one thing you hope we still do together when we're 80?",
+    "What's something ordinary that stopped feeling ordinary once we did it together?",
+    "When did you last feel proud to be with me?",
+    "What part of my personality do you hope never changes?",
+    "If you could keep only one photo of us forever, which one?",
+    "What do you hope I know about how you feel, even on the days we don't say it?",
+    "When have you felt safest with me?",
+    "What's a small ritual of ours you'd miss most if it disappeared?",
+    "What has loving me taught you about yourself?",
+    "If today were a chapter in our story, what would you title it?",
+    "What's the moment you'd replay from us if you only got one?"
   ],
   spicy: [
     "What am I wearing when you find me completely irresistible?",
@@ -98,7 +120,17 @@ const BANK = {
     "If we had a whole rainy Sunday in bed, what's on the agenda?",
     "What's something I wear that you consider a personal attack (in the best way)?",
     "Kissing my neck or holding my waist — which one do you enjoy more?",
-    "What look do I give you that you can read instantly?"
+    "What look do I give you that you can read instantly?",
+    "What's the last thing I did that made you look twice?",
+    "If I could only touch you in one place tonight, where should it be?",
+    "What's something I own that you've never admitted you love seeing me in?",
+    "Do you want my hands or my full attention right now? Choose.",
+    "What look do I give you that changes the mood instantly?",
+    "Twenty minutes and a locked door — what happens first?",
+    "What do I say that sounds completely innocent to everyone but you?",
+    "Where do you want to be kissed that I haven't kissed you yet?",
+    "What's your favorite thing I do in the second before we kiss?",
+    "If I sent you one photo right now, what should be in it?"
   ],
   nasty: [
     "What's one thing you've always wanted to try with me but never said out loud?",
@@ -125,7 +157,17 @@ const BANK = {
     "What's one thing I underestimate about my own effect on you?",
     "Pick a movie scene you'd want to reenact with me — any genre.",
     "What am I better at than I realize? Be specific.",
-    "Finish this sentence: 'Tonight, I want you to…'"
+    "Finish this sentence: 'Tonight, I want you to…'",
+    "What's a thought about us you'd only confess at 2am?",
+    "If tonight were entirely your plan, what's the itinerary?",
+    "What's the boldest thing you'd whisper to me in a crowded room?",
+    "What's one thing you want me to do slower?",
+    "Name a place we absolutely shouldn't — but you've thought about it.",
+    "What's the hottest part of watching me lose control?",
+    "One rule for tonight: what is it, and who breaks it first?",
+    "What do you think about when you can't sleep and I'm not there?",
+    "What's something you want me to ask you for?",
+    "Finish this: 'Next time I see you, I'm not letting you…'"
   ],
   ldr: [
     "What's the FIRST thing we're doing when we're in the same room again?",
@@ -147,7 +189,189 @@ const BANK = {
     "What's your favorite message I've ever sent you? Scroll back and quote it.",
     "If the distance were a video game boss, what's today's difficulty rating and why?",
     "What are we eating first when we're together again?",
-    "What's one thing this distance has taught you about us?"
+    "What's one thing this distance has taught you about us?",
+    "What's the first text you'll send me the morning we wake up in the same city?",
+    "Which of our video calls do you still think about?",
+    "What do you do on the days the distance feels heaviest?",
+    "What could I mail you that would fix an entire bad week?",
+    "If we could share one sense across the distance — touch, smell, or hearing — which?",
+    "What plan do we keep calling 'someday' that we should actually book?",
+    "Which part of your daily routine would change most if I were there?",
+    "What's the best thing about missing me? There has to be one.",
+    "Which of my voice messages would you save forever?",
+    "When we finally live in the same place, what's the first boring Tuesday night we spend together?"
+  ],
+  deep: [
+    "What's a belief you held five years ago that you've completely let go of?",
+    "What are you most afraid of losing — and have you ever said it out loud?",
+    "When do you feel most like yourself?",
+    "What are you still trying to forgive yourself for?",
+    "What did your childhood teach you about love that you've had to unlearn?",
+    "Describe a good life ten years from now, in detail.",
+    "What's a fear about us you've never told me?",
+    "Which of your parents do you see in yourself, and how do you feel about that?",
+    "What do you need more of that you've never asked me for?",
+    "When did you last change your mind about something that mattered?",
+    "What part of yourself do you hide from most people, but not from me?",
+    "What would you do with your life if money and other people's opinions didn't exist?",
+    "What's the hardest thing you've survived, and who were you afterward?",
+    "Is home a place, a person, or a feeling to you?",
+    "What do you want people to say about you when you're not in the room?",
+    "What's a dream you quietly gave up on? Should you have?",
+    "How do you know when you can trust someone?",
+    "What are you proud of that nobody ever congratulates you for?",
+    "Where are you still growing, and where do you feel stuck?",
+    "What's the kindest thing anyone has ever done for you?",
+    "Honestly — what do you think we'd argue about in ten years?",
+    "What boundary do you wish you were better at holding?",
+    "When did you last cry, and what was it really about?",
+    "What does success mean to you now versus at twenty?",
+    "What's one thing about your future that genuinely scares you?",
+    "Who do you owe an apology to — yourself included?",
+    "What do you need from me when you're struggling that I don't always give you?",
+    "What memory shaped you more than people would guess?",
+    "If we get fifty years together, what would make you say it was worth it?",
+    "What's true about you that takes people a long time to see?"
+  ],
+  dareapart: [
+    "Send me a photo of whatever's in front of you right now. No tidying up first.",
+    "Voice-note me the song that's stuck in your head — singing it, obviously.",
+    "Change your lock screen to a photo of us and send proof.",
+    "Write me a one-star review of my worst habit, like I'm a product.",
+    "Send a selfie making the face you make when I say something ridiculous.",
+    "Describe my laugh in a voice note. Cruelty permitted.",
+    "Show me the 7th most recent photo in your camera roll. No context, no excuses.",
+    "Set a reminder to text me something filthy at a random time tomorrow.",
+    "Photograph the last thing you ate and rate it as if I cooked it.",
+    "Tell me your entire day in emojis only — I have to guess it back.",
+    "Send me a picture of the view out your nearest window right now.",
+    "Text me a compliment you've thought about me but never said out loud.",
+    "Give me a video tour of your fridge, narrated like a nature documentary.",
+    "Send me your battery percentage and a promise the size of that number.",
+    "Write a two-line poem about the distance. It is allowed to be terrible.",
+    "Photograph something in your room that reminds you of me.",
+    "Voice-note me your honest ranking of my three best qualities.",
+    "Draw me from memory in thirty seconds and send it. No do-overs.",
+    "Send a song that's exactly how you feel right now. No explanation allowed.",
+    "Tell me something you've never told anyone — as a voice note, so I hear it.",
+    "Plan one small thing for future-us and text me what it is.",
+    "Take a photo of your hand and tell me where you'd put it if I were there.",
+    "Send the ugliest selfie you are physically capable of producing. I'll frame it.",
+    "Change my contact name to something embarrassing for 24 hours. Screenshot it.",
+    "Tell me about your day but lie about one detail — I have to catch it.",
+    "Text me one thing you want us to do on our next trip.",
+    "Mirror selfie, right now, however you look. Excuses are not accepted.",
+    "Send me a photo of your hands doing whatever they're doing right now.",
+    "Say 'I miss you' in the most dramatic accent you can manage. Record it.",
+    "Send me a photo of your current chaos: desk, bag, or floor. Dealer's choice."
+  ],
+  dareapartx: [
+    "Send me a photo of what you're wearing. Then send one with less.",
+    "Voice-note the exact thing you'd whisper if you were on top of me.",
+    "Text me where you want my mouth. Be specific.",
+    "Send a photo from the angle you know undoes me.",
+    "Tell me what you did the last time you thought about me alone.",
+    "Text me the filthiest sentence you're willing to type. Autocorrect is no defence.",
+    "Set tonight's alarm label to what you want me to do to you. Screenshot it.",
+    "Send me a photo of your lips, then tell me where they'd go.",
+    "Tell me one thing you've imagined but never dared ask me for.",
+    "Ten seconds of you saying my name the way you'd say it at 2am.",
+    "Photograph the empty side of your bed and tell me what I'd be doing in it.",
+    "Describe the first five minutes after we get a door that locks. Skip nothing.",
+    "Wear something of mine to bed tonight and send proof.",
+    "Send a photo that shows nothing and promises everything.",
+    "Name the moment today you thought about me and absolutely shouldn't have.",
+    "Voice-note the three things happening the second I'm through your door.",
+    "Send me a photo of your neck and your instructions for it.",
+    "Text me one sentence that will ruin my concentration for the rest of the day.",
+    "Describe what you're wearing to bed in unnecessary, unhurried detail.",
+    "Tell me the rule you want broken next time we're alone. Then tell me again, slower.",
+    "Type out, step by step, exactly how tonight would go if I were there.",
+    "Record yourself breathing for ten seconds. That's the whole dare.",
+    "Send me your favourite photo of my body and tell me precisely why it's that one.",
+    "Leave me a voicemail I'd have to delete before anyone else could hear it.",
+    "Tell me what you're doing right now — and then what you'd rather be doing to me."
+  ],
+  daretogether: [
+    "Kiss me somewhere you've never kissed me. Ten seconds to decide.",
+    "Thirty-second massage. Anywhere you like.",
+    "Whisper what you want tonight, in exactly five words.",
+    "Sit on my lap until you've named three things you love about me.",
+    "Feed me the next thing you eat.",
+    "Take a photo of us right now, however we look.",
+    "Slow dance with me to whatever's playing. Nothing playing? Hum.",
+    "Hold eye contact for one full minute. First to laugh loses.",
+    "Trace a word on my back with your finger — I have to guess it.",
+    "Kiss me the way you did the first time. Recreate it exactly.",
+    "Steal my hoodie and wear it for the rest of the night.",
+    "Best pickup line you've got. Out loud, straight face.",
+    "Do my hair however you want. I'm not allowed to look until you're done.",
+    "Pick my outfit for tomorrow. I'm wearing it, no appeals.",
+    "Compliment me while looking me in the eyes. No jokes allowed.",
+    "Sit close enough that no light gets between us, for one whole song.",
+    "Bite my shoulder. Gently. Or don't — your call.",
+    "Take my hand and put it where you want it.",
+    "Kiss me for as long as it takes you to get through the alphabet.",
+    "Hug me until one of us gets restless. It had better not be you.",
+    "Tell me what you want to do to me later — in my ear, so only I hear it.",
+    "Cover my eyes with your hand and kiss me somewhere I won't expect.",
+    "Undo one thing. Your choice what.",
+    "Straddle me and tell me about your day as though nothing is happening.",
+    "Two-minute timer. Make out until it goes off — ignoring it is permitted."
+  ],
+  daretogetherx: [
+    "Take something off. You choose what; I choose where it lands.",
+    "Kiss your way down from my neck until I tell you to stop. I won't.",
+    "Put my hand exactly where you want it and hold it there.",
+    "Tell me what you want out loud, in filthy detail. Then I'll decide.",
+    "Get on top and don't let me move for two minutes.",
+    "Undress me using your teeth wherever that's physically possible.",
+    "Whisper the dirtiest thing you've thought about me this week, in my ear.",
+    "Show me exactly how you touch yourself when you're thinking about me.",
+    "Ten minutes, no hands for you. I make the rules.",
+    "Pin me down and tell me what happens next.",
+    "Bite me somewhere that'll still be there tomorrow.",
+    "Take me to the least sensible room in this place.",
+    "Say my name the way you say it when you're close.",
+    "Do that thing you did last time. You know the one. Slower.",
+    "Beg for something. Be specific.",
+    "Cover my eyes and use only your mouth for five minutes.",
+    "Tell me to do something to you. I'm not allowed to say no.",
+    "Kiss me like you've been waiting 1,800 miles for it. Because you have.",
+    "Take a photo of me right now that we can never show anyone.",
+    "Sit on the edge and let me kneel.",
+    "Leave a mark somewhere only the two of us will ever see.",
+    "Make me stop talking. Your method, your choice.",
+    "Hands above your head. Don't move them until I say.",
+    "Describe what you want me to do — then let me do the opposite, slower.",
+    "Show me what you'd do if we had five minutes and a locked door."
+  ],
+  filthy: [
+    "What's the filthiest thought you've had about me in public?",
+    "Where do you want my mouth first?",
+    "What do you want me to do to you that you've never said out loud?",
+    "How should I wake you the first morning we share a bed again?",
+    "What's the hottest thing I've ever done to you? Details, please.",
+    "What do you think about when you're alone and thinking about me?",
+    "Rough or slow tonight — and why that one?",
+    "What's one thing you'd rather be told than asked?",
+    "What would you want me to do if you couldn't use your hands?",
+    "Where's the least appropriate place you've wanted me?",
+    "What's a sound I make that you replay later?",
+    "What do you want more of that you've been too polite to ask for?",
+    "If you could keep me in one position all night, which?",
+    "What's the first thing you'd take off me?",
+    "Which part of my body do you most want in your hands?",
+    "What should happen the second we're alone — before either of us talks?",
+    "What do you want me wearing when you arrive? Be specific.",
+    "What have we done once that you want to become a habit?",
+    "Do you want to be in charge tonight, or do you want me to be?",
+    "What's the dirtiest thing you'd let me whisper to you in a crowded room?",
+    "What's your favourite thing to hear me say when we're alone?",
+    "What would you never say sober but absolutely mean?",
+    "Where do you want to be marked?",
+    "What's the fantasy you're saving to tell me in person?",
+    "What's the one thing that would end me fastest, and do you know it?"
   ]
 };
 
@@ -157,115 +381,77 @@ const CHIPS = {
   romantic: { label: "💕 Romantic", color: "#ff7aa2" },
   spicy:    { label: "🌶️ Spicy",   color: "#ff6b4a" },
   nasty:    { label: "😈 After Dark", color: "#ff2e63" },
-  ldr:      { label: "💌 Long Distance", color: "#7ac7ff" }
+  ldr:      { label: "💌 Long Distance", color: "#7ac7ff" },
+  deep:     { label: "🧠 Deep", color: "#a99bff" },
+  dareapart:     { label: "✈️ Dare", color: "#ff9f45" },
+  dareapartx:    { label: "😈 Dare", color: "#ff2e63" },
+  daretogether:  { label: "💞 Dare", color: "#ff9f45" },
+  daretogetherx: { label: "😈 Dare", color: "#ff2e63" },
+  filthy:        { label: "🔥 Filthy", color: "#ff2e63" }
 };
 
-
-let usedShuffle = [];
-let current = null;
-
-function pools() {
-  return afterDark ? ["spicy", "nasty"] : ["funny", "romantic", "spicy", "nasty", "ldr"];
-}
-
 // The hardcoded BANK is the offline fallback; once Supabase answers,
-// loadQuestions() swaps this to the DB copy (same content ⇒ same daily pick).
+// loadQuestions() swaps this for the DB copy (identical content, so the
+// deck deals the same card either way).
 let QUESTION_SOURCE = BANK;
 
-function flatPool() {
-  const cats = pools();
+// Home's Question of the Day stays sweet on purpose — spicy, deep and dare
+// live behind a deliberate tap in the Talk · Flirt · Dare tab (js/tfd.js).
+const QOTD_CATS = ["funny", "romantic", "ldr"];
+
+function flatOf(cats) {
   const out = [];
-  cats.forEach(c => QUESTION_SOURCE[c].forEach(q => out.push({ cat: c, text: q })));
+  cats.forEach(c => (QUESTION_SOURCE[c] || []).forEach(q => out.push({ cat: c, text: q })));
   return out;
 }
 
-function dailyQuestion() {
-  const pool = flatPool();
-  const seed = dayNumber() * 7919 + (afterDark ? 104729 : 0);
-  const rng = mulberry32(seed);
-  return pool[Math.floor(rng() * pool.length)];
-}
-
-function randomQuestion() {
-  const pool = flatPool();
-  if (usedShuffle.length >= pool.length) usedShuffle = [];
-  let pick;
-  let guard = 0;
-  do {
-    pick = pool[Math.floor(Math.random() * pool.length)];
-    guard++;
-  } while (guard < 60 && (usedShuffle.includes(pick.text) || (current && pick.text === current.text)));
-  usedShuffle.push(pick.text);
-  return pick;
-}
-
-
-// ---------------- GAME RENDER ----------------
-const elQ = document.getElementById("question");
-const elChip = document.getElementById("chip");
-const elHint = document.getElementById("hint");
-
 function styleChip(el, cat) {
   const chip = CHIPS[cat];
+  if (!el || !chip) return;
   el.textContent = chip.label;
   el.style.borderColor = chip.color;
   el.style.background = chip.color + "33";
 }
 
-function show(q, isDaily) {
-  current = q;
-  elQ.classList.add("swapping");
-  setTimeout(() => {
-    elQ.textContent = q.text;
-    styleChip(elChip, q.cat);
-    elQ.classList.remove("swapping");
-  }, 250);
-  elHint.textContent = isDaily
-    ? "Today's question is the same for both of you — no cheating, answer honestly 😌"
-    : "Bonus round! Hit the button again if you're feeling brave.";
+// ---------------- THE DAILY DECK ----------------
+// Deal a deck instead of drawing blind each day.
+//
+// The original version seeded the PRNG per day and took a single draw, so a
+// day could land on the same question as the day before (~5 times a year)
+// while other questions went unseen for years — that's the birthday problem,
+// not a broken PRNG. Now the whole pool is shuffled once per cycle and dealt
+// in order: every question appears exactly once before any of them repeats.
+// Still seeded, so both phones deal the identical deck with no server.
+function shuffledOrder(n, seed) {
+  const rng = mulberry32(seed);
+  const order = Array.from({ length: n }, (_, i) => i);
+  for (let i = n - 1; i > 0; i--) { // Fisher–Yates
+    const j = Math.floor(rng() * (i + 1));
+    const tmp = order[i]; order[i] = order[j]; order[j] = tmp;
+  }
+  return order;
 }
 
-function renderHeader() {
-  document.getElementById("daypill").innerHTML = "Day <b>" + dayNumber() + "</b>";
-  document.getElementById("datepill").textContent =
-    new Date().toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
-  // home teaser
-  const savedDark = afterDark;
-  afterDark = false;
-  const dq = dailyQuestion();
-  afterDark = savedDark;
-  styleChip(document.getElementById("teaserChip"), dq.cat);
-  document.getElementById("teaserGo").textContent = "Day " + dayNumber() + " — tap to play →";
+// The finished deck for one pass. The anti-repeat swap has to be baked in
+// here, for every day of the cycle — applying it only on the boundary day
+// would deal the swapped card twice (day 0 and again on day 1).
+function deckForCycle(n, cycle, offset) {
+  const order = shuffledOrder(n, offset + cycle * 7919);
+  // a fresh deck must not open on the card the previous one closed with.
+  // Safe to read the previous deck unswapped: the swap only ever touches
+  // positions 0 and 1, never the last card (n > 2).
+  if (cycle > 0 && n > 2) {
+    const prev = shuffledOrder(n, offset + (cycle - 1) * 7919);
+    if (prev[n - 1] === order[0]) { const t = order[0]; order[0] = order[1]; order[1] = t; }
+  }
+  return order;
 }
 
-document.getElementById("shuffleBtn").addEventListener("click", (e) => {
-  show(randomQuestion(), false);
-  burst(e.clientX, e.clientY);
-});
-
-document.getElementById("darkBtn").addEventListener("click", (e) => {
-  afterDark = !afterDark;
-  document.body.classList.toggle("afterdark", afterDark);
-  // <html> too: it owns the canvas colour behind iOS's overscroll bounce
-  document.documentElement.classList.toggle("afterdark", afterDark);
-  const themeMeta = document.getElementById("themeColor");
-  if (themeMeta) themeMeta.content = afterDark ? "#0d0208" : "#1a0b2e";
-  e.target.classList.toggle("toggled", afterDark);
-  e.target.textContent = afterDark ? "🔥 After Dark: ON" : "🌶️ After Dark";
-  if (activeTab === "game") {
-    document.getElementById("subtitle").textContent = afterDark ? "After Dark Edition" : SUBTITLES.game;
-  }
-  usedShuffle = [];
-  show(dailyQuestion(), true);
-  if (afterDark) burst(e.clientX, e.clientY, ["🔥","😈","💋"]);
-});
-
-document.getElementById("copyBtn").addEventListener("click", async () => {
-  const text = (current ? current.text : "") + "  — Lucia ♥ Riu, Day " + dayNumber();
-  try {
-    await navigator.clipboard.writeText(text);
-    popToast("Copied! Send it 💌");
-  } catch {
-    popToast("Couldn't copy — long-press the question instead");
-  }
-});
+// Same date ⇒ same question on both phones, and it never changes on refresh.
+function dailyQuestion() {
+  const pool = flatOf(QOTD_CATS);
+  const n = pool.length;
+  if (!n) return { cat: "funny", text: "Our question bank is empty — that's a bug 😅" };
+  const day = Math.max(0, dayNumber() - 1);
+  return pool[deckForCycle(n, Math.floor(day / n), 0)[day % n]];
+}

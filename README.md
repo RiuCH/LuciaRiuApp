@@ -1,9 +1,9 @@
 # Lucia ♥ Riu 💞
 
-Our own little couple app: a shared question every day, a together-clock,
+Our own little couple app: a shared question every day on the home page,
+Talk · Flirt · Dare (three decks, Together/Apart modes), a together-clock,
 anniversary countdown, long-distance clocks, a timeline of every trip we
-take (with photos from our Apple shared albums), and (soon™) more stupid
-games.
+take (with photos from our Apple shared albums), and Word Duel.
 
 **▶ Live app: https://lucia-riu-app.vercel.app** — open it on your phone →
 Share → *Add to Home Screen*.
