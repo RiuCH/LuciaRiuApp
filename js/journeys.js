@@ -138,7 +138,7 @@ function renderJourneys() {
       pickBtn.title = "Choose which album photos the timeline shows";
       pickBtn.addEventListener("click", () => openPicker(j));
       card.appendChild(pickBtn);
-      hydrateAlbum(j.album_url, photos, j.photo_guids);
+      jrHydrateWhenVisible(() => hydrateAlbum(j.album_url, photos, j.photo_guids));
     }
 
     item.appendChild(card);
@@ -394,9 +394,15 @@ async function fetchICloudAlbum(url) {
   return photos;
 }
 
+// Thumbs are lazy, which only works because we never build them inside a
+// hidden tab — see jrHydrateVisible(). A lazy image created while its
+// container is display:none is never picked up by the browser's lazy-load
+// observer, not even once the tab is shown; it stays blank until a scroll
+// forces re-evaluation. That was the old "journey photos load slowly" bug.
 function mediaThumb(p, onClick) {
   const img = document.createElement("img");
   img.loading = "lazy";
+  img.decoding = "async";
   img.src = p.thumb;
   img.alt = p.video ? "journey video" : "journey photo";
   if (onClick) img.addEventListener("click", onClick);
@@ -409,6 +415,38 @@ function mediaThumb(p, onClick) {
   badge.textContent = "▶";
   wrap.appendChild(badge);
   return { el: wrap, img: img };
+}
+
+// --- album hydration is deferred until the Trips tab is on screen ---
+// Two reasons: (1) lazy thumbs built inside a display:none tab never load
+// (see mediaThumb), and (2) a growing timeline shouldn't pull every album's
+// photos on every page load — a tab you never open should cost nothing.
+// The JSON is still pre-warmed at idle (jrPrewarmAlbums), so opening Trips
+// only has image bytes left to fetch.
+let jrPendingHydration = [];
+
+function jrHydrateWhenVisible(fn) {
+  if (activeTab === "journeys") fn();
+  else jrPendingHydration.push(fn);
+}
+
+function jrHydrateVisible() {
+  const queued = jrPendingHydration;
+  jrPendingHydration = [];
+  queued.forEach(fn => fn());
+}
+TAB_HOOKS.journeys = jrHydrateVisible;
+
+// Warm the album JSON (not the images) once the page is idle, so the first
+// tap on Trips goes straight to loading pictures. Failures are ignored —
+// hydrateAlbum will simply fetch normally.
+function jrPrewarmAlbums() {
+  journeys.forEach(j => {
+    if (!j.album_url) return;
+    const picks = (j.photo_guids || "").split(",").filter(Boolean);
+    const p = picks.length ? fetchAlbumGuids(j.album_url, picks) : fetchAlbumPage(j.album_url, 1);
+    p.catch(() => {});
+  });
 }
 
 async function hydrateAlbum(url, box, picksCsv) {

@@ -45,6 +45,12 @@ const SUBTITLES = { home: "Our Little Universe", game: "Question of the Day", jo
 const NAVIDS = { home: "navHome", game: "navGame", journeys: "navJourneys", duel: "navDuel" };
 let activeTab = "home";
 
+// A tab can register work that must only run once it's actually on screen —
+// e.g. building <img> elements, which never load inside a display:none
+// container. Set TAB_HOOKS.<tab> from that tab's own file. It fires on every
+// switch to that tab, so keep it cheap and idempotent.
+const TAB_HOOKS = {};
+
 function switchTab(name) {
   activeTab = name;
   ["home", "game", "journeys", "duel"].forEach(t => {
@@ -54,6 +60,7 @@ function switchTab(name) {
   document.getElementById("subtitle").textContent =
     (name === "game" && afterDark) ? "After Dark Edition" : SUBTITLES[name];
   window.scrollTo({ top: 0 });
+  if (TAB_HOOKS[name]) TAB_HOOKS[name]();
 }
 document.getElementById("navHome").addEventListener("click", () => switchTab("home"));
 document.getElementById("navGame").addEventListener("click", () => switchTab("game"));
