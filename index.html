@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Lucia ♥ Riu</title>
+
+<!-- Journey photos and the couple photo come from iCloud's CDN. Open the
+     connection early so the first image doesn't pay DNS + TLS first. -->
+<link rel="preconnect" href="https://cvws.icloud-content.com" crossorigin>
+<link rel="dns-prefetch" href="https://cvws.icloud-content.com">
+
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/home.css">
 <link rel="stylesheet" href="css/journeys.css">
