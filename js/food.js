@@ -18,9 +18,14 @@ const FD_QUALITY = 0.82;
 const FD_KINDS = [
   { key: "restaurant", label: "🍽️ Restaurant" },
   { key: "dish",       label: "🍝 Food type" },
-  { key: "place",      label: "📍 Location" },
+  { key: "city",       label: "🏙️ City" },
+  { key: "country",    label: "🌍 Country" },
   { key: "other",      label: "🏷️ Other" }
 ];
+// `place` was one combined kind before 2026-07-26. Anything still carrying it
+// is shown under City so nothing disappears before the migration is run
+// (supabase/food_split_place.sql).
+const FD_LEGACY_PLACE = "place";
 
 let fdPhotos = [];          // [{id, url, path, taken_at, lat, lon, caption, tags:[tagId]}]
 let fdTags = [];            // [{id, name, kind}]
@@ -214,9 +219,9 @@ async function fdGeoTag(photo, lat, lon) {
     const res = await fetch(`/api/geocode?lat=${lat}&lon=${lon}`);
     if (!res.ok) return;
     const place = await res.json();
-    for (const name of [place.city, place.country]) {
+    for (const [name, kind] of [[place.city, "city"], [place.country, "country"]]) {
       if (!name) continue;
-      const tag = await fdEnsureTag(name, "place");
+      const tag = await fdEnsureTag(name, kind);
       if (tag) await fdLink(photo.id, tag.id);
     }
   } catch (e) { /* no place tag, no drama */ }
@@ -373,8 +378,11 @@ function fdRenderTimeline(box, photos) {
 }
 
 // "Show me everything by restaurant / food type / location."
+const fdKindMatches = (tagKind, view) =>
+  tagKind === view || (view === "city" && tagKind === FD_LEGACY_PLACE);
+
 function fdRenderByTag(box, photos, kind) {
-  const tags = fdTags.filter(t => t.kind === kind);
+  const tags = fdTags.filter(t => fdKindMatches(t.kind, kind));
   let shown = 0;
   tags.forEach(tag => {
     const items = photos.filter(p => p.tags.includes(tag.id));
@@ -399,7 +407,7 @@ function fdRenderByTag(box, photos, kind) {
     box.appendChild(section);
   });
   const untagged = photos.filter(p => !p.tags.some(id => {
-    const t = fdTagById(id); return t && t.kind === kind;
+    const t = fdTagById(id); return t && fdKindMatches(t.kind, kind);
   }));
   if (untagged.length) {
     const section = document.createElement("div");
@@ -481,7 +489,7 @@ function fdRenderTagCatalogue() {
   box.innerHTML = "";
   if (!fdTags.length) return;
   FD_KINDS.forEach(kind => {
-    const mine = fdTags.filter(t => t.kind === kind.key);
+    const mine = fdTags.filter(t => fdKindMatches(t.kind, kind.key));
     if (!mine.length) return;
     const row = document.createElement("div");
     row.className = "fd-taglist-row";
@@ -622,6 +630,26 @@ fdEl("fdPickCancel").addEventListener("click", () => {
   fdPicking = null;
   fdPicked = new Set();
   fdRender();
+});
+
+// ---------------- the foldable organise panel ----------------
+// Everything above the photos is one tap away from folding out of sight.
+// State is in memory only (no localStorage in this app), so it reopens on
+// refresh — which is the right default for a search box.
+let fdOrganiseOpen = true;
+
+function fdRenderFold() {
+  fdEl("fdOrganise").style.display = fdOrganiseOpen ? "block" : "none";
+  fdEl("fdChev").textContent = fdOrganiseOpen ? "▾" : "▸";
+  fdEl("fdFoldBtn").setAttribute("aria-expanded", String(fdOrganiseOpen));
+  // folded, the island should be a slim bar rather than a tall empty panel
+  const panel = fdEl("fdFoldBtn").closest(".panel");
+  if (panel) panel.classList.toggle("fd-folded", !fdOrganiseOpen);
+}
+
+fdEl("fdFoldBtn").addEventListener("click", () => {
+  fdOrganiseOpen = !fdOrganiseOpen;
+  fdRenderFold();
 });
 
 // ---------------- toolbar ----------------

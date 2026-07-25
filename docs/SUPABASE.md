@@ -44,6 +44,10 @@ falls back to the hardcoded copies and in-memory state ("local mode").
 
 Projects set up before v6 need one-off migrations, run in the SQL editor:
 
+- `supabase/food_split_place.sql` — splits the Food tab's old `place` tag
+  kind into `city` and `country` (2026-07-26). Optional: the app shows any
+  leftover `place` tag under 🏙️ City regardless, and this repo's project was
+  already migrated over the REST API.
 - `supabase/food.sql` — the 🍜 Food tab: three tables, the `food` storage
   bucket and its policies. Until it's run, the Food tab is switched off and
   says so. This is the only feature that needs a **storage bucket**, which

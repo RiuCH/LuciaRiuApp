@@ -224,25 +224,31 @@
     </div>
 
     <div class="panel">
-      <div class="ptitle">Find &amp; organise</div>
+      <button class="ptitle fd-fold" id="fdFoldBtn" aria-expanded="true" aria-controls="fdOrganise">
+        <span>Find &amp; organise</span><span class="fd-chev" id="fdChev">▾</span>
+      </button>
+      <div id="fdOrganise">
       <input type="search" id="fdSearch" class="fd-search" placeholder="🔍 search a tag or caption — ramen, Tokyo, Nari…">
       <div class="fd-views" id="fdViews">
         <span class="chip sel" data-view="date">🗓️ By date</span>
         <span class="chip" data-view="restaurant">🍽️ Restaurant</span>
         <span class="chip" data-view="dish">🍝 Food type</span>
-        <span class="chip" data-view="place">📍 Location</span>
+        <span class="chip" data-view="city">🏙️ City</span>
+        <span class="chip" data-view="country">🌍 Country</span>
       </div>
       <div class="cp-linkrow fd-newtag">
         <input type="text" id="fdNewTagName" placeholder="new tag — e.g. Nari, ramen, Phoenix" maxlength="40">
         <select id="fdNewTagKind" class="fd-select">
           <option value="restaurant">🍽️ Restaurant</option>
           <option value="dish">🍝 Food type</option>
-          <option value="place">📍 Location</option>
+          <option value="city">🏙️ City</option>
+          <option value="country">🌍 Country</option>
           <option value="other">🏷️ Other</option>
         </select>
         <button class="primary" id="fdNewTagBtn">Create &amp; pick photos</button>
       </div>
       <div class="fd-taglist" id="fdTagList"></div>
+      </div>
       <div class="fd-pickbar" id="fdPickBar" style="display:none">
         <span id="fdPickLabel"></span>
         <button class="primary" id="fdPickDone">✅ Done</button>
@@ -496,7 +502,8 @@
       <select id="fdLbTagKind" class="fd-select">
         <option value="restaurant">🍽️</option>
         <option value="dish">🍝</option>
-        <option value="place">📍</option>
+        <option value="city">🏙️</option>
+        <option value="country">🌍</option>
         <option value="other">🏷️</option>
       </select>
       <button class="primary" id="fdLbAdd">Add</button>
