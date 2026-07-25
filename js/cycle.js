@@ -3,9 +3,11 @@
 //
 // This tab has NO nav button on purpose — you reach it by long-pressing the ♥
 // in the header (see "the quiet door" in js/core.js) or with #moon=1. That's
-// obscurity, not security: this repo is public and the page source is
-// readable, exactly like the lock screen. It hides the tab from someone
-// glancing over your shoulder, nothing more.
+// obscurity, not security, exactly like the lock screen: the app is deployed
+// at a public URL that ships the Supabase anon key in its page source, and
+// the RLS policies let that key read every table (docs/SUPABASE.md,
+// "Security, honestly"). So anyone holding the app URL can read this log.
+// Hiding the tab stops a glance over your shoulder, nothing more.
 //
 // State lives in two rows of the existing `settings` table, so there is NO
 // database migration to run — the first write creates them. If Supabase is

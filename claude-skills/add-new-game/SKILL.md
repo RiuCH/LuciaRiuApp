@@ -51,9 +51,12 @@ a hidden tab costs no nav width at all. What makes it work:
   add a second hidden tab, reuse the long-press handler with a different
   target rather than inventing a second gesture — and `preventDefault()`
   the `contextmenu`, or iOS pops its copy/look-up callout mid-gesture.
-- **Say what it is.** Hidden ≠ protected: the repo is public and the page
-  source is readable. Same honesty as the lock screen — never let the UI
-  imply more privacy than there is.
+- **Say what it is.** Hidden ≠ protected. The repo is private, but that's
+  not what protects the data: the deployed page ships the Supabase anon key
+  and the RLS policies let it read every table, so anyone with the app URL
+  can read what's behind a hidden tab. Same honesty as the lock screen —
+  never let the UI imply more privacy than there is, and don't reach for
+  "the repo is private" as reassurance, because it isn't the control.
 
 ## Scaffold (6 steps)
 

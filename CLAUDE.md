@@ -126,7 +126,9 @@ can reference anything.
   door" in `js/core.js`) or use `#moon=1`. State = `settings.cycle_periods`
   (`start:len`) + `settings.love_log` (`date:count`), no migration needed;
   deliberately never written to the URL hash. **Hidden, not private** — the
-  repo is public, same honesty as the lock screen
+  deployed page ships the anon key and RLS is wide open, so the app URL is
+  all anyone needs to read it; same honesty as the lock screen. (The repo
+  itself IS private — don't cite repo visibility as the reason.)
 - Couple photo: `cp*` block — home hero image from `settings.home_photo`
   (URL / upload data-URL / `album:<link>` = Apple-album photo-of-the-day,
   seed offset 15485863); `#photo=` hash + session fallbacks

@@ -84,9 +84,10 @@ document.getElementById("wdTeaser").addEventListener("click", () => switchTab("d
 // Chosen because the header is on every tab, nobody long-presses a decorative
 // heart by accident, and it changes nothing about how the app looks.
 //
-// To be clear about what this is: the tab is HIDDEN, not protected. The repo
-// is public and the page source is readable, same as the lock screen. It
-// stops a shoulder-glance, not a curious reader.
+// To be clear about what this is: the tab is HIDDEN, not protected — same as
+// the lock screen. The deployed page ships the Supabase anon key and the RLS
+// policies are wide open, so the app URL is all anyone needs to read what's
+// behind here. It stops a shoulder-glance, not a curious reader.
 const CY_HOLD_MS = 1200;
 (function quietDoor() {
   const heart = document.getElementById("secretHeart");
