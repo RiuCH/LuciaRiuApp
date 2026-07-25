@@ -56,6 +56,27 @@
 }
 .fd-pickbar button { padding: 8px 14px; font-size: 13px; }
 
+.fd-taglist { margin-top: 12px; text-align: left; }
+.fd-taglist-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
+.fd-taglist-lbl {
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  flex: none;
+  width: 100%;
+}
+.fd-tagname {
+  border: none;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  backdrop-filter: none;
+}
+.fd-tagname:hover { transform: none; background: transparent; }
+
 /* ------- the timeline ------- */
 .fd-monthrow { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 18px; }
 .fd-rail {

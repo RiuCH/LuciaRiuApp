@@ -330,6 +330,7 @@ function fdVisible() {
 function fdRender() {
   fdRenderStatus();
   fdRenderTagBar();
+  fdRenderTagCatalogue();
   const box = fdEl("fdBody");
   box.innerHTML = "";
   if (fdReady === false) return;
@@ -470,6 +471,60 @@ function fdRenderTagBar() {
   fdEl("fdPickLabel").textContent = tag
     ? `Tap photos to tag “${tag.name}” · ${fdPicked.size} chosen`
     : "";
+}
+
+// Every tag we have, so you can see the vocabulary, tap one to filter by it,
+// and delete the inevitable typo. Deleting a tag unlinks it from every photo
+// (the FK cascades) but never touches the photos themselves.
+function fdRenderTagCatalogue() {
+  const box = fdEl("fdTagList");
+  box.innerHTML = "";
+  if (!fdTags.length) return;
+  FD_KINDS.forEach(kind => {
+    const mine = fdTags.filter(t => t.kind === kind.key);
+    if (!mine.length) return;
+    const row = document.createElement("div");
+    row.className = "fd-taglist-row";
+    const label = document.createElement("span");
+    label.className = "fd-taglist-lbl";
+    label.textContent = kind.label;
+    row.appendChild(label);
+    mine.forEach(tag => {
+      const chip = document.createElement("span");
+      chip.className = "chip fd-tagchip";
+      const name = document.createElement("button");
+      name.className = "fd-tagname";
+      name.textContent = tag.name + " " + fdCountFor(tag.id);
+      name.title = "Show photos tagged “" + tag.name + "”";
+      name.addEventListener("click", () => {
+        fdEl("fdSearch").value = tag.name;
+        fdSearch = tag.name;
+        fdRender();
+      });
+      const x = document.createElement("button");
+      x.className = "fd-tagx";
+      x.textContent = "✕";
+      x.title = "Delete this tag everywhere";
+      x.addEventListener("click", () => fdDeleteTag(tag));
+      chip.append(name, x);
+      row.appendChild(chip);
+    });
+    box.appendChild(row);
+  });
+}
+
+const fdCountFor = id => fdPhotos.filter(p => p.tags.includes(id)).length;
+
+async function fdDeleteTag(tag) {
+  const n = fdCountFor(tag.id);
+  const warn = n ? ` It's on ${n} photo${n > 1 ? "s" : ""} — they stay, they just lose the tag.` : "";
+  if (!confirm(`Delete the tag “${tag.name}”?` + warn)) return;
+  try {
+    await supa(`food_tags?id=eq.${tag.id}`, { method: "DELETE" });
+  } catch (e) { popToast("Couldn't delete that tag: " + e.message); return; }
+  if (fdPicking === tag.id) { fdPicking = null; fdPicked = new Set(); }
+  popToast(`“${tag.name}” removed 🏷️`);
+  await fdLoad();
 }
 
 // ---------------- lightbox ----------------

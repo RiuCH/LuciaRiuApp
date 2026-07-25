@@ -116,7 +116,9 @@ can reference anything.
   `api/food-import.js`; iCloud asset URLs are signed and expire.
   EXIF gives us the capture date and GPS; `api/geocode.js` turns GPS into
   city/country tags via OpenStreetMap. `taken_at` holds a **wall clock**
-  (rendered in UTC), never an instant — see the comment in `fdExifDate`
+  (rendered in UTC), never an instant — see the comment in `fdExifDate`.
+  Deleting a photo removes the row AND the stored file; deleting a tag
+  (✕ in the tag catalogue) unlinks it everywhere but keeps the photos
 - 🎮 Games tab (key `duel`, nav "🎮 Games") holds TWO games behind a chooser:
   Word Duel and 20 Questions. `gamesShow(which)` in `js/twenty.js` swaps
   `#gameDuel`/`#game20q` and sets `gamesPick` (declared in `js/core.js`),
