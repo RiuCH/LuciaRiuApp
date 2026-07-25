@@ -112,9 +112,20 @@ Both must degrade gracefully when unreachable.
 ## Testing with the in-app browser (Claude sessions)
 
 The sandboxed preview server can't read `~/Desktop` (macOS folder
-protection). Copy `index.html` into the session scratchpad and serve it
-from there (see `.claude/launch.json` — re-copy after every edit), or just
-open the file in the user's real browser.
+protection). Copy `index.html` **plus `css/` and `js/`** into the session
+scratchpad and serve it from there (see `.claude/launch.json` — re-copy
+after every edit), or just open the file in the user's real browser.
+
+**Known limits of that browser — don't diagnose bugs from them:**
+- It does **not** honour `loading="lazy"`: an in-viewport lazy image never
+  loads, while an `eager` sibling does. An unloaded thumb there proves
+  nothing about real phones. Verify with a lazy-vs-eager control pair in
+  the same container before believing any "images don't load" finding.
+- `file://` URLs are refused, so double-click behaviour can't be checked
+  here — ask the user.
+- `/api/*` doesn't exist on the static scratchpad server, so album code
+  falls back to the direct-iCloud path and fails on CORS. Stub the fetch
+  helpers to test hydration logic, or use a real deployment.
 
 ## The lock screen (login gate)
 
