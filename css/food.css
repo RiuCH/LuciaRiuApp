@@ -1,0 +1,220 @@
+/* food.css — Lucia ♥ Riu
+   🍜 Food: the upload/organise panels, the month-rail timeline, the photo
+   grid, and the tag lightbox. Mobile is the source of truth. */
+
+.fd-status { font-size: 12px; color: var(--text-dim); margin-bottom: 4px; }
+.fd-progress {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ------- search + view chips ------- */
+.fd-search {
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text);
+  background: rgba(0,0,0,0.25);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  width: 100%;
+  outline: none;
+}
+.fd-search:focus { border-color: var(--accent); }
+.fd-views { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin: 12px 0 4px; }
+.fd-views .chip {
+  cursor: pointer;
+  font-size: 11px;
+  padding: 6px 12px;
+  opacity: 0.5;
+  transition: opacity 0.2s ease, box-shadow 0.2s ease;
+}
+.fd-views .chip.sel { opacity: 1; box-shadow: 0 0 12px var(--accent-soft); }
+
+.fd-select {
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text);
+  background: rgba(0,0,0,0.25);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 10px 8px;
+  color-scheme: dark;
+}
+.fd-newtag { margin-top: 12px; }
+.fd-pickbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 12px;
+  font-size: 12.5px;
+  color: var(--accent);
+}
+.fd-pickbar button { padding: 8px 14px; font-size: 13px; }
+
+.fd-taglist { margin-top: 12px; text-align: left; }
+.fd-taglist-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
+.fd-taglist-lbl {
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  flex: none;
+  width: 100%;
+}
+.fd-tagname {
+  border: none;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  backdrop-filter: none;
+}
+.fd-tagname:hover { transform: none; background: transparent; }
+
+/* ------- the timeline ------- */
+.fd-monthrow { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 18px; }
+.fd-rail {
+  flex: none;
+  width: 58px;
+  padding-top: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--accent);
+  text-align: right;
+  white-space: pre-line;   /* month on one line, year under it */
+  line-height: 1.5;
+  position: sticky;
+  top: 12px;
+}
+.fd-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  min-width: 0;
+}
+.fd-cell {
+  padding: 0;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(0,0,0,0.2);
+  aspect-ratio: 1;
+  cursor: pointer;
+}
+.fd-cell:hover { transform: translateY(-2px); }
+.fd-cell img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.fd-cell.sel {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent), 0 0 14px var(--accent-soft);
+}
+
+/* ------- grouped-by-tag sections ------- */
+.fd-section { margin-bottom: 20px; }
+.fd-sectionhead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 2px 8px;
+}
+.fd-sectionname { font-size: 15px; font-weight: 700; }
+.fd-count {
+  font-size: 11px;
+  color: var(--text-dim);
+  border: 1px solid var(--card-border);
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+.fd-dim { color: var(--text-dim); font-weight: 500; }
+.fd-empty { text-align: center; color: var(--text-dim); font-size: 14px; padding: 28px 10px; }
+
+/* ------- album import ------- */
+.fd-album { margin-top: 14px; text-align: left; }
+.fd-albumnote { font-size: 12px; color: var(--text-dim); margin: 8px 0; }
+.fd-albumgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.fd-albumgrid img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  opacity: 0.55;
+  cursor: pointer;
+  transition: opacity 0.15s ease, border-color 0.15s ease;
+}
+.fd-albumgrid img.sel { opacity: 1; border-color: var(--accent); }
+.fd-albumnav { display: flex; gap: 10px; align-items: center; justify-content: center; margin-top: 10px; }
+.fd-albumnav button { padding: 8px 14px; font-size: 13px; }
+.fd-albumnav button:disabled { opacity: 0.35; pointer-events: none; }
+
+/* ------- lightbox ------- */
+.fd-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(5,2,10,0.86);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.fd-lightbox.show { display: flex; }
+.fd-lbbox {
+  width: min(520px, 96vw);
+  max-height: 92vh;
+  overflow-y: auto;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 22px;
+  padding: 14px;
+  backdrop-filter: blur(14px);
+}
+.fd-lbbox img { width: 100%; border-radius: 14px; display: block; }
+.fd-lbbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 12px 0 10px;
+}
+.fd-lbbar button { padding: 7px 12px; font-size: 13px; }
+.fd-lbdate { font-size: 12.5px; color: var(--text-dim); }
+.fd-lbtags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; min-height: 26px; align-items: center; }
+.fd-tagchip { font-size: 11px; padding: 5px 8px 5px 12px; gap: 4px; }
+.fd-tagx {
+  border: none;
+  background: transparent;
+  padding: 0 2px;
+  font-size: 11px;
+  cursor: pointer;
+  color: var(--text);
+  opacity: 0.6;
+  backdrop-filter: none;
+}
+.fd-tagx:hover { opacity: 1; transform: none; background: transparent; }
+
+/* Three controls in one row (text + kind + button) don't fit a phone —
+   let the name take its own line rather than being squeezed to a sliver. */
+@media (max-width: 560px) {
+  .fd-newtag, #fdLbTagName ~ *, .fd-lbbox .cp-linkrow { flex-wrap: wrap; }
+  .fd-newtag input, .fd-lbbox .cp-linkrow input { flex: 1 1 100%; }
+  .fd-newtag select, .fd-lbbox .cp-linkrow select { flex: 0 0 auto; }
+  .fd-newtag button, .fd-lbbox .cp-linkrow button { flex: 1 1 auto; }
+}
+
+@media (max-width: 420px) {
+  .fd-rail { width: 46px; font-size: 10px; }
+  .fd-grid { gap: 5px; }
+  .fd-albumgrid { grid-template-columns: repeat(3, 1fr); }
+}

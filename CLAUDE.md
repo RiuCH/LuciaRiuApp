@@ -52,6 +52,7 @@ and the `<link>`/`<script src>` tags.
 | `css/home.css` | anniversary, clocks, countdown, teasers, couple photo |
 | `css/tfd.css` | Talk · Flirt · Dare: mode switches, deck buttons, prompt card |
 | `css/journeys.css` | timeline, journey cards, photo grid, lightbox, picker |
+| `css/food.css` | 🍜 Food: month rail, photo grid, tag lightbox, album picker |
 | `css/duel.css` | letter pair, hearts, penalty modes |
 | `css/twenty.css` | Games-tab chooser, 20 Questions board + interrogation log |
 | `css/cycle.css` | 🌙 Moon: month grid, day marks, stat tiles |
@@ -62,6 +63,7 @@ and the `<link>`/`<script src>` tags.
 | `js/tfd.js` | Talk · Flirt · Dare tab: the three decks, Together/Apart mode (`tfd*`) |
 | `js/home.js` | `MISSYOU`, anniversary/clock/countdown ticks, couple photo (`cp*`) |
 | `js/journeys.js` | timeline CRUD + sort, iCloud album, lightbox (`jr*`) |
+| `js/food.js` | 🍜 Food: uploads, EXIF, timeline, tags, search (`fd*`) |
 | `js/duel.js` | Word Duel (`wd*`) |
 | `js/twenty.js` | 20 Questions (`q20*`) **and** the Games-tab chooser (`gamesShow`) |
 | `js/cycle.js` | 🌙 Moon: cycle calendar + our tally (`cy*`) — the hidden tab |
@@ -69,7 +71,8 @@ and the `<link>`/`<script src>` tags.
 | `js/init.js` | boot order — **loads last** |
 
 Script order in `index.html` is load-bearing: `core` → `supabase` →
-`questions` → `home` → `journeys` → `duel` → `twenty` → `cycle` → `lock` → `init`.
+`questions` → `home` → `journeys` → `food` → `duel` → `twenty` → `cycle` →
+`lock` → `init`.
 Anything
 running at *top level* may only reference things defined in an
 earlier-loaded file; calls made later (inside handlers or from `init.js`)
@@ -103,6 +106,19 @@ can reference anything.
   exhausted — `shuffledOrder`/`deckForCycle`);
   pool comes from `QUESTION_SOURCE` (= `BANK`, swapped to the DB copy once
   `loadQuestions()` succeeds — content identical, so the pick doesn't change)
+- 🍜 Food (`#page-food`, `fd*` in `js/food.js`): every meal we've eaten
+  together. Photos live in **Supabase Storage** (bucket `food`) with rows in
+  `food_photos` / `food_tags` / `food_photo_tags` — the app's first real
+  file storage, and it needs `supabase/food.sql` run once (the tab says so
+  until then). Uploads are resized to 1600px in-browser before they leave
+  the phone. **You cannot upload INTO an Apple Shared Album** — Apple's API
+  is read-only — so album photos are *copied* into our bucket by
+  `api/food-import.js`; iCloud asset URLs are signed and expire.
+  EXIF gives us the capture date and GPS; `api/geocode.js` turns GPS into
+  city/country tags via OpenStreetMap. `taken_at` holds a **wall clock**
+  (rendered in UTC), never an instant — see the comment in `fdExifDate`.
+  Deleting a photo removes the row AND the stored file; deleting a tag
+  (✕ in the tag catalogue) unlinks it everywhere but keeps the photos
 - 🎮 Games tab (key `duel`, nav "🎮 Games") holds TWO games behind a chooser:
   Word Duel and 20 Questions. `gamesShow(which)` in `js/twenty.js` swaps
   `#gameDuel`/`#game20q` and sets `gamesPick` (declared in `js/core.js`),

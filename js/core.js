@@ -43,11 +43,11 @@ function dayNumber() {
 
 
 // ---------------- TABS ----------------
-const SUBTITLES = { home: "Our Little Universe", tfd: "Talk · Flirt · Dare", journeys: "Everywhere, Together", duel: "The Games Room", cycle: "Moonlight" };
+const SUBTITLES = { home: "Our Little Universe", tfd: "Talk · Flirt · Dare", journeys: "Everywhere, Together", food: "Everything We've Eaten", duel: "The Games Room", cycle: "Moonlight" };
 // `cycle` is deliberately missing from NAVIDS: it's the one tab with no nav
 // button, so nothing in the nav ever lights up for it. See "the quiet door".
-const NAVIDS = { home: "navHome", tfd: "navTfd", journeys: "navJourneys", duel: "navDuel" };
-const TABS = ["home", "tfd", "journeys", "duel", "cycle"];
+const NAVIDS = { home: "navHome", tfd: "navTfd", journeys: "navJourneys", food: "navFood", duel: "navDuel" };
+const TABS = ["home", "tfd", "journeys", "food", "duel", "cycle"];
 let activeTab = "home";
 // The Games tab (key "duel") hosts more than one game; js/twenty.js owns
 // the chooser and sets this. Lives here so each game can guard its own poll.
@@ -74,6 +74,7 @@ function switchTab(name) {
 document.getElementById("navHome").addEventListener("click", () => switchTab("home"));
 document.getElementById("navTfd").addEventListener("click", () => switchTab("tfd"));
 document.getElementById("navJourneys").addEventListener("click", () => switchTab("journeys"));
+document.getElementById("navFood").addEventListener("click", () => switchTab("food"));
 document.getElementById("navDuel").addEventListener("click", () => switchTab("duel"));
 document.getElementById("wdTeaser").addEventListener("click", () => switchTab("duel"));
 

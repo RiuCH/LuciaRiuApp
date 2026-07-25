@@ -23,8 +23,10 @@
 2. **Google login** 🔐 — Supabase Auth, allowlist exactly two emails
    (Riu + Lucia). The backend now exists (v5) with wide-open anon RLS
    policies — this feature tightens them to just the two of us.
-3. **Photo album** 📸 — Supabase Storage + a gallery tab. Needs login
-   first. (Partial today: journeys embed Apple Shared Albums.)
+3. **Photo album** 📸 — ~~Supabase Storage + a gallery tab~~ **shipped as the
+   🍜 Food tab (2026-07-25)**: uploads, EXIF dates, GPS→city tags, a tag
+   system and shared-album import. Still worth doing after login: the
+   bucket is world-readable today, same as every other table.
 4. **Answer & compare** ✍️ — both type answers to the daily question, reveal
    together. Needs Supabase DB. This is the feature that makes the daily
    question 10x better, but do login first.
