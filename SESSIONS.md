@@ -48,7 +48,7 @@ out of each other's way.
 
 | Session | Who | Feature | Regions of index.html claimed | Status |
 |---|---|---|---|---|
-| 2026-07-24-modular | Riu | Split into per-feature files (branch `feature/modular-files`) | ALL of index.html — exclusive, nobody else should edit until merged | 🔃 PR open |
+| _(none)_ | | | | |
 
 <!-- Row template:
 | 2026-07-24-login | Riu | Login page | lock CSS block, lock HTML block, LOCK SCREEN script block | ✅ shipped |
@@ -58,6 +58,7 @@ out of each other's way.
 
 | Date | Who | Feature | Notes |
 |---|---|---|---|
+| 2026-07-24 | Riu | **Modular split — one tab, one js + one css** | `index.html` 2483 → 263 lines; `css/*` + `js/*`. Classic scripts, NEVER ES modules (they break `file://`). Script order load-bearing: core → supabase → questions → home → journeys → duel → lock → init. Golden rule #1 is now "no build step" (PR #8) |
 <<<<<<< HEAD
 | 2026-07-24 | Riu | Desktop/laptop layout | One trailing `@media (min-width:900px)` block (now `css/desktop.css`); hooks `#homeClocks`, `#homeCd`, `.wd-scorepanel` (PR #6) |
 =======
