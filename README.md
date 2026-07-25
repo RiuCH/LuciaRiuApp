@@ -8,8 +8,10 @@ games.
 **▶ Live app: https://lucia-riu-app.vercel.app** — open it on your phone →
 Share → *Add to Home Screen*.
 
-The whole app is **one file, `index.html`**. No build step, no dependencies,
-no server. Open the file in a browser and that's the dev environment.
+**No build step, no dependencies, no server.** Open `index.html` in a
+browser — that's the dev environment. The code is split by feature:
+`index.html` (markup) + `css/*.css` + `js/*.js`, one file per tab, wired
+with plain `<link>`/`<script src>` tags.
 
 ---
 
@@ -72,7 +74,9 @@ it's in the skills.)
 
 ## House rules (Claude enforces these, but for humans too)
 
-1. Everything stays in `index.html` — one file, opens by double-click
+1. No build step — `index.html` still opens by double-click. One tab =
+   one `js/` file + one `css/` file. Classic scripts only, never ES
+   modules (they break `file://`)
 2. Never use `localStorage`/`sessionStorage` (breaks our previews) —
    in-memory state or URL-hash params only
 3. Don't break the daily-question determinism (both phones must agree)

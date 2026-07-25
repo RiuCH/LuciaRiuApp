@@ -237,8 +237,8 @@ talk:
 > *"I want a game where we both get the same daily dare"*
 > *"Make an 'our songs' tab where each day recommends one song"*
 
-Claude knows the house rules (one file, keep it cute, don't break the
-daily question) and the whole workflow — including checking
+Claude knows the house rules (no build step, keep it cute, don't break
+the daily question) and the whole workflow — including checking
 `SESSIONS.md` so we don't collide if we're both building at once.
 
 ---

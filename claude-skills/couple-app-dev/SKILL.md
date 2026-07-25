@@ -16,9 +16,19 @@ session's claims, ask the user before proceeding.
 
 ## Hard constraints — check every change against these
 
-1. Everything stays in `index.html`. Inline CSS in the single `<style>`,
-   inline JS in the single `<script>`. No external requests except (rarely)
-   cdnjs.cloudflare.com if truly unavoidable.
+1. **No build step; double-clicking `index.html` must work.** The app is
+   `index.html` (markup only) + `css/*.css` + `js/*.js`, wired with plain
+   `<link>`/`<script src>`. Put a change in the file that owns that
+   feature — one tab, one js file, one css file. **Classic scripts only:
+   never `type="module"` or `import`/`export`** (ES modules are blocked on
+   `file://` — they'd break double-click, and Lucia's whole workflow is
+   "open index.html"). Files share state via ordinary globals; script
+   order in `index.html` is load-bearing (`core` first, `init` last).
+   Top-level code may only touch things from an earlier-loaded file;
+   anything called later (handlers, `init.js`) can reference anything.
+   No external requests except (rarely) cdnjs.cloudflare.com if truly
+   unavoidable. **Adding a new file? Add its tag to `index.html`** — it is
+   not picked up automatically.
 2. NO localStorage, sessionStorage, IndexedDB, or cookies — they fail in the
    preview environments the couple uses. Persistence options, in order:
    in-memory variable → URL hash param (like `#reunion=2026-12-20`) →
@@ -122,6 +132,9 @@ just covers it.
 
 - Open `index.html` in a browser (that IS the dev environment). No console
   errors — including with Supabase unreachable (local mode must work).
+- **Open it by double-click too, not just through a server** — that's the
+  one thing the modular layout could silently break (a stray `import`, or
+  a new file missing its `<script src>` tag).
 - Lock screen: wrong date shakes + sasses; `06/02/2026` (or "june 2")
   unlocks with hearts; reload with `#unlocked=1` skips straight in.
 - All four tabs switch; bottom nav highlights correctly and fits at 420px.

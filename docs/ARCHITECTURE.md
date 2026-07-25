@@ -15,7 +15,30 @@ Both phones run identical copies of `index.html`. There is no backend, no
 database, no accounts. Anything that must be "the same for both" is computed
 deterministically from the calendar date on each device independently.
 
-## index.html internals
+## How the files fit together
+
+`index.html` holds only markup — the lock overlay, the four
+`<section class="page">` tabs, the nav — plus `<link>` tags for
+`css/*.css` and `<script src>` tags for `js/*.js`. There is no bundler
+and no build step: the browser loads the files directly, which is why
+double-clicking `index.html` still works.
+
+They are **classic scripts, deliberately not ES modules.** Modules are
+blocked on the `file://` protocol, so `import`/`export` anywhere would
+mean the app only runs behind a web server — breaking the "just open it"
+workflow. Instead the files share ordinary globals, and the script order
+in `index.html` is load-bearing:
+
+```
+core → supabase → questions → home → journeys → duel → lock → init
+```
+
+`js/core.js` defines what everyone needs (`switchTab`, `popToast`,
+`burst`, `mulberry32`, `dayNumber`, the hash-param helpers).
+`js/init.js` runs last and does all the boot work, so any file may call
+into any other by then — only *top-level* code is order-sensitive.
+
+## Internals
 
 ### Data
 | Thing | What it is |

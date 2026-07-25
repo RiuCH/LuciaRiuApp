@@ -14,19 +14,28 @@ during a call" game: live `Math.random()` is fine for those (no seed
 offset needed) because only one device generates state. Deterministic
 seeding is only required when BOTH phones must independently agree.
 
-## Scaffold (5 steps, all in index.html)
+## Scaffold (6 steps)
 
-1. **Page section** — next to the other `<section class="page">` blocks:
+1. **Make your two files first** — `js/mygame.js` and `css/mygame.css`,
+   then add their tags to `index.html`: `<link>` in `<head>`, and
+   `<script src="js/mygame.js"></script>` **before `js/init.js`**. Nothing
+   is picked up automatically. Classic script — no `import`/`export`
+   (ES modules break double-click). Keep your game's state and handlers
+   in your own file; call shared helpers (`switchTab`, `popToast`,
+   `burst`, `mulberry32`) from `js/core.js`. Boot work goes in
+   `js/init.js`, not at the top level of your file.
+2. **Page section** — in `index.html`, next to the other
+   `<section class="page">` blocks:
    ```html
    <section class="page" id="page-mygame">
      <div class="panel">…game UI…</div>
    </section>
    ```
-2. **Nav button** — inside `<nav class="nav">`:
+3. **Nav button** — inside `<nav class="nav">`:
    ```html
    <button id="navMygame">🎯 My Game</button>
    ```
-3. **Register the tab** — in the TABS part of the script, extend both maps:
+4. **Register the tab** — in `js/core.js`, extend both maps:
    ```js
    SUBTITLES.mygame = "Some Cute Subtitle";
    NAVIDS.mygame = "navMygame";
@@ -34,9 +43,12 @@ seeding is only required when BOTH phones must independently agree.
    …and make sure `switchTab` iterates your tab (extend the
    `["home","game","journeys","duel"]` array) and add the click listener
    like the others.
-4. **Teaser (optional but nice)** — add a tappable `.panel.teaser` card on
+5. **Teaser (optional but nice)** — add a tappable `.panel.teaser` card on
    Home that `switchTab`s to your game, like the Question of the Day teaser.
-5. **Test** — open `index.html`, click every tab, check the browser console.
+   On desktop it needs a grid area in `css/desktop.css` (see the Home grid).
+6. **Test** — open `index.html` (double-click it too, not just via a
+   server — that catches a missing `<script src>` tag), click every tab,
+   check the browser console.
 
 ## Game design rules for a two-phone, no-server app
 

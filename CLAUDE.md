@@ -9,10 +9,16 @@ June 2, 2026). Fun is a feature — keep the tone playful.
 
 ## Golden rules (never break these)
 
-1. **One file.** The entire app is `index.html` — inline CSS + JS, no build
-   step, no dependencies, no frameworks. It must work by double-clicking it.
+1. **No build step, and it must work by double-clicking `index.html`.**
+   (This replaced the old "one file" rule when the app was modularised —
+   the *spirit* is unchanged: zero tooling between editing and seeing it.)
+   The app is now `index.html` + `css/*.css` + `js/*.js`, wired with plain
+   `<link>` and `<script src>` tags. No dependencies, no frameworks, no
+   bundler. **Classic scripts only — never `type="module"`/`import`:** ES
+   modules are blocked on `file://`, so modules would break double-click.
+   Files share state through ordinary globals; `js/init.js` loads last.
    (Narrow exception per ROADMAP: Vercel serverless functions in `api/` —
-   enhancements only, the file must work without them.)
+   enhancements only, the app must work without them.)
 2. **No localStorage / sessionStorage / cookies.** They break in the preview
    environments we use. State lives in memory or in URL-hash params —
    always via the `getHashParam`/`setHashParam` helpers so params coexist
@@ -30,7 +36,34 @@ June 2, 2026). Fun is a feature — keep the tone playful.
    every DB-backed feature keeps a hardcoded/in-memory fallback (`BANK`,
    `LOCK_KEYS`, hash params). Setup + conventions: docs/SUPABASE.md.
 
-## Map of index.html
+## Map of the files
+
+`index.html` is now just markup: the lock overlay, the four `<section
+class="page">` tabs, the nav, and the `<link>`/`<script src>` tags.
+
+| File | What lives there |
+|---|---|
+| `css/base.css` | theme vars, layout shell, `.panel`/`.card`/`.chip`/buttons, Daily Q page, nav, toast, burst, lock screen |
+| `css/home.css` | anniversary, clocks, countdown, teasers, couple photo |
+| `css/journeys.css` | timeline, journey cards, photo grid, lightbox, picker |
+| `css/duel.css` | letter pair, hearts, penalty modes |
+| `css/desktop.css` | the whole `@media (min-width: 900px)` layout |
+| `js/core.js` | hash params, `EPOCH`/`afterDark`, `mulberry32`, `dayNumber`, `switchTab`, `popToast`, `burst`, hearts |
+| `js/supabase.js` | `SUPABASE_*` config, `supa()`, `loadSettings()`, `saveReunion()`, `loadQuestions()` |
+| `js/questions.js` | `BANK`, `CHIPS`, `QUESTION_SOURCE`, `dailyQuestion()`, game-page render |
+| `js/home.js` | `MISSYOU`, anniversary/clock/countdown ticks, couple photo (`cp*`) |
+| `js/journeys.js` | timeline CRUD + sort, iCloud album, lightbox (`jr*`) |
+| `js/duel.js` | Word Duel (`wd*`) |
+| `js/lock.js` | login gate |
+| `js/init.js` | boot order — **loads last** |
+
+Script order in `index.html` is load-bearing: `core` → `supabase` →
+`questions` → `home` → `journeys` → `duel` → `lock` → `init`. Anything
+running at *top level* may only reference things defined in an
+earlier-loaded file; calls made later (inside handlers or from `init.js`)
+can reference anything.
+
+### Details worth knowing
 
 - CSS: `:root` variables = theme; `body.afterdark` = red After Dark theme
 - `BANK` — question object, 5 categories: funny, romantic, spicy, nasty, ldr
