@@ -102,6 +102,28 @@ header .sub {
   transition: opacity 0.3s ease;
 }
 
+/* ------- auth bar (header) ------- */
+.authbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: -8px 0 18px;
+  font-size: 11.5px;
+}
+.authbar .auth-who {
+  color: var(--text-dim);
+  letter-spacing: 0.4px;
+}
+.authbar button {
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+}
+/* signed in is the quiet state — it shouldn't compete with the app */
+.authbar.auth-on .auth-who { opacity: 0.7; }
+
 /* ------- pages ------- */
 .page { display: none; }
 .page.active { display: block; animation: pageIn 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.1); }
@@ -190,16 +212,6 @@ header .sub {
   color: var(--text);
   transition: all 0.4s ease;
 }
-.question {
-  font-size: 25px;
-  line-height: 1.45;
-  font-weight: 500;
-  max-width: 420px;
-  transition: opacity 0.25s ease, transform 0.25s ease;
-}
-.question.swapping { opacity: 0; transform: translateY(10px); }
-@media (max-width: 420px) { .question { font-size: 21px; } }
-
 .btnrow { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
 button {
   font-family: inherit;

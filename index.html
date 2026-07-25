@@ -40,6 +40,13 @@
     <!-- the ♥ is also the quiet door: long-press it (js/core.js) -->
     <div class="names">Lucia <span class="amp" id="secretHeart">♥</span> Riu</div>
     <div class="sub" id="subtitle">Our Little Universe</div>
+    <!-- Signed out, the app still runs on its hardcoded copy (golden rule 6) —
+         this bar says which of the two you're looking at. -->
+    <div class="authbar" id="authBar">
+      <span class="auth-who" id="authWho">…</span>
+      <button id="authSignIn">🔐 Sign in with Google</button>
+      <button id="authSignOut" style="display:none">Sign out</button>
+    </div>
   </header>
 
   <!-- ================= HOME ================= -->
@@ -525,6 +532,8 @@
      Order matters — core first, init last. -->
 <script src="js/core.js"></script>
 <script src="js/supabase.js"></script>
+<!-- after supabase.js (needs SUPABASE_URL), before everything that calls supa() -->
+<script src="js/auth.js"></script>
 <script src="js/questions.js"></script>
 <script src="js/home.js"></script>
 <script src="js/tfd.js"></script>

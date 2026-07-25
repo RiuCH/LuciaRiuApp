@@ -44,7 +44,13 @@ function tryUnlock() {
   lockInput.focus();
 }
 
-if (getHashParam("unlocked") === "1") {
+// A signed-in Google account on the allowlist is strictly stronger evidence
+// than "knows the anniversary" — which is printed on the Home page and spelled
+// out by this screen's own hints. So real auth skips the gate entirely; the
+// anniversary stays as the offline/local-mode door.
+if (typeof authSignedIn === "function" && authSignedIn()) {
+  unlock(false);
+} else if (getHashParam("unlocked") === "1") {
   unlock(false); // already let in this session — no ceremony
 } else {
   document.body.classList.add("locked");

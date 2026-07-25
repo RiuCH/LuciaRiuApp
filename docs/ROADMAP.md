@@ -69,6 +69,14 @@
      currency eventually. Leave room for the column; don't write the
      converter yet.
 
+7. **Private food bucket** 🔒 — the `food` Storage bucket is `public = true`,
+   so every photo is served over an unauthenticated URL and storage policies
+   don't apply to that path. `supabase/auth_policies.sql` closes the
+   enumeration route (the rows holding those URLs become us-only) and revokes
+   anon insert/delete, but the objects themselves stay publicly fetchable by
+   URL. Real fix: flip the bucket to private and have `js/food.js` mint signed
+   URLs instead of using the plain public ones. Do it after Google login.
+
 ## Agreed platform plan
 - **Hosting:** Vercel (static now; serverless functions when needed)
 - **Backend when needed:** Supabase — Postgres + file storage + auth
