@@ -58,6 +58,7 @@ out of each other's way.
 
 | Date | Who | Feature | Notes |
 |---|---|---|---|
+| 2026-07-25 | Riu | 🎯 20 Questions + the Games hub | The 🔤 Duel tab became 🎮 Games: `gamesShow()` in `js/twenty.js` swaps `#gameDuel`/`#game20q`, `gamesPick` in `js/core.js` guards each game's poll. 20 Questions shares `settings.q20_state` (JSON, no migration) and the duel's `#me`; YES/NO/SOMETIMES only, a wrong final guess costs a question. Desktop duel grid moved from `#page-duel.active` to `#gameDuel` — an inline `display:block` from the chooser would otherwise kill it. Stale-poll races dropped via a local write counter |
 | 2026-07-25 | Riu | Duel sync actually works (no migration needed) | Moved off the unrun `duel` table onto `settings.duel_state` + `duel_first`, so sharing needs zero setup; poll 2.5s → 2s plus a pull on `visibilitychange`/`focus` (phones freeze timers in background tabs); sync status line now tells the truth instead of always claiming "shared" |
 | 2026-07-25 | Riu | Word Duel v7: shared hearts, typing race, 100 situation-based penalties | New `duel` table (one row, polled every 2.5s on-tab); `me` hash param picks your side; race settled by a `first_by=is.null` PATCH so Postgres decides, not two clocks; "I lost" no longer rerolls letters; penalties reorganised into two situation pools — 🏠 in person (35) and 💌 long distance (65, the complete one), each mixing funny/spicy/nasty with the flavour shown as a tag. Superseded next day: that `duel` table was never created, so nothing synced — sync was rebuilt on `settings.duel_state`/`duel_first`, no migration needed. |
 | 2026-07-25 | Riu | Question of the Day moved to Home; Daily Q tab replaced by Talk · Flirt · Dare | New `js/tfd.js` + `css/tfd.css`; tab key `game` → `tfd`; one 💞 Together / ✈️ Apart switch picks the decks and drives the hot theme (`hotMode` + `.hot`, replacing the After Dark toggle). Bank 215 → 345 prompts: `filthy` + four Dare decks (apart/together × normal/explicit). Home's card draws from `QOTD_CATS` only |
@@ -104,7 +105,7 @@ out of each other's way.
 | `duel` | Word Duel (took over the retired `soon` placeholder slot) |
 
 **Element id / CSS class prefixes:** `lock*` (login), `cd*` (countdown),
-`nav*` (nav buttons), `tick*` (home widget functions), `tfd*` (Talk · Flirt ·
+`nav*` (nav buttons), `q20*` (20 Questions), `tick*` (home widget functions), `tfd*` (Talk · Flirt ·
 Dare), `qotd*` (home Question of the Day), `jr*` (journeys
 timeline), `wd*` (Word Duel), `cp*` (couple photo). New features should
 pick their own short prefix and list it here.

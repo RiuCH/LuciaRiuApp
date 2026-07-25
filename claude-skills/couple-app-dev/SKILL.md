@@ -116,6 +116,13 @@ JOURNEYS block of `index.html`:
 - Tables: `journeys` (timeline), `settings` (key/value: `lock_keys`,
   `reunion_date`), `questions` (the bank; feeds `QUESTION_SOURCE`).
   Schema + seed in `supabase/`; setup guide in docs/SUPABASE.md.
+- **A poll that was already in flight when you acted will clobber you.**
+  The 2s pull applies whatever it fetched, so a question you just submitted
+  can vanish for a second and then reappear. `js/twenty.js` bumps a
+  `q20Writes` counter on every local change and discards any pull whose
+  counter moved mid-flight — copy that for any new polled game. A
+  `pushing` flag alone is NOT enough: it only blocks pulls that *start*
+  during the push.
 - **Every DB feature keeps its no-server fallback** (hardcoded const,
   in-memory state, or hash param) and swallows fetch errors quietly —
   offline is normal, not an error state.

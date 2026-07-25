@@ -6,6 +6,8 @@ qotdRender();
 wdRollLetters(false);   // local letters so the duel works offline…
 wdRenderAll();
 wdPull();               // …then adopt the shared row if Supabase is up
+q20Render();            // 20 Questions paints from memory…
+q20Pull();              // …then adopts whatever game is already in progress
 // couple photo: hash-param fallback first; loadSettings() overrides with the DB copy
 (function cpInit() {
   const ph = getHashParam("photo");

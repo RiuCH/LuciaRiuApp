@@ -248,16 +248,17 @@ async function wdPull() {
 // Poll while the duel is on screen. 2s is brisk enough that a fresh letter
 // pair lands on the other phone almost immediately, without a realtime SDK
 // (which the no-SDK rule bars anyway).
-setInterval(() => { if (activeTab === "duel") wdPull(); }, 2000);
-TAB_HOOKS.duel = wdPull;
+setInterval(() => { if (activeTab === "duel" && gamesPick === "duel") wdPull(); }, 2000);
+// the tab hook runs for whichever game is showing
+TAB_HOOKS.duel = () => { if (gamesPick === "duel") wdPull(); else if (typeof q20Pull === "function") q20Pull(); };
 
 // Phones throttle (or freeze) timers in a backgrounded tab, so after a lock
 // screen or an app switch the poll can be minutes stale. Catch up the moment
 // we're looked at again.
 document.addEventListener("visibilitychange", () => {
-  if (!document.hidden && activeTab === "duel") wdPull();
+  if (!document.hidden && activeTab === "duel" && gamesPick === "duel") wdPull();
 });
-window.addEventListener("focus", () => { if (activeTab === "duel") wdPull(); });
+window.addEventListener("focus", () => { if (activeTab === "duel" && gamesPick === "duel") wdPull(); });
 
 // ---- rendering ----
 function wdRenderLetters(animate) {

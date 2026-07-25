@@ -50,6 +50,7 @@ class="page">` tabs, the nav, and the `<link>`/`<script src>` tags.
 | `css/tfd.css` | Talk · Flirt · Dare: mode switches, deck buttons, prompt card |
 | `css/journeys.css` | timeline, journey cards, photo grid, lightbox, picker |
 | `css/duel.css` | letter pair, hearts, penalty modes |
+| `css/twenty.css` | Games-tab chooser, 20 Questions board + interrogation log |
 | `css/desktop.css` | the whole `@media (min-width: 900px)` layout |
 | `js/core.js` | hash params, `EPOCH`/`afterDark`, `mulberry32`, `dayNumber`, `switchTab`, `popToast`, `burst`, hearts |
 | `js/supabase.js` | `SUPABASE_*` config, `supa()`, `loadSettings()`, `saveReunion()`, `loadQuestions()` |
@@ -58,11 +59,12 @@ class="page">` tabs, the nav, and the `<link>`/`<script src>` tags.
 | `js/home.js` | `MISSYOU`, anniversary/clock/countdown ticks, couple photo (`cp*`) |
 | `js/journeys.js` | timeline CRUD + sort, iCloud album, lightbox (`jr*`) |
 | `js/duel.js` | Word Duel (`wd*`) |
+| `js/twenty.js` | 20 Questions (`q20*`) **and** the Games-tab chooser (`gamesShow`) |
 | `js/lock.js` | login gate |
 | `js/init.js` | boot order — **loads last** |
 
 Script order in `index.html` is load-bearing: `core` → `supabase` →
-`questions` → `home` → `journeys` → `duel` → `lock` → `init`. Anything
+`questions` → `home` → `journeys` → `duel` → `twenty` → `lock` → `init`. Anything
 running at *top level* may only reference things defined in an
 earlier-loaded file; calls made later (inside handlers or from `init.js`)
 can reference anything.
@@ -91,6 +93,16 @@ can reference anything.
   exhausted — `shuffledOrder`/`deckForCycle`);
   pool comes from `QUESTION_SOURCE` (= `BANK`, swapped to the DB copy once
   `loadQuestions()` succeeds — content identical, so the pick doesn't change)
+- 🎮 Games tab (key `duel`, nav "🎮 Games") holds TWO games behind a chooser:
+  Word Duel and 20 Questions. `gamesShow(which)` in `js/twenty.js` swaps
+  `#gameDuel`/`#game20q` and sets `gamesPick` (declared in `js/core.js`),
+  which each game's poll guards on so only the visible one talks to the DB
+- 20 Questions (`q20*`): one thinks of something, the other gets 20 questions
+  answered only YES / NO / SOMETIMES; a wrong final guess burns a question.
+  Whole game in `settings.q20_state` (JSON, no migration), polled every 2s;
+  `#me` picks your side, shared with the duel. The secret is hidden from the
+  guesser's UI but *is* in the shared row — honour system, same as the app's
+  other 'hidden ≠ private' spots
 - Word Duel: `WD_STARTS`/`WD_ENDS` (weighted letters), `WD_PENALTIES`
   (two situation pools: `inperson`/`ldr`, each mixing funny/spicy/nasty
   flavours), `wd*` functions. v7: hearts/round/letters/

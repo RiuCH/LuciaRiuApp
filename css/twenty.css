@@ -1,0 +1,92 @@
+/* twenty.css — Lucia ♥ Riu
+   The Games-tab chooser and 20 Questions: the interrogation log, the three
+   answer buttons, the secret line. Mobile is the source of truth. */
+
+/* ------- which game are we playing ------- */
+.games-picker {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.games-picker .chip {
+  cursor: pointer;
+  opacity: 0.45;
+  transition: opacity 0.25s ease, box-shadow 0.25s ease;
+}
+.games-picker .chip.sel { opacity: 1; box-shadow: 0 0 14px var(--accent-soft); }
+
+/* ------- 20 questions ------- */
+.q20-role { font-size: 15px; font-weight: 500; line-height: 1.45; margin-bottom: 12px; }
+.q20-secret {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+  background: rgba(0,0,0,0.22);
+  border: 1px dashed var(--accent);
+  border-radius: 14px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  word-break: break-word;
+}
+.q20-mood { font-size: 12.5px; color: var(--text-dim); min-height: 18px; margin-bottom: 10px; }
+
+.q20-pending {
+  background: rgba(0,0,0,0.2);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+.q20-pending-q { font-size: 17px; font-weight: 600; line-height: 1.4; margin-bottom: 12px; }
+.q20-answers { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.q20-answers button { padding: 12px 18px; font-weight: 700; letter-spacing: 1px; }
+#q20Yes       { border-color: #8dd694; color: #d8f5db; }
+#q20No        { border-color: #ff6b6b; color: #ffd9d9; }
+#q20Sometimes { border-color: #ffd166; color: #fff0c9; }
+#q20Correct   { border-color: #8dd694; color: #d8f5db; }
+#q20Wrong     { border-color: #ff6b6b; color: #ffd9d9; }
+
+/* ------- the interrogation log ------- */
+.q20-log { max-height: 320px; overflow-y: auto; text-align: left; }
+.q20-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 4px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  font-size: 14px;
+}
+.q20-row:last-child { border-bottom: none; }
+.q20-n {
+  flex: none;
+  width: 22px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+.q20-q { flex: 1; line-height: 1.4; }
+.q20-a {
+  flex: none;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+}
+.q20-yes       { color: #d8f5db; border-color: #8dd694; }
+.q20-no        { color: #ffd9d9; border-color: #ff6b6b; }
+.q20-sometimes { color: #fff0c9; border-color: #ffd166; }
+.q20-correct   { color: #d8f5db; border-color: #8dd694; }
+.q20-nope      { color: #ffd9d9; border-color: #ff6b6b; }
+.q20-empty { font-size: 13px; color: var(--text-dim); padding: 14px 4px; text-align: center; }
+
+#game20q .cp-linkrow { margin-top: 10px; }
+
+@media (max-width: 420px) {
+  .q20-answers button { padding: 11px 14px; font-size: 13px; }
+  .q20-pending-q { font-size: 16px; }
+}

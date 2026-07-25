@@ -43,9 +43,12 @@ function dayNumber() {
 
 
 // ---------------- TABS ----------------
-const SUBTITLES = { home: "Our Little Universe", tfd: "Talk · Flirt · Dare", journeys: "Everywhere, Together", duel: "The Word Duel" };
+const SUBTITLES = { home: "Our Little Universe", tfd: "Talk · Flirt · Dare", journeys: "Everywhere, Together", duel: "The Games Room" };
 const NAVIDS = { home: "navHome", tfd: "navTfd", journeys: "navJourneys", duel: "navDuel" };
 let activeTab = "home";
+// The Games tab (key "duel") hosts more than one game; js/twenty.js owns
+// the chooser and sets this. Lives here so each game can guard its own poll.
+let gamesPick = "duel";   // "duel" | "q20"
 
 // A tab can register work that must only run once it's actually on screen —
 // e.g. building <img> elements, which never load inside a display:none
