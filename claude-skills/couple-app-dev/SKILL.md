@@ -33,6 +33,14 @@ session's claims, ask the user before proceeding.
    the app runs as two independent copies with no communication.
 4. Mobile first: test layouts at ~420px wide. The bottom nav must never
    overlap content (body has padding-bottom for it).
+5. **Desktop is one media query, never a second layout.** Everything up to
+   899px is the mobile column — the source of truth. A single
+   `@media (min-width: 900px)` block at the END of the CSS widens `.app`
+   (1080px cap) and turns Home and Duel into CSS grids via named
+   `grid-template-areas`; Daily Q centres vertically; Trips just gets
+   wider. Add a Home/Duel panel ⇒ give it an id and assign it a grid area
+   there, or it drops into an implicit row. Never fork the markup or add
+   JS breakpoints — desktop must stay pure CSS on top of mobile.
 
 ## The shared-daily pattern (the app's one clever trick)
 
