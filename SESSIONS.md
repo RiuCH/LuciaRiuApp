@@ -58,6 +58,7 @@ out of each other's way.
 
 | Date | Who | Feature | Notes |
 |---|---|---|---|
+| 2026-07-24 | Riu | Word Duel v7: shared hearts, typing race, Nasty LDR | New `duel` table (one row, polled every 2.5s on-tab); `me` hash param picks your side; race settled by a `first_by=is.null` PATCH so Postgres decides, not two clocks; "I lost" no longer rerolls letters |
 | 2026-07-24 | Riu | Album metadata cache (picker 50s → ~1s) | iCloud `webstream` measured at 50.4s for a 365-photo album vs 0.95s for `webasseturls`; it was called on every request. Now 3-tier cached: memory → `album_cache` table → iCloud (PR #11 + #12) |
 | 2026-07-24 | Riu | Journey photos fetched only when Trips is opened | `TAB_HOOKS` registry in `js/core.js` for on-screen-only work; `jrPrewarmAlbums` warms album JSON at idle; iCloud CDN preconnect. Boot photo cost 384KB → 0 (and ~5.8MB → 0 at 30 trips) (PR #10) |
 | 2026-07-24 | Riu | **Modular split — one tab, one js + one css** | `index.html` 2483 → 263 lines; `css/*` + `js/*`. Classic scripts, NEVER ES modules (they break `file://`). Script order load-bearing: core → supabase → questions → home → journeys → duel → lock → init. Golden rule #1 is now "no build step" (PR #8) |
@@ -91,6 +92,7 @@ out of each other's way.
 | `reunion` | Reunion countdown date |
 | `unlocked` | Login gate |
 | `photo` | Couple photo (link/album fallback when DB is off) |
+| `me` | Which of us is on this phone (`lucia`/`riu`) — Word Duel |
 
 **Tabs** (`page-*` section ids + `NAVIDS`/`SUBTITLES` keys):
 | Tab key | Feature |
@@ -114,14 +116,14 @@ implicit rows and breaks the composition.
 **Global constants / backends:** `SUPABASE_URL` + `SUPABASE_ANON_KEY`
 (journeys feature owns the Supabase config constants; future Supabase
 features reuse them — see docs/SUPABASE.md). Supabase table names are
-global identifiers too: `journeys`, `settings`, `questions`, `album_cache`
-are claimed.
+global identifiers too: `journeys`, `settings`, `questions`, `album_cache`,
+`duel` are claimed.
 Settings keys claimed: `lock_keys`, `reunion_date`, `home_photo` (couple
 photo: image URL, upload data-URL, or `album:<link>` for photo-of-the-day).
 
 **Serverless endpoints (`api/`):** `album` (iCloud shared-album proxy,
 journeys feature). Claim new endpoint paths here before using them.
 
-**Note:** Word Duel uses live `Math.random()` (session state, one phone
-runs the game) — no seed offset claimed. Now that the DB exists (v5),
-revisit if the duel becomes two-phone synced.
+**Note:** Word Duel letters are still live `Math.random()` — but as of v7
+the *result* is shared through the `duel` table rather than recomputed, so
+no seed offset is needed: one phone rolls, both read the same row.

@@ -1,9 +1,9 @@
 // duel.js — Lucia ♥ Riu
-// Word Duel: letter-pair rounds, hearts, and the penalty roulette.
-// One phone runs the game (live Math.random, session state).
+// Word Duel: letter-pair rounds, shared hearts, and the penalty roulette.
+// State lives in the `duel` table (one row) so both phones agree; with
+// Supabase off or unreachable it degrades to the old one-phone session game.
 
 // ---------------- WORD DUEL ----------------
-// One phone runs the game during a call (DB sync comes later).
 // Letters are weighted toward playable combos: common starts × common ends.
 const WD_STARTS = "AAABBBCCCDDDEEEFFGGHHIIJKLLMMNNOOPPPRRRSSSSTTTUVWY";
 const WD_ENDS   = "AADDDEEEEGGGHHKKLLLMMNNNOOPPRRRSSSTTTTWYY";
@@ -43,100 +43,317 @@ const WD_PENALTIES = {
     "The winner schedules one surprise call this week — you MUST pick up.",
     "Photo-tour of your whole day tomorrow: minimum 5 pictures.",
     "Count the days until the reunion in a voice message. Dramatically. With feeling."
+  ],
+  // long distance, but make it dangerous 😈
+  nastyldr: [
+    "Voice message the winner describing exactly what happens the first hour we're alone at the reunion.",
+    "Text the winner one thing you've thought about doing to them but never said out loud. Now.",
+    "The winner picks what you sleep in tonight. Photographic proof required.",
+    "Set a reminder for 11pm and send the winner a message that ruins their concentration.",
+    "Tell the winner your favorite thing they've ever done to you. Full detail. No abbreviating.",
+    "The winner gets one IOU, redeemable the moment we're in the same room. They name it now.",
+    "Send a photo taken from the winner's favorite angle of you. They'll know the one.",
+    "Answer any three questions the winner asks tonight. Completely honestly. No passing.",
+    "Describe what you'd do if the winner walked in right now — in exactly three messages.",
+    "The winner writes the first line of tonight's goodnight text. You have to finish it."
   ]
 };
+
+// ---- state (mirrors the `duel` row when Supabase is up) ----
 let wdHearts = { lucia: 5, riu: 5 };
 let wdRoundNum = 1;
-let wdOver = false;
-let wdMode = "funny";
-let wdLastPenalty = "";
+let wdPenaltyMode = "funny";
+let wdPlay = "say";                       // say | type
+let wdWords = { lucia: null, riu: null };
+let wdFirstBy = null;                     // who answered first this round
+let wdL = { l1: "?", l2: "?" };
+let wdPenaltyText = "";
+let wdMe = getHashParam("me") || null;    // which of us is on this phone
+let wdPushing = false;                    // don't let a poll clobber my own write
 
 const wdLettersEl = document.getElementById("wdLetters");
+const wdWordInput = document.getElementById("wdWordInput");
 
-function wdRollLetters() {
-  wdLettersEl.classList.add("swapping");
-  setTimeout(() => {
-    const l1 = WD_STARTS[Math.floor(Math.random() * WD_STARTS.length)];
-    const l2 = WD_ENDS[Math.floor(Math.random() * WD_ENDS.length)];
-    document.getElementById("wdL1").textContent = l1;
-    document.getElementById("wdL2").textContent = l2;
-    document.getElementById("wdSub").innerHTML =
-      "First to say a word that <b>starts with " + l1 + "</b> and <b>ends with " + l2 +
-      "</b> wins the round. Proper words only — the other player is the judge 😌";
+function wdOver() { return wdHearts.lucia === 0 || wdHearts.riu === 0; }
+function wdCap(p) { return p === "lucia" ? "Lucia" : "Riu"; }
+function wdOther(p) { return p === "lucia" ? "riu" : "lucia"; }
+
+// ---- Supabase plumbing (all of it optional — see golden rule 6) ----
+async function wdPush(patch) {
+  if (!supaOn()) return null;
+  wdPushing = true;
+  try {
+    const rows = await supa("duel?id=eq.1", {
+      method: "PATCH",
+      body: Object.assign({ updated_at: new Date().toISOString() }, patch)
+    });
+    return rows && rows[0];
+  } catch (e) {
+    return null;
+  } finally {
+    wdPushing = false;
+  }
+}
+
+function wdApply(row) {
+  if (!row) return;
+  wdHearts = { lucia: row.hearts_lucia, riu: row.hearts_riu };
+  wdRoundNum = row.round;
+  wdPlay = row.play_mode || "say";
+  wdWords = { lucia: row.word_lucia, riu: row.word_riu };
+  wdFirstBy = row.first_by;
+  wdPenaltyMode = row.penalty_mode || "funny";
+  wdPenaltyText = row.penalty || "";
+  if (row.l1 && row.l2) { wdL = { l1: row.l1, l2: row.l2 }; }
+  wdRenderAll();
+}
+
+async function wdPull() {
+  if (!supaOn() || wdPushing) return;
+  try {
+    const rows = await supa("duel?id=eq.1&select=*");
+    if (rows && rows[0]) wdApply(rows[0]);
+  } catch (e) { /* offline — keep playing locally */ }
+}
+
+// Poll only while the duel is on screen; cheap enough at this cadence and it
+// keeps both phones honest without a realtime SDK (which the no-SDK rule bars).
+setInterval(() => { if (activeTab === "duel") wdPull(); }, 2500);
+TAB_HOOKS.duel = wdPull;
+
+// ---- rendering ----
+function wdRenderLetters(animate) {
+  const paint = () => {
+    document.getElementById("wdL1").textContent = wdL.l1;
+    document.getElementById("wdL2").textContent = wdL.l2;
+    document.getElementById("wdSub").innerHTML = wdPlay === "type"
+      ? "Type a word that <b>starts with " + wdL.l1 + "</b> and <b>ends with " + wdL.l2 +
+        "</b>. Fastest submit is shown — but you two still decide who loses 😌"
+      : "First to say a word that <b>starts with " + wdL.l1 + "</b> and <b>ends with " + wdL.l2 +
+        "</b> wins the round. Proper words only — the other player is the judge 😌";
     wdLettersEl.classList.remove("swapping");
-  }, 250);
+  };
+  if (animate) { wdLettersEl.classList.add("swapping"); setTimeout(paint, 250); }
+  else paint();
 }
 
 function wdRenderHearts() {
   ["lucia", "riu"].forEach(p => {
-    const cap = p === "lucia" ? "Lucia" : "Riu";
-    document.getElementById("wdHearts" + cap).textContent =
+    document.getElementById("wdHearts" + wdCap(p)).textContent =
       "❤️".repeat(wdHearts[p]) + "🖤".repeat(5 - wdHearts[p]);
-    document.getElementById("wdRow" + cap).classList.toggle("wd-dead", wdHearts[p] === 0);
+    const row = document.getElementById("wdRow" + wdCap(p));
+    row.classList.toggle("wd-dead", wdHearts[p] === 0);
+    row.classList.toggle("wd-me", wdMe === p);
+  });
+  document.getElementById("wdRound").textContent = wdRoundNum;
+}
+
+function wdRenderRace() {
+  const box = document.getElementById("wdRace");
+  document.getElementById("wdTypeBox").style.display = wdPlay === "type" ? "block" : "none";
+  document.querySelectorAll("#wdPlayModes .chip").forEach(c =>
+    c.classList.toggle("sel", c.dataset.play === wdPlay));
+  if (wdPlay !== "type") return;
+
+  const iAnswered = wdMe && wdWords[wdMe];
+  wdWordInput.disabled = !wdMe || !!iAnswered;
+  wdWordInput.placeholder = !wdMe ? "pick who you are first ↓"
+    : iAnswered ? "answered — hit New letters for the next round" : "your word…";
+
+  box.innerHTML = "";
+  ["lucia", "riu"].forEach(p => {
+    const line = document.createElement("div");
+    const who = document.createElement("b");
+    who.textContent = wdCap(p);
+    line.appendChild(who);
+    const w = document.createElement("span");
+    w.className = "wd-word";
+    if (!wdWords[p]) {
+      w.className += " wd-hidden";
+      w.textContent = "thinking…";
+    } else if (iAnswered || !wdMe) {
+      // only reveal once you've committed your own answer — no peeking
+      w.textContent = wdWords[p];
+    } else {
+      w.className += " wd-hidden";
+      w.textContent = "answered ✓";
+    }
+    line.appendChild(w);
+    if (wdFirstBy === p) {
+      const fast = document.createElement("span");
+      fast.className = "wd-fast";
+      fast.textContent = " ⚡ first";
+      line.appendChild(fast);
+    }
+    box.appendChild(line);
   });
 }
 
-function wdLoseHeart(loser, e) {
-  if (wdOver) return;
-  wdHearts[loser]--;
-  wdRenderHearts();
-  const name = loser === "lucia" ? "Lucia" : "Riu";
-  if (e) burst(e.clientX, e.clientY, ["💔", "🥀", "😵"]);
-  if (wdHearts[loser] === 0) { wdGameOver(loser); return; }
-  wdRoundNum++;
-  document.getElementById("wdRound").textContent = wdRoundNum;
-  popToast(name + " loses a heart 💔 " + wdHearts[loser] + " left!");
-  wdRollLetters();
+function wdRenderPenalty() {
+  const panel = document.getElementById("wdPenaltyPanel");
+  const over = wdOver();
+  panel.style.display = over ? "block" : "none";
+  document.querySelectorAll(".wd-modes:not(.wd-playmodes) .chip").forEach(c =>
+    c.classList.toggle("sel", c.dataset.mode === wdPenaltyMode));
+  if (over) {
+    const loser = wdHearts.lucia === 0 ? "lucia" : "riu";
+    document.getElementById("wdLoserLine").textContent = "💀 " + wdCap(loser) + " is out of hearts!";
+    document.getElementById("wdSpin").textContent = "🎰 Spin " + wdCap(loser) + "'s penalty";
+  }
+  const box = document.getElementById("wdPenalty");
+  box.textContent = wdPenaltyText;
+  box.classList.toggle("show", !!wdPenaltyText);
 }
 
-function wdGameOver(loser) {
-  wdOver = true;
-  const name = loser === "lucia" ? "Lucia" : "Riu";
-  const panel = document.getElementById("wdPenaltyPanel");
-  panel.style.display = "block";
-  document.getElementById("wdLoserLine").textContent = "💀 " + name + " is out of hearts!";
-  document.getElementById("wdSpin").textContent = "🎰 Spin " + name + "'s penalty";
-  popToast(name + " is DEFEATED 😈 Time for judgment");
-  burst(innerWidth / 2, innerHeight / 2, ["💀", "😈", "⚡"]);
-  panel.scrollIntoView({ behavior: "smooth", block: "center" });
+function wdRenderWhoAmI() {
+  document.querySelectorAll("#wdWhoAmI .chip").forEach(c =>
+    c.classList.toggle("sel", c.dataset.me === wdMe));
+  document.getElementById("wdSyncHint").textContent = supaOn()
+    ? "Hearts are shared — you'll both see the same score 💞"
+    : "Local mode — this phone keeps score on its own (set up Supabase to share it)";
+}
+
+function wdRenderAll() {
+  wdRenderLetters(false);
+  wdRenderHearts();
+  wdRenderRace();
+  wdRenderPenalty();
+  wdRenderWhoAmI();
+}
+
+// ---- actions ----
+// New letters is now the ONLY thing that starts a fresh round: losing a heart
+// deliberately leaves the pair up, so you can argue about it first.
+function wdRollLetters(bumpRound) {
+  wdL = {
+    l1: WD_STARTS[Math.floor(Math.random() * WD_STARTS.length)],
+    l2: WD_ENDS[Math.floor(Math.random() * WD_ENDS.length)]
+  };
+  if (bumpRound) wdRoundNum++;
+  wdWords = { lucia: null, riu: null };
+  wdFirstBy = null;
+  wdWordInput.value = "";
+  wdRenderLetters(true);
+  wdRenderHearts();
+  wdRenderRace();
+  if (bumpRound) {
+    wdPush({ l1: wdL.l1, l2: wdL.l2, round: wdRoundNum, word_lucia: null, word_riu: null, first_by: null });
+  }
+}
+
+function wdLoseHeart(loser, e) {
+  if (wdOver()) return;
+  wdHearts[loser] = Math.max(0, wdHearts[loser] - 1);
+  if (e) burst(e.clientX, e.clientY, ["💔", "🥀", "😵"]);
+  if (wdHearts[loser] === 0) {
+    popToast(wdCap(loser) + " is DEFEATED 😈 Time for judgment");
+    burst(innerWidth / 2, innerHeight / 2, ["💀", "😈", "⚡"]);
+  } else {
+    popToast(wdCap(loser) + " loses a heart 💔 " + wdHearts[loser] + " left!");
+  }
+  wdRenderAll();
+  if (wdOver()) document.getElementById("wdPenaltyPanel").scrollIntoView({ behavior: "smooth", block: "center" });
+  wdPush({ hearts_lucia: wdHearts.lucia, hearts_riu: wdHearts.riu });
+}
+
+async function wdSubmitWord() {
+  const word = wdWordInput.value.trim();
+  if (!wdMe) { popToast("Tap who you are first 😌"); return; }
+  if (!word) return;
+  if (!new RegExp("^" + wdL.l1 + ".*" + wdL.l2 + "$", "i").test(word)) {
+    popToast("That has to start with " + wdL.l1 + " and end with " + wdL.l2 + " 🤨");
+    return;
+  }
+  const col = "word_" + wdMe;
+  wdWords[wdMe] = word;
+  wdRenderRace();
+
+  if (!supaOn()) { wdFirstBy = wdFirstBy || wdMe; wdRenderRace(); return; }
+  // Let Postgres settle the race: this only matches while first_by is still
+  // null, so whoever's write lands first wins — no clock comparison needed.
+  wdPushing = true;
+  try {
+    const claim = await supa("duel?id=eq.1&first_by=is.null", {
+      method: "PATCH",
+      body: { first_by: wdMe, [col]: word, updated_at: new Date().toISOString() }
+    });
+    if (claim && claim.length) {
+      wdFirstBy = wdMe;
+      popToast("First! ⚡");
+    } else {
+      await supa("duel?id=eq.1", { method: "PATCH", body: { [col]: word, updated_at: new Date().toISOString() } });
+      popToast("Submitted — " + wdCap(wdOther(wdMe)) + " beat you to it ⚡");
+    }
+  } catch (e) {
+    // DB unreachable: fall back to this phone deciding the race, same as local mode
+    wdFirstBy = wdFirstBy || wdMe;
+    popToast("Couldn't sync that one — it still counts here 💞");
+  } finally {
+    wdPushing = false;
+  }
+  wdRenderRace();
 }
 
 function wdRematch() {
   wdHearts = { lucia: 5, riu: 5 };
   wdRoundNum = 1;
-  wdOver = false;
-  document.getElementById("wdRound").textContent = 1;
-  document.getElementById("wdPenaltyPanel").style.display = "none";
-  document.getElementById("wdPenalty").classList.remove("show");
-  wdRenderHearts();
-  wdRollLetters();
+  wdPenaltyText = "";
+  wdWords = { lucia: null, riu: null };
+  wdFirstBy = null;
+  wdWordInput.value = "";
+  wdRollLetters(false);
+  wdRenderAll();
   popToast("Hearts refilled — round 1 💞");
   window.scrollTo({ top: 0, behavior: "smooth" });
+  wdPush({
+    hearts_lucia: 5, hearts_riu: 5, round: 1, penalty: null,
+    l1: wdL.l1, l2: wdL.l2, word_lucia: null, word_riu: null, first_by: null
+  });
 }
 
+// ---- wiring ----
 document.getElementById("wdReroll").addEventListener("click", (e) => {
-  wdRollLetters();
+  wdRollLetters(true);
   burst(e.clientX, e.clientY);
 });
 document.getElementById("wdLostLucia").addEventListener("click", (e) => wdLoseHeart("lucia", e));
 document.getElementById("wdLostRiu").addEventListener("click", (e) => wdLoseHeart("riu", e));
+document.getElementById("wdSubmitWord").addEventListener("click", wdSubmitWord);
+wdWordInput.addEventListener("keydown", (e) => { if (e.key === "Enter") wdSubmitWord(); });
+
 document.getElementById("wdSpin").addEventListener("click", (e) => {
-  const pool = WD_PENALTIES[wdMode];
+  const pool = WD_PENALTIES[wdPenaltyMode];
   let pick;
   do { pick = pool[Math.floor(Math.random() * pool.length)]; }
-  while (pick === wdLastPenalty && pool.length > 1);
-  wdLastPenalty = pick;
-  const box = document.getElementById("wdPenalty");
-  box.textContent = pick;
-  box.classList.add("show");
+  while (pick === wdPenaltyText && pool.length > 1);
+  wdPenaltyText = pick;
+  wdRenderPenalty();
   burst(e.clientX, e.clientY, ["🎰", "😈", "✨"]);
+  wdPush({ penalty: pick });
 });
 document.getElementById("wdRematch").addEventListener("click", wdRematch);
-document.querySelectorAll(".wd-modes .chip").forEach(chip => {
+
+document.querySelectorAll(".wd-modes:not(.wd-playmodes) .chip").forEach(chip => {
   chip.addEventListener("click", () => {
-    document.querySelectorAll(".wd-modes .chip").forEach(c => c.classList.remove("sel"));
-    chip.classList.add("sel");
-    wdMode = chip.dataset.mode;
-    document.getElementById("wdPenalty").classList.remove("show");
+    wdPenaltyMode = chip.dataset.mode;
+    wdPenaltyText = "";
+    wdRenderPenalty();
+    wdPush({ penalty_mode: wdPenaltyMode, penalty: null });
+  });
+});
+document.querySelectorAll("#wdPlayModes .chip").forEach(chip => {
+  chip.addEventListener("click", () => {
+    wdPlay = chip.dataset.play;
+    wdRenderLetters(false);
+    wdRenderRace();
+    wdPush({ play_mode: wdPlay });
+  });
+});
+document.querySelectorAll("#wdWhoAmI .chip").forEach(chip => {
+  chip.addEventListener("click", () => {
+    wdMe = chip.dataset.me;
+    setHashParam("me", wdMe);   // survives refresh, no localStorage needed
+    wdRenderAll();
+    popToast("You're playing as " + wdCap(wdMe) + " 💞");
   });
 });

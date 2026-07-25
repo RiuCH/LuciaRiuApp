@@ -39,3 +39,43 @@
 .wd-modes { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
 .wd-modes .chip { cursor: pointer; opacity: 0.5; transition: opacity 0.25s ease, box-shadow 0.25s ease; }
 .wd-modes .chip.sel { opacity: 1; box-shadow: 0 0 14px var(--accent-soft); }
+
+/* ------- play-mode toggle + typing race (v7) ------- */
+.wd-playmodes { margin-top: 4px; }
+.wd-typebox { width: 100%; max-width: 380px; }
+.wd-typebox input { text-align: center; letter-spacing: 1px; }
+.wd-typebox input:disabled { opacity: 0.5; }
+.wd-race {
+  min-height: 20px;
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+.wd-race b { color: var(--text); }
+.wd-race .wd-fast { color: var(--accent); font-weight: 700; }
+.wd-word {
+  display: inline-block;
+  background: rgba(0,0,0,0.22);
+  border: 1px solid var(--card-border);
+  border-radius: 999px;
+  padding: 2px 10px;
+  margin-left: 4px;
+  font-weight: 600;
+  color: var(--text);
+}
+.wd-word.wd-hidden { color: var(--text-dim); font-style: italic; font-weight: 400; }
+
+/* ------- who am I ------- */
+.wd-whoami {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.wd-whoami-lbl { font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); }
+.wd-whoami .chip { cursor: pointer; opacity: 0.45; transition: opacity 0.25s ease, box-shadow 0.25s ease; }
+.wd-whoami .chip.sel { opacity: 1; box-shadow: 0 0 14px var(--accent-soft); }
+.wd-player.wd-me { border-color: var(--accent); }

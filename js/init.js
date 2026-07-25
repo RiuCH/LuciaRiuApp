@@ -4,8 +4,9 @@
 // ---------------- INIT ----------------
 renderHeader();
 show(dailyQuestion(), true);
-wdRollLetters();
-wdRenderHearts();
+wdRollLetters(false);   // local letters so the duel works offline…
+wdRenderAll();
+wdPull();               // …then adopt the shared row if Supabase is up
 // couple photo: hash-param fallback first; loadSettings() overrides with the DB copy
 (function cpInit() {
   const ph = getHashParam("photo");
