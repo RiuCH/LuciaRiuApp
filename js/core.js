@@ -43,8 +43,11 @@ function dayNumber() {
 
 
 // ---------------- TABS ----------------
-const SUBTITLES = { home: "Our Little Universe", tfd: "Talk · Flirt · Dare", journeys: "Everywhere, Together", duel: "The Word Duel" };
+const SUBTITLES = { home: "Our Little Universe", tfd: "Talk · Flirt · Dare", journeys: "Everywhere, Together", duel: "The Word Duel", cycle: "Moonlight" };
+// `cycle` is deliberately missing: it's the one tab with no nav button, so
+// nothing in the nav ever lights up for it. See "the quiet door" below.
 const NAVIDS = { home: "navHome", tfd: "navTfd", journeys: "navJourneys", duel: "navDuel" };
+const TABS = ["home", "tfd", "journeys", "duel", "cycle"];
 let activeTab = "home";
 
 // A tab can register work that must only run once it's actually on screen —
@@ -55,9 +58,10 @@ const TAB_HOOKS = {};
 
 function switchTab(name) {
   activeTab = name;
-  ["home", "tfd", "journeys", "duel"].forEach(t => {
+  TABS.forEach(t => {
     document.getElementById("page-" + t).classList.toggle("active", t === name);
-    document.getElementById(NAVIDS[t]).classList.toggle("active", t === name);
+    const nav = NAVIDS[t] ? document.getElementById(NAVIDS[t]) : null;
+    if (nav) nav.classList.toggle("active", t === name);
   });
   document.getElementById("subtitle").textContent =
     (name === "tfd" && hotMode) ? "Together Edition" : SUBTITLES[name];
@@ -69,6 +73,38 @@ document.getElementById("navTfd").addEventListener("click", () => switchTab("tfd
 document.getElementById("navJourneys").addEventListener("click", () => switchTab("journeys"));
 document.getElementById("navDuel").addEventListener("click", () => switchTab("duel"));
 document.getElementById("wdTeaser").addEventListener("click", () => switchTab("duel"));
+
+
+// ---------------- THE QUIET DOOR ----------------
+// Hold the ♥ in the header for a moment and the Moon tab (js/cycle.js) opens.
+// It has no nav button, so this gesture and `#moon=1` are the only ways in.
+// Chosen because the header is on every tab, nobody long-presses a decorative
+// heart by accident, and it changes nothing about how the app looks.
+//
+// To be clear about what this is: the tab is HIDDEN, not protected. The repo
+// is public and the page source is readable, same as the lock screen. It
+// stops a shoulder-glance, not a curious reader.
+const CY_HOLD_MS = 1200;
+(function quietDoor() {
+  const heart = document.getElementById("secretHeart");
+  let timer = null;
+  const cancel = () => { clearTimeout(timer); timer = null; };
+  const start = () => {
+    cancel();
+    timer = setTimeout(() => {
+      timer = null;
+      if (activeTab === "cycle") return;
+      switchTab("cycle");
+      burst(innerWidth / 2, 90, ["🌙", "✨", "🌸", "💞"]);
+    }, CY_HOLD_MS);
+  };
+  heart.addEventListener("pointerdown", start);
+  ["pointerup", "pointercancel", "pointerleave"].forEach(ev =>
+    heart.addEventListener(ev, cancel));
+  // Long-press on a phone otherwise raises the copy/look-up callout, and on a
+  // laptop the right-click menu — both would fight the gesture.
+  heart.addEventListener("contextmenu", (e) => e.preventDefault());
+})();
 
 
 const toast = document.getElementById("toast");

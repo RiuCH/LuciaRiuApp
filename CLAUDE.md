@@ -23,7 +23,9 @@ June 2, 2026). Fun is a feature — keep the tone playful.
    environments we use. State lives in memory or in URL-hash params —
    always via the `getHashParam`/`setHashParam` helpers so params coexist
    (current: `#reunion=YYYY-MM-DD`, `#unlocked=1`, `#photo=<url>`,
-   `#me=lucia|riu`).
+   `#me=lucia|riu`, `#moon=1`). Private data is the exception — the 🌙 Moon
+   log stays out of the hash on purpose, since the hash is visible in the
+   address bar and in shared links.
 3. **The daily question must stay deterministic and shared.** The pool is
    shuffled by a seeded PRNG (`mulberry32`) into a *deck* and dealt one per
    day since July 24, 2026, so every question comes up once before any
@@ -40,8 +42,9 @@ June 2, 2026). Fun is a feature — keep the tone playful.
 
 ## Map of the files
 
-`index.html` is now just markup: the lock overlay, the four `<section
-class="page">` tabs, the nav, and the `<link>`/`<script src>` tags.
+`index.html` is now just markup: the lock overlay, the five `<section
+class="page">` tabs (four in the nav + the hidden 🌙 Moon one), the nav,
+and the `<link>`/`<script src>` tags.
 
 | File | What lives there |
 |---|---|
@@ -50,6 +53,7 @@ class="page">` tabs, the nav, and the `<link>`/`<script src>` tags.
 | `css/tfd.css` | Talk · Flirt · Dare: mode switches, deck buttons, prompt card |
 | `css/journeys.css` | timeline, journey cards, photo grid, lightbox, picker |
 | `css/duel.css` | letter pair, hearts, penalty modes |
+| `css/cycle.css` | 🌙 Moon: month grid, day marks, stat tiles |
 | `css/desktop.css` | the whole `@media (min-width: 900px)` layout |
 | `js/core.js` | hash params, `EPOCH`/`afterDark`, `mulberry32`, `dayNumber`, `switchTab`, `popToast`, `burst`, hearts |
 | `js/supabase.js` | `SUPABASE_*` config, `supa()`, `loadSettings()`, `saveReunion()`, `loadQuestions()` |
@@ -58,11 +62,12 @@ class="page">` tabs, the nav, and the `<link>`/`<script src>` tags.
 | `js/home.js` | `MISSYOU`, anniversary/clock/countdown ticks, couple photo (`cp*`) |
 | `js/journeys.js` | timeline CRUD + sort, iCloud album, lightbox (`jr*`) |
 | `js/duel.js` | Word Duel (`wd*`) |
+| `js/cycle.js` | 🌙 Moon: cycle calendar + our tally (`cy*`) — the hidden tab |
 | `js/lock.js` | login gate |
 | `js/init.js` | boot order — **loads last** |
 
 Script order in `index.html` is load-bearing: `core` → `supabase` →
-`questions` → `home` → `journeys` → `duel` → `lock` → `init`. Anything
+`questions` → `home` → `journeys` → `duel` → `cycle` → `lock` → `init`. Anything
 running at *top level* may only reference things defined in an
 earlier-loaded file; calls made later (inside handlers or from `init.js`)
 can reference anything.
@@ -78,8 +83,10 @@ can reference anything.
 - `CHIPS` — category labels/colors
 - Constants: `EPOCH` (day counter start), `ANNIVERSARY` (June 2, 2026),
   `TZ_RIU`/`TZ_LUCIA` (clock timezones)
-- Tabs: sections `#page-home`, `#page-tfd`, `#page-journeys`, `#page-duel`
-  + `switchTab()`
+- Tabs: sections `#page-home`, `#page-tfd`, `#page-journeys`, `#page-duel`,
+  `#page-cycle` + `switchTab()`, which iterates the `TABS` array in
+  `js/core.js`. A tab with no `NAVIDS` entry simply has no nav button —
+  that's how 🌙 Moon stays hidden
 - Question of the Day: a card on **Home** (`qotd*` in `js/home.js`), not a
   tab. One per day, same on both phones, unchanged by refresh
 - Talk · Flirt · Dare (`#page-tfd`): three decks, live `Math.random()` draws
@@ -96,7 +103,15 @@ can reference anything.
   flavours), `wd*` functions. v7: hearts/round/letters/
   answers live in the one-row `duel` table, polled while the tab is open;
   `#me` picks your side; falls back to a one-phone session game offline
-- Couple photo: `cp*` block — home hero image from `settings.home_photo`
+- 🌙 Moon (`#page-cycle`, `cy*` in `js/cycle.js`): Lucia's cycle calendar and
+  our own tally on one month grid — logged/predicted period days, the
+  fertile-window estimate, 💞 counts per day, plus cycle-day/average-cycle
+  stats and total · month · year · 🏆 best day · 🔥 longest streak. **No nav
+  button**: you long-press the header `♥` (`#secretHeart`, 1.2s, the "quiet
+  door" in `js/core.js`) or use `#moon=1`. State = `settings.cycle_periods`
+  (`start:len`) + `settings.love_log` (`date:count`), no migration needed;
+  deliberately never written to the URL hash. **Hidden, not private** — the
+  repo is public, same honesty as the lock screen
   (URL / upload data-URL / `album:<link>` = Apple-album photo-of-the-day,
   seed offset 15485863); `#photo=` hash + session fallbacks
 - Home widgets: `tickAnniversary()`, `tickClocks()`, `tickCountdown()`
