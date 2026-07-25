@@ -75,6 +75,9 @@ document.querySelectorAll("#jrSort .chip").forEach(ch => {
 function renderJourneys() {
   const box = document.getElementById("jrTimeline");
   box.innerHTML = "";
+  // this render replaces every container the queued hydrations pointed at,
+  // so drop them — otherwise re-renders while away from Trips pile up
+  jrPendingHydration = [];
   if (!journeys.length) {
     const empty = document.createElement("div");
     empty.className = "jr-empty";
