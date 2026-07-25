@@ -14,6 +14,25 @@ during a call" game: live `Math.random()` is fine for those (no seed
 offset needed) because only one device generates state. Deterministic
 seeding is only required when BOTH phones must independently agree.
 
+## Or: a second game inside an existing tab (the 🎮 Games pattern)
+
+The nav is full at four buttons, so game #4 went *inside* the Duel tab
+rather than beside it — that tab is now 🎮 Games. `#page-duel` holds a
+`.games-picker` plus two wrappers, `#gameDuel` and `#game20q`;
+`gamesShow(which)` in `js/twenty.js` toggles them and sets `gamesPick`
+(declared in `js/core.js` so each game can guard its own poll).
+
+Three things that bit, in order:
+
+- **Hide with `display:none`, show with `""`** — never `"block"`. An inline
+  display silently overrides the desktop grid, and the duel quietly lost its
+  two-column layout.
+- **Move the desktop grid onto the wrapper.** `css/desktop.css` targeted
+  `#page-duel.active`; with a wrapper in between, the grid items are no
+  longer the page's children. Those rules live on `#gameDuel` now, scoped
+  so the other game keeps its own margins.
+- **Guard every poll on `gamesPick`**, or the hidden game keeps hitting the
+  DB every 2s and re-rendering behind the one you're actually looking at.
 ## Or: a tab with no nav button (the 🌙 Moon pattern)
 
 `#page-cycle` (2026-07-25) is the reference for a tab that shouldn't be
