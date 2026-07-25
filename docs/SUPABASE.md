@@ -28,7 +28,7 @@ falls back to the hardcoded copies and in-memory state ("local mode").
 |---|---|---|
 | `journeys` | timeline entries (place, dates, description, album link) | seed entry + in-memory adds |
 | `settings` | `lock_keys` (password), `reunion_date` (shared countdown), `home_photo` (home photo: URL, upload data-URL, or `album:<link>`) | hardcoded `LOCK_KEYS`, `#reunion=` / `#photo=` hash params |
-| `questions` | the full question bank (`category`, `text`) | hardcoded `BANK` |
+| `questions` | the full prompt bank (`category`, `text`) — 345 rows in 11 categories: the Question-of-the-Day pool, the Talk/Flirt decks, and both Dare decks | hardcoded `BANK` |
 | `album_cache` | slimmed iCloud shared-album metadata, keyed by album token — written and read by `api/album.js`, never by the browser | fetch straight from iCloud (correct, just slow) |
 
 - **Change the password:** Table editor → `settings` → edit the `lock_keys`
@@ -56,11 +56,22 @@ per-category order must match exactly, or the shared daily pick diverges
 between an online phone (DB copy) and an offline one (hardcoded copy).
 After editing `BANK`, regenerate and re-apply:
 
+**For a project that already has rows, append — don't reseed.** Add new
+questions at the END of their category array in `js/questions.js`, then:
+
 ```bash
-python3 supabase/generate_seed.py     # rewrites seed_questions.sql from index.html
-# then in the Supabase SQL editor:
-#   delete from questions;
-#   (paste the new seed_questions.sql)
+python3 supabase/append_questions.py            # dry run — shows the diff
+python3 supabase/append_questions.py --apply    # inserts, then verifies
+```
+
+It aborts if the stored rows aren't a prefix of `BANK` (order drift would
+desync the two copies), and never deletes anything.
+
+For a brand-new project, generate and paste the whole seed instead:
+
+```bash
+python3 supabase/generate_seed.py     # rewrites seed_questions.sql from js/questions.js
+# then paste supabase/seed_questions.sql into the Supabase SQL editor
 ```
 
 ## Why `album_cache` exists

@@ -41,7 +41,7 @@ seeding is only required when BOTH phones must independently agree.
    NAVIDS.mygame = "navMygame";
    ```
    …and make sure `switchTab` iterates your tab (extend the
-   `["home","game","journeys","duel"]` array) and add the click listener
+   `["home","tfd","journeys","duel"]` array) and add the click listener
    like the others.
 5. **Teaser (optional but nice)** — add a tappable `.panel.teaser` card on
    Home that `switchTab`s to your game, like the Question of the Day teaser.

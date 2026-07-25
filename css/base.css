@@ -13,9 +13,10 @@
   --text: #fdf3f7;
   --text-dim: rgba(253, 243, 247, 0.62);
 }
-/* matches both <html> and <body> — the root needs the theme vars too so the
-   canvas colour below follows After Dark (js/questions.js toggles both) */
-.afterdark {
+/* Together mode's hot palette. Matches <html> AND <body> — the root needs
+   the vars too so the canvas colour below follows the theme (js/tfd.js
+   toggles both). */
+.hot {
   --bg1: #0d0208;
   --bg2: #2b040f;
   --bg3: #560a1f;

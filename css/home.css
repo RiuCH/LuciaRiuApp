@@ -120,3 +120,25 @@ input[type="date"] {
   transition: border-color 0.3s ease;
 }
 .cp-linkrow input:focus { border-color: var(--accent); }
+
+/* ------- question of the day (home) ------- */
+.qotd .qotd-chiprow { margin-bottom: 12px; }
+.qotd .qotd-q {
+  font-size: 18px;
+  line-height: 1.45;
+  font-weight: 500;
+  transition: opacity 0.25s ease;
+}
+.qotd .qotd-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 14px;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.qotd .qotd-foot button { padding: 8px 16px; font-size: 13px; }
+@media (max-width: 420px) { .qotd .qotd-q { font-size: 17px; } }

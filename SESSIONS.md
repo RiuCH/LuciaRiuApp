@@ -58,6 +58,8 @@ out of each other's way.
 
 | Date | Who | Feature | Notes |
 |---|---|---|---|
+| 2026-07-25 | Riu | Question of the Day moved to Home; Daily Q tab replaced by Talk · Flirt · Dare | New `js/tfd.js` + `css/tfd.css`; tab key `game` → `tfd`; one 💞 Together / ✈️ Apart switch picks the decks and drives the hot theme (`hotMode` + `.hot`, replacing the After Dark toggle). Bank 215 → 345 prompts: `filthy` + four Dare decks (apart/together × normal/explicit). Home's card draws from `QOTD_CATS` only |
+| 2026-07-25 | Riu | Deep Talk mode + 80 new questions + no-repeat seeding | New `deep` category (30 Qs, Deep Talk mode only, offset 32452843) and +10 per existing category — bank 135 → 215, appended to the DB non-destructively via `supabase/append_questions.py`. `dailyQuestion()` now deals a seeded deck (`shuffledOrder`/`deckForCycle`) instead of one blind draw, so no question repeats until the pool is exhausted and consecutive days can never match |
 | 2026-07-24 | Riu | Album metadata cache (picker 50s → ~1s) | iCloud `webstream` measured at 50.4s for a 365-photo album vs 0.95s for `webasseturls`; it was called on every request. Now 3-tier cached: memory → `album_cache` table → iCloud (PR #11 + #12) |
 | 2026-07-24 | Riu | Journey photos fetched only when Trips is opened | `TAB_HOOKS` registry in `js/core.js` for on-screen-only work; `jrPrewarmAlbums` warms album JSON at idle; iCloud CDN preconnect. Boot photo cost 384KB → 0 (and ~5.8MB → 0 at 30 trips) (PR #10) |
 | 2026-07-24 | Riu | **Modular split — one tab, one js + one css** | `index.html` 2483 → 263 lines; `css/*` + `js/*`. Classic scripts, NEVER ES modules (they break `file://`). Script order load-bearing: core → supabase → questions → home → journeys → duel → lock → init. Golden rule #1 is now "no build step" (PR #8) |
@@ -83,7 +85,8 @@ out of each other's way.
 | 0 | Question of the Day (normal) |
 | 104729 | Question of the Day (After Dark) |
 | 15485863 | Couple photo — Apple-album photo-of-the-day |
-| _next free: 32452843, then any unlisted prime_ | |
+| 32452843 | Question of the Day (Deep Talk) |
+| _next free: 49979687, then any unlisted prime_ | |
 
 **URL hash params** (via `getHashParam`/`setHashParam` only):
 | Param | Feature |
@@ -96,12 +99,13 @@ out of each other's way.
 | Tab key | Feature |
 |---|---|
 | `home` | Home |
-| `game` | Question of the Day |
+| `tfd` | Talk · Flirt · Dare |
 | `journeys` | Journeys timeline |
 | `duel` | Word Duel (took over the retired `soon` placeholder slot) |
 
 **Element id / CSS class prefixes:** `lock*` (login), `cd*` (countdown),
-`nav*` (nav buttons), `tick*` (home widget functions), `jr*` (journeys
+`nav*` (nav buttons), `tick*` (home widget functions), `tfd*` (Talk · Flirt ·
+Dare), `qotd*` (home Question of the Day), `jr*` (journeys
 timeline), `wd*` (Word Duel), `cp*` (couple photo). New features should
 pick their own short prefix and list it here.
 

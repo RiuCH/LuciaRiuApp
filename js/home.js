@@ -242,3 +242,29 @@ document.getElementById("cpLinkSave").addEventListener("click", () => {
   document.getElementById("cpLinkRow").style.display = "none";
   document.getElementById("cpOptions").style.display = "none";
 });
+
+
+// ---------------- QUESTION OF THE DAY (home card) ----------------
+// One question a day, identical on both phones, and it does NOT change when
+// you refresh — dailyQuestion() deals from a date-seeded deck (js/questions.js).
+let qotdCurrent = null;
+
+function qotdRender() {
+  const q = dailyQuestion();
+  qotdCurrent = q;
+  document.getElementById("qotdText").textContent = q.text;
+  styleChip(document.getElementById("qotdChip"), q.cat);
+  document.getElementById("qotdDay").textContent = "Day " + dayNumber();
+  return q;
+}
+
+document.getElementById("qotdCopy").addEventListener("click", async (e) => {
+  e.stopPropagation();
+  const text = (qotdCurrent ? qotdCurrent.text : "") + "  — Lucia ♥ Riu, Day " + dayNumber();
+  try {
+    await navigator.clipboard.writeText(text);
+    popToast("Copied! Send it 💌");
+  } catch {
+    popToast("Couldn't copy — long-press the question instead");
+  }
+});

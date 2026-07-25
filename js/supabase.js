@@ -73,8 +73,7 @@ async function loadQuestions() {
     // only swap in a complete bank — a partial one would break determinism
     if (Object.keys(CHIPS).every(c => bank[c] && bank[c].length)) {
       QUESTION_SOURCE = bank;
-      renderHeader();
-      show(dailyQuestion(), true);
+      qotdRender(); // redeal today's card from the DB copy (same content)
     }
   } catch (e) { /* fallback BANK keeps working */ }
 }

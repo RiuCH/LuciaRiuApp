@@ -1,0 +1,78 @@
+/* tfd.css — Lucia ♥ Riu
+   Talk · Flirt · Dare: the mode switches, the three deck buttons and the
+   prompt card. Mobile is the source of truth; desktop.css only widens it. */
+
+/* ------- mode switches (distance + After Dark) ------- */
+.tfd-seg {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.tfd-seg button {
+  cursor: pointer;
+  padding: 8px 18px;
+  font-size: 12px;
+  opacity: 0.45;
+  transition: opacity 0.25s ease, box-shadow 0.25s ease, transform 0.15s ease;
+}
+.tfd-seg button.sel {
+  opacity: 1;
+  box-shadow: 0 0 14px var(--accent-soft);
+}
+.tfd-modes .rowbtns { margin-top: 12px; }
+.tfd-modes .hint { margin-top: 10px; }
+
+/* ------- the three decks ------- */
+.tfd-picker {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.tfd-picker button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 6px 14px;
+  border-radius: 20px;
+  font-size: 26px;          /* the emoji */
+  line-height: 1;
+}
+.tfd-picker button span {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.tfd-picker button.sel {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 10px 28px var(--accent-soft);
+}
+
+/* ------- the prompt ------- */
+.tfd-card { min-height: 240px; gap: 18px; }
+.tfd-text {
+  font-size: 23px;
+  line-height: 1.45;
+  font-weight: 500;
+  max-width: 440px;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.tfd-blurb {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  max-width: 340px;
+  transition: opacity 0.2s ease;
+}
+.tfd-card.swapping .tfd-text,
+.tfd-card.swapping .tfd-blurb { opacity: 0; transform: translateY(8px); }
+
+@media (max-width: 420px) {
+  .tfd-text { font-size: 20px; }
+  .tfd-picker button { font-size: 23px; padding: 14px 4px 12px; }
+  .tfd-picker button span { font-size: 12px; letter-spacing: 1px; }
+}

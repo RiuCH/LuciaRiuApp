@@ -43,7 +43,7 @@ into any other by then — only *top-level* code is order-sensitive.
 ### Data
 | Thing | What it is |
 |---|---|
-| `BANK` | ~135 questions in 5 category arrays (funny/romantic/spicy/nasty/ldr) |
+| `BANK` | 345 prompts in 11 category arrays — questions, plus the two Dare decks |
 | `MISSYOU` | 15 miss-you strings for the generator |
 | `CHIPS` | category → label + color |
 | `EPOCH` | Jul 24 2026 — "Day 1" of the app's day counter |
@@ -51,11 +51,22 @@ into any other by then — only *top-level* code is order-sensitive.
 | `TZ_RIU` / `TZ_LUCIA` | IANA timezones for the dual clocks |
 
 ### Determinism (the core trick)
-`dailyQuestion()` seeds `mulberry32` (a tiny 32-bit PRNG) with
-`dayNumber() * 7919` and takes one draw from the flattened pool. Deterministic
-seed ⇒ identical question on both phones. After Dark daily uses seed offset
-`104729` over the spicy+nasty pool only. New daily features should use fresh
-prime offsets.
+`dailyQuestion()` deals from a **seeded deck** rather than drawing blind.
+`shuffledOrder()` runs Fisher–Yates over the whole pool using `mulberry32`
+(a tiny 32-bit PRNG) seeded with `modeOffset() + cycle * 7919`; the day
+index picks a card from that order. Deterministic seed ⇒ identical question
+on both phones, and because it's a permutation, **every question appears
+exactly once before any repeats**. `deckForCycle()` also swaps the first two
+cards if a new deck would open on the card the previous one closed with, so
+consecutive days can never match.
+
+(The original version seeded per-day and took a single draw. That repeated
+a question on consecutive days ~5×/year and only surfaced 127 of 135
+questions in a year — independent draws collide by the birthday problem.)
+
+Mode seed offsets: normal `0`, After Dark `104729` (spicy+nasty), Deep Talk
+`32452843` (deep only). New daily features should use fresh prime offsets —
+claim them in `SESSIONS.md`.
 
 `randomQuestion()` (the 🎲 button) is intentionally NOT shared — real
 `Math.random()`, with in-session repeat avoidance (`usedShuffle`).
