@@ -24,7 +24,6 @@ function setHashParam(name, val) {
 const EPOCH = new Date(2026, 6, 24); // Day 1 = July 24, 2026 (local time)
 let afterDark = false;
 
-
 function mulberry32(seed) {
   return function() {
     seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
@@ -39,6 +38,7 @@ function dayNumber() {
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   return Math.max(1, Math.round((today - EPOCH) / 86400000) + 1);
 }
+
 
 // ---------------- TABS ----------------
 const SUBTITLES = { home: "Our Little Universe", game: "Question of the Day", journeys: "Everywhere, Together", duel: "The Word Duel" };
@@ -62,6 +62,7 @@ document.getElementById("navDuel").addEventListener("click", () => switchTab("du
 document.getElementById("teaserCard").addEventListener("click", () => switchTab("game"));
 document.getElementById("wdTeaser").addEventListener("click", () => switchTab("duel"));
 
+
 const toast = document.getElementById("toast");
 
 function popToast(msg) {
@@ -69,6 +70,7 @@ function popToast(msg) {
   toast.classList.add("show");
   setTimeout(() => toast.classList.remove("show"), 2200);
 }
+
 
 // ---------------- EFFECTS ----------------
 function burst(x, y, set) {

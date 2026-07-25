@@ -160,6 +160,7 @@ const CHIPS = {
   ldr:      { label: "💌 Long Distance", color: "#7ac7ff" }
 };
 
+
 let usedShuffle = [];
 let current = null;
 
@@ -198,11 +199,11 @@ function randomQuestion() {
   return pick;
 }
 
+
 // ---------------- GAME RENDER ----------------
 const elQ = document.getElementById("question");
 const elChip = document.getElementById("chip");
 const elHint = document.getElementById("hint");
-
 
 function styleChip(el, cat) {
   const chip = CHIPS[cat];

@@ -229,12 +229,17 @@
 </nav>
 
 <div class="toast" id="toast">Copied!</div>
-<div class="jr-lightbox" id="jrLightbox"><img id="jrLightboxImg" alt="journey photo, full size"></div>
+<div class="jr-lightbox" id="jrLightbox"><img id="jrLightboxImg" alt="journey photo, full size"><video id="jrLightboxVid" controls playsinline style="display:none"></video></div>
 <div class="jr-picker" id="jrPicker">
   <div class="panel jr-picker-box">
     <div class="ptitle">Pick the photos our timeline shows</div>
     <div class="jr-picker-note" id="jrPickerNote">Loading album… 📸</div>
     <div class="jr-picker-grid" id="jrPickerGrid"></div>
+    <div class="jr-picker-nav" id="jrPickerNav" style="display:none">
+      <button id="jrPickerPrev">‹ Prev</button>
+      <span class="jr-picker-pagelbl" id="jrPickerPageLbl"></span>
+      <button id="jrPickerNext">Next ›</button>
+    </div>
     <div class="rowbtns">
       <button class="primary" id="jrPickerSave">💾 Save picks</button>
       <button id="jrPickerClear">Newest 6 instead</button>
