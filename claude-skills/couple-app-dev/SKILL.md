@@ -229,6 +229,16 @@ Commit → push to `main` → Vercel auto-deploys https://lucia-riu-app.vercel.a
 within ~a minute. Both partners refresh. Never push a broken main; if a
 change is risky, test locally first — there is no staging environment.
 
+**Roadmap additions go straight to `main`.** Asked to "add this to the
+roadmap"? Write the entry in `docs/ROADMAP.md`, commit, push — no branch, no
+PR, no asking first. The app never loads that file, so it cannot break a
+deploy, and an idea stuck in a review queue is an idea nobody can see. Same
+for the parking lot / ideas backlog.
+
+Code is the opposite: branch + PR, as always. If a roadmap edit is sitting in
+a feature branch next to code, lift that one file over to `main` (stash it,
+switch, pop) instead of merging the branch to get it out.
+
 ## Keep the skills in sync (do this as part of every feature)
 
 The skills in `claude-skills/` are living docs — when a change makes them

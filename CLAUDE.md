@@ -180,6 +180,16 @@ couple-app-dev), then run `./setup-claude.sh` to refresh `.claude/skills/`.
 edit `index.html` → open in browser to test → commit → push to `main`
 → Vercel deploys → both refresh their phones. That's the whole pipeline.
 
+**Roadmap additions skip the ceremony.** When Riu or Lucia says "add this to
+the roadmap", write the entry in `docs/ROADMAP.md` and commit it straight to
+`main` — no branch, no PR, don't ask. It's a docs-only change to a file the
+app never loads, so it can't break a deploy, and an idea sitting in a review
+queue is an idea nobody can see. Same for the ideas backlog / parking lot.
+
+This is the exception, not the pattern: **code** still gets a branch and a
+PR. If a roadmap edit happens to be sitting in a feature branch alongside
+code, lift just that file over to `main` rather than merging the branch.
+
 ## Parallel sessions
 
 Multiple Claude sessions may be building different features at once.
