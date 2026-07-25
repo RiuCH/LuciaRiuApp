@@ -58,6 +58,7 @@ out of each other's way.
 
 | Date | Who | Feature | Notes |
 |---|---|---|---|
+| 2026-07-25 | Riu | Duel sync actually works (no migration needed) | Moved off the unrun `duel` table onto `settings.duel_state` + `duel_first`, so sharing needs zero setup; poll 2.5s → 2s plus a pull on `visibilitychange`/`focus` (phones freeze timers in background tabs); sync status line now tells the truth instead of always claiming "shared" |
 | 2026-07-25 | Riu | Word Duel v7: shared hearts, typing race, 100 situation-based penalties | New `duel` table (one row, polled every 2.5s on-tab); `me` hash param picks your side; race settled by a `first_by=is.null` PATCH so Postgres decides, not two clocks; "I lost" no longer rerolls letters; penalties reorganised into two situation pools — 🏠 in person (35) and 💌 long distance (65, the complete one), each mixing funny/spicy/nasty with the flavour shown as a tag. **Needs `supabase/duel.sql` run before hearts actually sync.** |
 | 2026-07-25 | Riu | Question of the Day moved to Home; Daily Q tab replaced by Talk · Flirt · Dare | New `js/tfd.js` + `css/tfd.css`; tab key `game` → `tfd`; one 💞 Together / ✈️ Apart switch picks the decks and drives the hot theme (`hotMode` + `.hot`, replacing the After Dark toggle). Bank 215 → 345 prompts: `filthy` + four Dare decks (apart/together × normal/explicit). Home's card draws from `QOTD_CATS` only |
 | 2026-07-25 | Riu | Deep Talk mode + 80 new questions + no-repeat seeding | New `deep` category (30 Qs, Deep Talk mode only, offset 32452843) and +10 per existing category — bank 135 → 215, appended to the DB non-destructively via `supabase/append_questions.py`. `dailyQuestion()` now deals a seeded deck (`shuffledOrder`/`deckForCycle`) instead of one blind draw, so no question repeats until the pool is exhausted and consecutive days can never match |
@@ -117,10 +118,11 @@ implicit rows and breaks the composition.
 **Global constants / backends:** `SUPABASE_URL` + `SUPABASE_ANON_KEY`
 (journeys feature owns the Supabase config constants; future Supabase
 features reuse them — see docs/SUPABASE.md). Supabase table names are
-global identifiers too: `journeys`, `settings`, `questions`, `album_cache`,
-`duel` are claimed.
+global identifiers too: `journeys`, `settings`, `questions`, `album_cache`
+are claimed.
 Settings keys claimed: `lock_keys`, `reunion_date`, `home_photo` (couple
-photo: image URL, upload data-URL, or `album:<link>` for photo-of-the-day).
+photo: image URL, upload data-URL, or `album:<link>` for photo-of-the-day),
+`duel_state` + `duel_first` (Word Duel shared game).
 
 **Serverless endpoints (`api/`):** `album` (iCloud shared-album proxy,
 journeys feature). Claim new endpoint paths here before using them.
