@@ -58,7 +58,7 @@ out of each other's way.
 
 | Date | Who | Feature | Notes |
 |---|---|---|---|
-| 2026-07-24 | Riu | Word Duel v7: shared hearts, typing race, Nasty LDR | New `duel` table (one row, polled every 2.5s on-tab); `me` hash param picks your side; race settled by a `first_by=is.null` PATCH so Postgres decides, not two clocks; "I lost" no longer rerolls letters |
+| 2026-07-24 | Riu | Word Duel v7: shared hearts, typing race, Nasty LDR | New `duel` table (one row, polled every 2.5s on-tab); `me` hash param picks your side; race settled by a `first_by=is.null` PATCH so Postgres decides, not two clocks; "I lost" no longer rerolls letters; penalties reorganised into two situation pools (`inperson`/`ldr`) each mixing funny/spicy/nasty |
 | 2026-07-24 | Riu | Album metadata cache (picker 50s → ~1s) | iCloud `webstream` measured at 50.4s for a 365-photo album vs 0.95s for `webasseturls`; it was called on every request. Now 3-tier cached: memory → `album_cache` table → iCloud (PR #11 + #12) |
 | 2026-07-24 | Riu | Journey photos fetched only when Trips is opened | `TAB_HOOKS` registry in `js/core.js` for on-screen-only work; `jrPrewarmAlbums` warms album JSON at idle; iCloud CDN preconnect. Boot photo cost 384KB → 0 (and ~5.8MB → 0 at 30 trips) (PR #10) |
 | 2026-07-24 | Riu | **Modular split — one tab, one js + one css** | `index.html` 2483 → 263 lines; `css/*` + `js/*`. Classic scripts, NEVER ES modules (they break `file://`). Script order load-bearing: core → supabase → questions → home → journeys → duel → lock → init. Golden rule #1 is now "no build step" (PR #8) |

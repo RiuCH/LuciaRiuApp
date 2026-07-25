@@ -29,7 +29,7 @@ falls back to the hardcoded copies and in-memory state ("local mode").
 | `journeys` | timeline entries (place, dates, description, album link) | seed entry + in-memory adds |
 | `settings` | `lock_keys` (password), `reunion_date` (shared countdown), `home_photo` (home photo: URL, upload data-URL, or `album:<link>`) | hardcoded `LOCK_KEYS`, `#reunion=` / `#photo=` hash params |
 | `questions` | the full question bank (`category`, `text`) | hardcoded `BANK` |
-| `duel` | Word Duel shared state: hearts, round, current letters, typed answers, who answered first, penalty | in-memory one-phone game (exactly how it worked before v7) |
+| `duel` | Word Duel shared state: hearts, round, current letters, typed answers, who answered first, penalty (`penalty_mode` is `inperson` or `ldr`) | in-memory one-phone game (exactly how it worked before v7) |
 | `album_cache` | slimmed iCloud shared-album metadata, keyed by album token — written and read by `api/album.js`, never by the browser | fetch straight from iCloud (correct, just slow) |
 
 - **Change the password:** Table editor → `settings` → edit the `lock_keys`

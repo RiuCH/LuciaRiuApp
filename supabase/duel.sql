@@ -17,7 +17,7 @@ create table if not exists duel (
   -- Who got their answer in first. Set with a `first_by=is.null` filter so
   -- Postgres decides the race, not two phone clocks that may disagree.
   first_by text,
-  penalty_mode text not null default 'funny', -- funny | spicy | ldr | nastyldr
+  penalty_mode text not null default 'ldr',   -- inperson | ldr (the two situations)
   penalty text,                  -- the spun penalty, shared so both read the same one
   updated_at timestamptz not null default now(),
   constraint duel_single_row check (id = 1)

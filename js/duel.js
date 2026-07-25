@@ -7,62 +7,82 @@
 // Letters are weighted toward playable combos: common starts × common ends.
 const WD_STARTS = "AAABBBCCCDDDEEEFFGGHHIIJKLLMMNNOOPPPRRRSSSSTTTUVWY";
 const WD_ENDS   = "AADDDEEEEGGGHHKKLLLMMNNNOOPPRRRSSSTTTTWYY";
+// Penalties are organised by SITUATION, not by flavour: what's even possible
+// depends entirely on whether we're in the same room. Each pool mixes funny,
+// spicy and nasty, and the draw is from the whole pool — the flavour tag just
+// gets shown alongside the result so you know what you're in for.
+const WD_FLAVORS = { funny: "😂 Funny", spicy: "🌶️ Spicy", nasty: "😈 Nasty" };
 const WD_PENALTIES = {
-  funny: [
-    "Send a selfie making the ugliest face you can. It may legally be used as blackmail.",
-    "Talk in a terrible British accent for the next 5 minutes of the call. Cheerio.",
-    "Send a 3-sentence apology speech for losing — maximum drama, minimum dignity.",
-    "Change your phone wallpaper to a photo the winner picks. 24 hours minimum.",
-    "Sing the chorus of a song the winner chooses. Voice message. No excuses.",
-    "Do 10 pushups on camera. Form will be judged. Harshly.",
-    "The winner picks your profile picture for tomorrow. Choose your enemy wisely.",
-    "Speak only in questions for the next 3 minutes? Can you do it? Are you sure?",
-    "Send a voice message narrating your defeat like a nature documentary.",
-    "Draw a portrait of the winner in 60 seconds and send it. It will be framed. Emotionally."
-  ],
-  spicy: [
-    "Send the winner your most smoldering selfie. Effort is mandatory.",
-    "Give the winner one IOU kiss — redeemable anywhere, anytime, no refusing.",
-    "Describe your favorite thing about the winner's looks. In detail. Out loud. Now.",
-    "Whisper the next thing you say on the call. Whatever it is.",
-    "Send a flirty text so good it would've worked on you.",
-    "The winner picks your outfit for the next video call. Within reason. Barely.",
-    "Tell the winner exactly what you'd do if you were together right now. Start talking.",
-    "One genuine compliment about the winner every hour, next 3 hours. Set alarms.",
-    "Blow a kiss on camera. Make it embarrassingly cinematic.",
-    "Rate the winner's kissing skills out of 10, out loud, and defend the score."
+  inperson: [
+    { f: "funny", t: "Talk in a terrible British accent for the next 5 minutes. Cheerio." },
+    { f: "funny", t: "Stand up and deliver a 3-sentence apology speech. Maximum drama, minimum dignity." },
+    { f: "funny", t: "10 pushups. Right now. Form will be judged, harshly." },
+    { f: "funny", t: "Sing the chorus of a song the winner picks. Out loud. In this room." },
+    { f: "funny", t: "Speak only in questions for 3 minutes? Can you manage it? Are you sure?" },
+    { f: "funny", t: "Draw a portrait of the winner in 60 seconds. It will be displayed. Forever." },
+    { f: "funny", t: "The winner does your hair however they want. It stays that way for an hour." },
+    { f: "funny", t: "Narrate the next 2 minutes of your life like a nature documentary." },
+    { f: "funny", t: "You're the designated snack-fetcher for the rest of the evening. Off you go." },
+    { f: "funny", t: "The winner picks your outfit for the rest of the day. No vetoes." },
+    { f: "spicy", t: "Five-minute massage for the winner. Timed. No negotiating." },
+    { f: "spicy", t: "Kiss the winner. They choose where." },
+    { f: "spicy", t: "Slow dance with the winner to a song they pick. Full commitment." },
+    { f: "spicy", t: "Compliment the winner's body out loud, in detail, holding eye contact the whole time." },
+    { f: "spicy", t: "Big spoon duty all night. No complaints, no rolling away." },
+    { f: "spicy", t: "Winner's choice: neck kisses or a proper back scratch. You deliver either way." },
+    { f: "nasty", t: "Whisper what you want to do to them. In their ear. Right now." },
+    { f: "nasty", t: "The winner gets one guaranteed yes tonight. Any request. No refusing." },
+    { f: "nasty", t: "The winner picks what you're wearing to bed tonight. Or what you're not." },
+    { f: "nasty", t: "One instruction from the winner every hour tonight. You follow all of them." }
   ],
   ldr: [
-    "You plan the entire next video date: theme, food, activity. Winner just shows up.",
-    "Write the winner a goodnight text so sweet it needs a warning label. Tonight.",
-    "Order or mail the winner one small surprise this week. Budget: love.",
-    "Make a 3-song playlist titled 'Sorry I Lost' and send it.",
-    "Good-morning selfie to the winner for the next 3 days. Set the alarm.",
-    "Match the winner's timezone for tomorrow's call — even the ugly hours.",
-    "Write 5 things we're doing at the next reunion. Send the list. It's binding.",
-    "The winner schedules one surprise call this week — you MUST pick up.",
-    "Photo-tour of your whole day tomorrow: minimum 5 pictures.",
-    "Count the days until the reunion in a voice message. Dramatically. With feeling."
-  ],
-  // long distance, but make it dangerous 😈
-  nastyldr: [
-    "Voice message the winner describing exactly what happens the first hour we're alone at the reunion.",
-    "Text the winner one thing you've thought about doing to them but never said out loud. Now.",
-    "The winner picks what you sleep in tonight. Photographic proof required.",
-    "Set a reminder for 11pm and send the winner a message that ruins their concentration.",
-    "Tell the winner your favorite thing they've ever done to you. Full detail. No abbreviating.",
-    "The winner gets one IOU, redeemable the moment we're in the same room. They name it now.",
-    "Send a photo taken from the winner's favorite angle of you. They'll know the one.",
-    "Answer any three questions the winner asks tonight. Completely honestly. No passing.",
-    "Describe what you'd do if the winner walked in right now — in exactly three messages.",
-    "The winner writes the first line of tonight's goodnight text. You have to finish it."
+    { f: "funny", t: "Send a selfie making the ugliest face you can. It may legally be used as blackmail." },
+    { f: "funny", t: "Change your phone wallpaper to a photo the winner picks. 24 hours minimum." },
+    { f: "funny", t: "Send a voice message narrating your defeat like a nature documentary." },
+    { f: "funny", t: "The winner picks your profile picture for tomorrow. Choose your enemy wisely." },
+    { f: "funny", t: "Sing the chorus of a song the winner chooses. Voice message. No excuses." },
+    { f: "funny", t: "Make a 3-song playlist titled 'Sorry I Lost' and send it." },
+    { f: "funny", t: "Draw a portrait of the winner in 60 seconds and send it. It will be framed. Emotionally." },
+    { f: "spicy", t: "Send the winner your most smoldering selfie. Effort is mandatory." },
+    { f: "spicy", t: "Give the winner one IOU kiss — redeemable the second we're together, no refusing." },
+    { f: "spicy", t: "Send a flirty text so good it would've worked on you." },
+    { f: "spicy", t: "Voice message your favorite thing about the winner's looks. In detail." },
+    { f: "spicy", t: "The winner picks your outfit for the next video call. Within reason. Barely." },
+    { f: "spicy", t: "One genuine compliment about the winner every hour, next 3 hours. Set alarms." },
+    { f: "spicy", t: "Blow a kiss on camera. Make it embarrassingly cinematic." },
+    { f: "ldr", t: "You plan the entire next video date: theme, food, activity. Winner just shows up." },
+    { f: "ldr", t: "Write the winner a goodnight text so sweet it needs a warning label. Tonight." },
+    { f: "ldr", t: "Order or mail the winner one small surprise this week. Budget: love." },
+    { f: "ldr", t: "Good-morning selfie to the winner for the next 3 days. Set the alarm." },
+    { f: "ldr", t: "Match the winner's timezone for tomorrow's call — even the ugly hours." },
+    { f: "ldr", t: "Write 5 things we're doing at the next reunion. Send the list. It's binding." },
+    { f: "ldr", t: "Photo-tour of your whole day tomorrow: minimum 5 pictures." },
+    { f: "ldr", t: "Count the days until the reunion in a voice message. Dramatically. With feeling." },
+    { f: "nasty", t: "Voice message the winner describing exactly what happens the first hour we're alone." },
+    { f: "nasty", t: "Text the winner one thing you've thought about doing to them but never said out loud. Now." },
+    { f: "nasty", t: "The winner picks what you sleep in tonight. Photographic proof required." },
+    { f: "nasty", t: "Set a reminder for 11pm and send the winner a message that ruins their concentration." },
+    { f: "nasty", t: "Tell the winner your favorite thing they've ever done to you. Full detail. No abbreviating." },
+    { f: "nasty", t: "Send a photo taken from the winner's favorite angle of you. They'll know the one." },
+    { f: "nasty", t: "Answer any three questions the winner asks tonight. Completely honestly. No passing." },
+    { f: "nasty", t: "Describe what you'd do if the winner walked in right now — in exactly three messages." }
   ]
 };
+// `ldr` doubles as a flavour label in that pool, so give it one too.
+WD_FLAVORS.ldr = "💌 Long Distance";
+
+function wdFlavorOf(text) {
+  for (const pool of Object.values(WD_PENALTIES)) {
+    const hit = pool.find(p => p.t === text);
+    if (hit) return WD_FLAVORS[hit.f] || "";
+  }
+  return "";
+}
 
 // ---- state (mirrors the `duel` row when Supabase is up) ----
 let wdHearts = { lucia: 5, riu: 5 };
 let wdRoundNum = 1;
-let wdPenaltyMode = "funny";
+let wdPenaltyMode = "ldr";   // we're apart more often than not
 let wdPlay = "say";                       // say | type
 let wdWords = { lucia: null, riu: null };
 let wdFirstBy = null;                     // who answered first this round
@@ -102,7 +122,8 @@ function wdApply(row) {
   wdPlay = row.play_mode || "say";
   wdWords = { lucia: row.word_lucia, riu: row.word_riu };
   wdFirstBy = row.first_by;
-  wdPenaltyMode = row.penalty_mode || "funny";
+  // guard against a row still holding a pre-v7.1 flavour name
+  wdPenaltyMode = WD_PENALTIES[row.penalty_mode] ? row.penalty_mode : "ldr";
   wdPenaltyText = row.penalty || "";
   if (row.l1 && row.l2) { wdL = { l1: row.l1, l2: row.l2 }; }
   wdRenderAll();
@@ -203,6 +224,10 @@ function wdRenderPenalty() {
   const box = document.getElementById("wdPenalty");
   box.textContent = wdPenaltyText;
   box.classList.toggle("show", !!wdPenaltyText);
+  const flavor = document.getElementById("wdFlavor");
+  const label = wdPenaltyText ? wdFlavorOf(wdPenaltyText) : "";
+  flavor.textContent = label;
+  flavor.style.display = label ? "inline-flex" : "none";
 }
 
 function wdRenderWhoAmI() {
@@ -324,7 +349,7 @@ wdWordInput.addEventListener("keydown", (e) => { if (e.key === "Enter") wdSubmit
 document.getElementById("wdSpin").addEventListener("click", (e) => {
   const pool = WD_PENALTIES[wdPenaltyMode];
   let pick;
-  do { pick = pool[Math.floor(Math.random() * pool.length)]; }
+  do { pick = pool[Math.floor(Math.random() * pool.length)].t; }
   while (pick === wdPenaltyText && pool.length > 1);
   wdPenaltyText = pick;
   wdRenderPenalty();

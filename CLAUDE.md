@@ -78,7 +78,8 @@ can reference anything.
   pool comes from `QUESTION_SOURCE` (= `BANK`, swapped to the DB copy once
   `loadQuestions()` succeeds — content identical, so the pick doesn't change)
 - Word Duel: `WD_STARTS`/`WD_ENDS` (weighted letters), `WD_PENALTIES`
-  (funny/spicy/ldr/nastyldr), `wd*` functions. v7: hearts/round/letters/
+  (two situation pools: `inperson`/`ldr`, each mixing funny/spicy/nasty
+  flavours), `wd*` functions. v7: hearts/round/letters/
   answers live in the one-row `duel` table, polled while the tab is open;
   `#me` picks your side; falls back to a one-phone session game offline
 - Couple photo: `cp*` block — home hero image from `settings.home_photo`

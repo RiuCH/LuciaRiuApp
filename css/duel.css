@@ -79,3 +79,6 @@
 .wd-whoami .chip { cursor: pointer; opacity: 0.45; transition: opacity 0.25s ease, box-shadow 0.25s ease; }
 .wd-whoami .chip.sel { opacity: 1; box-shadow: 0 0 14px var(--accent-soft); }
 .wd-player.wd-me { border-color: var(--accent); }
+
+/* the flavour of the drawn penalty (funny / spicy / nasty) */
+.wd-flavor { margin-top: 14px; }
