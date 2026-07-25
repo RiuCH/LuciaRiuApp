@@ -43,12 +43,15 @@ function dayNumber() {
 
 
 // ---------------- TABS ----------------
-const SUBTITLES = { home: "Our Little Universe", tfd: "Talk · Flirt · Dare", journeys: "Everywhere, Together", duel: "The Word Duel", cycle: "Moonlight" };
-// `cycle` is deliberately missing: it's the one tab with no nav button, so
-// nothing in the nav ever lights up for it. See "the quiet door" below.
+const SUBTITLES = { home: "Our Little Universe", tfd: "Talk · Flirt · Dare", journeys: "Everywhere, Together", duel: "The Games Room", cycle: "Moonlight" };
+// `cycle` is deliberately missing from NAVIDS: it's the one tab with no nav
+// button, so nothing in the nav ever lights up for it. See "the quiet door".
 const NAVIDS = { home: "navHome", tfd: "navTfd", journeys: "navJourneys", duel: "navDuel" };
 const TABS = ["home", "tfd", "journeys", "duel", "cycle"];
 let activeTab = "home";
+// The Games tab (key "duel") hosts more than one game; js/twenty.js owns
+// the chooser and sets this. Lives here so each game can guard its own poll.
+let gamesPick = "duel";   // "duel" | "q20"
 
 // A tab can register work that must only run once it's actually on screen —
 // e.g. building <img> elements, which never load inside a display:none

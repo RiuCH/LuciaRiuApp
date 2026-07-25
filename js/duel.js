@@ -155,12 +155,20 @@ function wdStarted() {
   return wdRoundNum > 1 || wdHearts.lucia < 5 || wdHearts.riu < 5 ||
          !!wdWords.lucia || !!wdWords.riu;
 }
-// You may pick a side freely until the game starts; after that you're stuck
-// with it, so nobody can swap into the other's identity mid-match. Restart is
-// the way out if you tapped the wrong name. Note this only bites once wdMe is
-// set — otherwise a game started on one phone would lock the other one out of
-// ever choosing.
-function wdSideLocked() { return !!wdMe && wdStarted(); }
+// You may pick a side freely until a game starts; after that you're stuck with
+// it, so nobody can swap into the other's identity mid-match. Restart is the
+// way out if you tapped the wrong name. Note this only bites once wdMe is set —
+// otherwise a game started on one phone would lock the other one out of ever
+// choosing.
+//
+// `#me` is ONE identity shared by every game in the Games tab, so the lock has
+// to be too: being mid-duel freezes your side in 20 Questions and vice versa.
+// q20Started() lives in js/twenty.js, which loads after this file — the typeof
+// guard is why this is safe to call from here.
+function wdSideLocked() {
+  if (!wdMe) return false;
+  return wdStarted() || (typeof q20Started === "function" && q20Started());
+}
 function wdCap(p) { return p === "lucia" ? "Lucia" : "Riu"; }
 function wdOther(p) { return p === "lucia" ? "riu" : "lucia"; }
 
@@ -260,16 +268,17 @@ async function wdPull() {
 // Poll while the duel is on screen. 2s is brisk enough that a fresh letter
 // pair lands on the other phone almost immediately, without a realtime SDK
 // (which the no-SDK rule bars anyway).
-setInterval(() => { if (activeTab === "duel") wdPull(); }, 2000);
-TAB_HOOKS.duel = wdPull;
+setInterval(() => { if (activeTab === "duel" && gamesPick === "duel") wdPull(); }, 2000);
+// the tab hook runs for whichever game is showing
+TAB_HOOKS.duel = () => { if (gamesPick === "duel") wdPull(); else if (typeof q20Pull === "function") q20Pull(); };
 
 // Phones throttle (or freeze) timers in a backgrounded tab, so after a lock
 // screen or an app switch the poll can be minutes stale. Catch up the moment
 // we're looked at again.
 document.addEventListener("visibilitychange", () => {
-  if (!document.hidden && activeTab === "duel") wdPull();
+  if (!document.hidden && activeTab === "duel" && gamesPick === "duel") wdPull();
 });
-window.addEventListener("focus", () => { if (activeTab === "duel") wdPull(); });
+window.addEventListener("focus", () => { if (activeTab === "duel" && gamesPick === "duel") wdPull(); });
 
 // ---- rendering ----
 function wdRenderLetters(animate) {
@@ -359,15 +368,28 @@ function wdRenderPenalty() {
   flavor.style.display = label ? "inline-flex" : "none";
 }
 
-function wdRenderWhoAmI() {
+// Both games in the tab show an "I'm playing as" row for the SAME `#me`, and
+// either game starting or restarting flips the lock for both. So one function
+// paints both rows and each game's render calls it — otherwise restarting the
+// duel leaves 20 Questions still claiming your side is locked in until
+// something happens to re-render it.
+function renderWhoAmIRows() {
   const locked = wdSideLocked();
-  document.querySelectorAll("#wdWhoAmI .chip").forEach(c => {
-    c.classList.toggle("sel", c.dataset.me === wdMe);
-    // dimmed, but still clickable — the handler explains why it won't budge
-    c.classList.toggle("wd-fixed", locked && c.dataset.me !== wdMe);
+  ["wdWhoAmI", "q20WhoAmI"].forEach(id => {
+    const box = document.getElementById(id);
+    if (!box) return;
+    box.querySelectorAll(".chip").forEach(c => {
+      c.classList.toggle("sel", c.dataset.me === wdMe);
+      // dimmed, but still clickable — the handler explains why it won't budge
+      c.classList.toggle("wd-fixed", locked && c.dataset.me !== wdMe);
+    });
+    const lbl = box.querySelector(".wd-whoami-lbl");
+    if (lbl) lbl.textContent = locked ? "Playing as (locked in)" : "I'm playing as";
   });
-  document.querySelector(".wd-whoami-lbl").textContent =
-    locked ? "Playing as (locked in)" : "I'm playing as";
+}
+
+function wdRenderWhoAmI() {
+  renderWhoAmIRows();
   // Say what's actually true. The old version promised sharing unconditionally,
   // which hid the fact that nothing was syncing at all.
   document.getElementById("wdSyncHint").textContent =

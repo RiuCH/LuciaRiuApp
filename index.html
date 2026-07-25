@@ -18,6 +18,7 @@
 <link rel="stylesheet" href="css/tfd.css">
 <link rel="stylesheet" href="css/journeys.css">
 <link rel="stylesheet" href="css/duel.css">
+<link rel="stylesheet" href="css/twenty.css">
 <link rel="stylesheet" href="css/cycle.css">
 <link rel="stylesheet" href="css/desktop.css">
 </head>
@@ -189,8 +190,15 @@
     <div class="jr-timeline" id="jrTimeline"></div>
   </section>
 
-  <!-- ================= WORD DUEL ================= -->
+  <!-- ================= GAMES (Word Duel + 20 Questions) ================= -->
   <section class="page" id="page-duel">
+
+    <div class="games-picker" id="gamesPicker">
+      <span class="chip sel" data-game="duel">🔤 Word Duel</span>
+      <span class="chip" data-game="q20">🎯 20 Questions</span>
+    </div>
+
+    <div id="gameDuel">
 
     <div class="daybar">
       <div class="pill">Round <b id="wdRound">1</b></div>
@@ -264,6 +272,83 @@
       <div class="missyou" id="wdPenalty"></div>
     </div>
 
+    </div>
+
+    <div id="game20q" style="display:none">
+
+      <div class="panel">
+        <div class="ptitle">20 Questions</div>
+        <div class="q20-role" id="q20Role">Pick who you are, then somebody think of something.</div>
+        <div class="wd-whoami" id="q20WhoAmI">
+          <span class="wd-whoami-lbl">I'm playing as</span>
+          <span class="chip" data-me="lucia">Lucia</span>
+          <span class="chip" data-me="riu">Riu</span>
+        </div>
+        <div class="rowbtns">
+          <button class="primary" id="q20Start">🧠 I'll think of something</button>
+          <button id="q20Again" style="display:none">🔄 Play again</button>
+          <!-- always available, unlike Play again; asks twice (shared state) -->
+          <button id="q20Restart">🔄 Restart</button>
+        </div>
+
+        <div id="q20SetupBox" style="display:none">
+          <div class="cp-linkrow">
+            <input type="text" id="q20Word" autocomplete="off" spellcheck="false"
+                   placeholder="your secret word or thing…" maxlength="60">
+            <button class="primary" id="q20Lock">Lock it 🤫</button>
+          </div>
+          <div class="rowbtns"><button id="q20Idea">🎲 Give me an idea</button></div>
+          <div class="hint">They get 20 questions. You may only answer YES, NO or SOMETIMES.</div>
+        </div>
+
+        <div class="hint" id="q20SyncHint">Connecting…</div>
+      </div>
+
+      <div id="q20Board" style="display:none">
+
+        <div class="daybar">
+          <div class="pill"><b id="q20Left">20</b> left</div>
+          <div class="pill">YES · NO · SOMETIMES</div>
+        </div>
+
+        <div class="panel">
+          <div class="q20-secret" id="q20Secret" style="display:none"></div>
+          <div class="q20-mood" id="q20Mood"></div>
+
+          <div class="q20-pending" id="q20Pending" style="display:none">
+            <div class="q20-pending-q" id="q20PendingQ"></div>
+            <div class="q20-answers" id="q20Answers">
+              <button id="q20Yes">YES</button>
+              <button id="q20Sometimes">SOMETIMES</button>
+              <button id="q20No">NO</button>
+            </div>
+            <div class="q20-answers" id="q20GuessAnswers" style="display:none">
+              <button id="q20Correct">🎉 Correct!</button>
+              <button id="q20Wrong">😈 Nope</button>
+            </div>
+          </div>
+
+          <div id="q20AskBox" style="display:none">
+            <div class="cp-linkrow">
+              <input type="text" id="q20Ask" autocomplete="off"
+                     placeholder="is it alive? bigger than a cat?…" maxlength="90">
+              <button class="primary" id="q20AskBtn">Ask ❓</button>
+            </div>
+            <div class="cp-linkrow">
+              <input type="text" id="q20Guess" autocomplete="off"
+                     placeholder="final guess — costs a question if you're wrong" maxlength="60">
+              <button id="q20GuessBtn">🎯 Guess</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="ptitle">The interrogation</div>
+          <div class="q20-log" id="q20Log"></div>
+        </div>
+
+      </div>
+    </div>
   </section>
 
   <!-- ================= MOON (the quiet one) =================
@@ -327,7 +412,7 @@
   <button id="navHome" class="active">🏠 Home</button>
   <button id="navTfd">🎭 Talk</button>
   <button id="navJourneys">✈️ Trips</button>
-  <button id="navDuel">🔤 Duel</button>
+  <button id="navDuel">🎮 Games</button>
 </nav>
 
 <div class="toast" id="toast">Copied!</div>
@@ -360,6 +445,7 @@
 <script src="js/tfd.js"></script>
 <script src="js/journeys.js"></script>
 <script src="js/duel.js"></script>
+<script src="js/twenty.js"></script>
 <script src="js/cycle.js"></script>
 <script src="js/lock.js"></script>
 <script src="js/init.js"></script>

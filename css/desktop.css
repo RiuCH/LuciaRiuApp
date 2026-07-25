@@ -56,8 +56,8 @@
   .jr-photos { grid-template-columns: repeat(4, 1fr); }
 
   /* ---- WORD DUEL: letters beside the scoreboard ---- */
-  #page-duel.active {
-    max-width: 980px;
+  #page-duel.active { max-width: 980px; }
+  #page-duel #gameDuel {
     display: grid;
     grid-template-columns: 1.1fr 1fr;
     grid-template-areas:
@@ -68,12 +68,17 @@
     gap: 18px;
     align-items: start;
   }
-  #page-duel .daybar   { grid-area: daybar; margin-bottom: 0; }
-  #page-duel .card     { grid-area: letters; align-self: stretch; }
-  #page-duel .panel    { margin-bottom: 0; }
-  #page-duel .wd-scorepanel   { grid-area: hearts; }
-  #page-duel #wdPenaltyPanel  { grid-area: penalty; }
+  /* scoped to the duel wrapper — 20 Questions shares the tab but not the grid */
+  #gameDuel .daybar   { grid-area: daybar; margin-bottom: 0; }
+  #gameDuel .card     { grid-area: letters; align-self: stretch; }
+  #gameDuel .panel    { margin-bottom: 0; }
+  #gameDuel .wd-scorepanel   { grid-area: hearts; }
+  #gameDuel #wdPenaltyPanel  { grid-area: penalty; }
   .wd-letters .wd-l { font-size: 76px; }
+
+  /* ---- 20 QUESTIONS: a comfortable reading column ---- */
+  #game20q { max-width: 720px; margin: 0 auto; }
+  #game20q .q20-log { max-height: 420px; }
 
   /* ---- MOON: the calendar beside the numbers ---- */
   #page-cycle.active {

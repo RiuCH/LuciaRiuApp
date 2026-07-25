@@ -107,10 +107,16 @@ card twice), and remember growing the pool reshuffles every future day.
   the second (it wipes the score on BOTH phones, so a stray tap mustn't);
   Talk · Flirt · Dare's `🔄 Start over` is local, so it just goes.
 - Anything identifying you as one partner locks once a shared game is under
-  way — the duel's "I'm playing as" freezes after the first heart or word
-  (`wdSideLocked()`), so nobody can swap into the other's side mid-match.
-  Restart is the escape hatch, and the chip stays clickable so the tap can
-  explain itself in a toast rather than just going dead.
+  way — "I'm playing as" freezes after the duel's first heart/word or once a
+  20 Questions round is live (`wdSideLocked()` in `js/duel.js`), so nobody can
+  swap into the other's side mid-match. Restart is the escape hatch, and the
+  chip stays clickable so the tap can explain itself in a toast rather than
+  just going dead.
+- **`#me` is ONE identity for the whole Games tab.** Both games render an
+  "I'm playing as" row for it, so `renderWhoAmIRows()` (js/duel.js) paints
+  BOTH and every game's render calls it. Don't give a new game its own
+  copy of that markup logic — restarting one game has to unlock the other's
+  row, and a per-game renderer leaves the hidden one stale.
 - Panels: `.panel` (glassmorphism card). Games get full `.card` treatment.
 - Buttons: `.primary` for the main action, `.toggled` for on-state.
 - Feedback: `popToast("...")` for confirmations, `burst(x, y, [emojis])`
@@ -132,6 +138,13 @@ JOURNEYS block of `index.html`:
 - Tables: `journeys` (timeline), `settings` (key/value: `lock_keys`,
   `reunion_date`), `questions` (the bank; feeds `QUESTION_SOURCE`).
   Schema + seed in `supabase/`; setup guide in docs/SUPABASE.md.
+- **A poll that was already in flight when you acted will clobber you.**
+  The 2s pull applies whatever it fetched, so a question you just submitted
+  can vanish for a second and then reappear. `js/twenty.js` bumps a
+  `q20Writes` counter on every local change and discards any pull whose
+  counter moved mid-flight — copy that for any new polled game. A
+  `pushing` flag alone is NOT enough: it only blocks pulls that *start*
+  during the push.
 - **Every DB feature keeps its no-server fallback** (hardcoded const,
   in-memory state, or hash param) and swallows fetch errors quietly —
   offline is normal, not an error state.
