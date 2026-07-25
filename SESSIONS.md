@@ -58,6 +58,7 @@ out of each other's way.
 
 | Date | Who | Feature | Notes |
 |---|---|---|---|
+| 2026-07-25 | Riu | 🍜 Food tab — photo library with tags | Fifth nav button (labels trimmed to fit 375px). First use of **Supabase Storage** (bucket `food`) — needs `supabase/food.sql` run once. Uploads resized to 1600px client-side; EXIF date + GPS parsed by hand (no deps); `api/geocode.js` turns GPS into city/country tags via OpenStreetMap; `api/food-import.js` COPIES shared-album photos into our bucket because iCloud URLs expire. Tags have kinds (restaurant/dish/place/other) driving the group-by views. `taken_at` is a wall clock rendered in UTC so a late dinner shows the same date on both phones |
 | 2026-07-25 | Riu | Game polish: restarts, locked sides, flatter status bar | Every game can now be restarted at any time, not just from an end state — Word Duel's `🔄 Restart` arms then commits (it wipes the shared score on both phones), Talk · Flirt · Dare's `🔄 Start over` is local and instant. "I'm playing as" freezes once a duel is under way (`wdSideLocked()`) so nobody swaps sides mid-match; restart unlocks it. `.daybar .pill` is flat text instead of a bordered pill — it was reading as a row of tappable tabs. Nav label `🎭 Play` → `🎭 Talk` (innocuous cover for the adult decks; tab key still `tfd`). Dropped the `logged` tile from Moon's Her Rhythm. Extended to 20 Questions after it landed: it gets the same always-on `🔄 Restart`, and the side lock is shared across the whole Games tab (`#me` is one identity — `renderWhoAmIRows()` paints both games' rows so restarting one unlocks the other's). |
 | 2026-07-25 | Riu | 🎯 20 Questions + the Games hub | The 🔤 Duel tab became 🎮 Games: `gamesShow()` in `js/twenty.js` swaps `#gameDuel`/`#game20q`, `gamesPick` in `js/core.js` guards each game's poll. 20 Questions shares `settings.q20_state` (JSON, no migration) and the duel's `#me`; YES/NO/SOMETIMES only, a wrong final guess costs a question. Desktop duel grid moved from `#page-duel.active` to `#gameDuel` — an inline `display:block` from the chooser would otherwise kill it. Stale-poll races dropped via a local write counter |
 | 2026-07-25 | Riu | 🌙 Moon tab — cycle calendar + our tally (hidden) | First **nav-less tab**: `switchTab` now walks a `TABS` array and skips the nav highlight when `NAVIDS[tab]` is absent, so a page can exist with no button. Reached by long-pressing the `♥` in the header (`#secretHeart`, 1.2s, js/core.js "quiet door") or `#moon=1`; `✕` returns Home, and a refresh always lands on Home. Month grid marks logged periods, predicted periods, the fertile window and 💞 days; stats give cycle day / average cycle / next period, and total · month · year · 🏆 best day · 🔥 longest streak. Two `settings` rows (`cycle_periods`, `love_log`) — **no migration to run**. Deliberately NOT mirrored to the URL hash. Hidden ≠ private: the repo is public, so this only stops a shoulder-glance |
@@ -105,12 +106,13 @@ array in `js/core.js`, which is what `switchTab` actually iterates):
 |---|---|
 | `home` | Home |
 | `tfd` | Talk · Flirt · Dare |
+| `food` | 🍜 Food photos |
 | `journeys` | Journeys timeline |
 | `duel` | Word Duel (took over the retired `soon` placeholder slot) |
 | `cycle` | 🌙 Moon — cycle calendar + our tally. **Hidden: no nav button**, so it has a `TABS`/`SUBTITLES` entry but deliberately NO `NAVIDS` one |
 
 **Element id / CSS class prefixes:** `lock*` (login), `cd*` (countdown),
-`nav*` (nav buttons), `q20*` (20 Questions), `tick*` (home widget functions), `tfd*` (Talk · Flirt ·
+`nav*` (nav buttons), `fd*` (🍜 Food), `q20*` (20 Questions), `tick*` (home widget functions), `tfd*` (Talk · Flirt ·
 Dare), `qotd*` (home Question of the Day), `jr*` (journeys
 timeline), `wd*` (Word Duel), `cp*` (couple photo), `cy*` (🌙 Moon calendar).
 New features should pick their own short prefix and list it here.

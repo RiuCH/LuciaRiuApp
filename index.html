@@ -19,6 +19,7 @@
 <link rel="stylesheet" href="css/journeys.css">
 <link rel="stylesheet" href="css/duel.css">
 <link rel="stylesheet" href="css/twenty.css">
+<link rel="stylesheet" href="css/food.css">
 <link rel="stylesheet" href="css/cycle.css">
 <link rel="stylesheet" href="css/desktop.css">
 </head>
@@ -188,6 +189,65 @@
     </div>
 
     <div class="jr-timeline" id="jrTimeline"></div>
+  </section>
+
+  <!-- ================= FOOD ================= -->
+  <section class="page" id="page-food">
+
+    <div class="panel">
+      <div class="ptitle">Everything we've eaten together</div>
+      <div class="fd-status" id="fdStatus">Loading…</div>
+      <div class="rowbtns">
+        <button class="primary" id="fdUploadBtn">📤 Upload photos</button>
+        <button id="fdAlbumBtn">🍎 From a shared album</button>
+        <input type="file" id="fdFile" accept="image/*" multiple style="display:none">
+      </div>
+      <div class="fd-progress" id="fdProgress" style="display:none"></div>
+
+      <div class="fd-album" id="fdAlbumBox" style="display:none">
+        <div class="cp-linkrow">
+          <input type="url" id="fdAlbumUrl" placeholder="🔗 Apple shared-album link">
+          <button class="primary" id="fdAlbumLoad">Open</button>
+        </div>
+        <div class="fd-albumnote" id="fdAlbumNote">Paste a link, then pick the plates worth keeping.</div>
+        <div class="fd-albumgrid" id="fdAlbumGrid"></div>
+        <div class="fd-albumnav" id="fdAlbumNav" style="display:none">
+          <button id="fdAlbumPrev">‹ Prev</button>
+          <button id="fdAlbumNext">Next ›</button>
+        </div>
+        <div class="rowbtns"><button class="primary" id="fdAlbumImport">⬇️ Import</button></div>
+        <div class="hint">Photos are copied into our own storage — iCloud links expire.</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ptitle">Find &amp; organise</div>
+      <input type="search" id="fdSearch" class="fd-search" placeholder="🔍 search a tag or caption — ramen, Tokyo, Nari…">
+      <div class="fd-views" id="fdViews">
+        <span class="chip sel" data-view="date">🗓️ By date</span>
+        <span class="chip" data-view="restaurant">🍽️ Restaurant</span>
+        <span class="chip" data-view="dish">🍝 Food type</span>
+        <span class="chip" data-view="place">📍 Location</span>
+      </div>
+      <div class="cp-linkrow fd-newtag">
+        <input type="text" id="fdNewTagName" placeholder="new tag — e.g. Nari, ramen, Phoenix" maxlength="40">
+        <select id="fdNewTagKind" class="fd-select">
+          <option value="restaurant">🍽️ Restaurant</option>
+          <option value="dish">🍝 Food type</option>
+          <option value="place">📍 Location</option>
+          <option value="other">🏷️ Other</option>
+        </select>
+        <button class="primary" id="fdNewTagBtn">Create &amp; pick photos</button>
+      </div>
+      <div class="fd-pickbar" id="fdPickBar" style="display:none">
+        <span id="fdPickLabel"></span>
+        <button class="primary" id="fdPickDone">✅ Done</button>
+        <button id="fdPickCancel">Cancel</button>
+      </div>
+    </div>
+
+    <div id="fdBody"></div>
+
   </section>
 
   <!-- ================= GAMES (Word Duel + 20 Questions) ================= -->
@@ -412,9 +472,33 @@
   <button id="navHome" class="active">🏠 Home</button>
   <button id="navTfd">🎭 Talk</button>
   <button id="navJourneys">✈️ Trips</button>
+  <button id="navFood">🍜 Food</button>
   <button id="navDuel">🎮 Games</button>
 </nav>
 
+<div class="fd-lightbox" id="fdLightbox">
+  <div class="fd-lbbox">
+    <img id="fdLbImg" alt="food photo">
+    <div class="fd-lbbar">
+      <span class="fd-lbdate" id="fdLbDate"></span>
+      <span>
+        <button id="fdLbDelete">🗑️</button>
+        <button id="fdLbClose">✕</button>
+      </span>
+    </div>
+    <div class="fd-lbtags" id="fdLbTags"></div>
+    <div class="cp-linkrow">
+      <input type="text" id="fdLbTagName" placeholder="add a tag…" maxlength="40">
+      <select id="fdLbTagKind" class="fd-select">
+        <option value="restaurant">🍽️</option>
+        <option value="dish">🍝</option>
+        <option value="place">📍</option>
+        <option value="other">🏷️</option>
+      </select>
+      <button class="primary" id="fdLbAdd">Add</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast">Copied!</div>
 <div class="jr-lightbox" id="jrLightbox"><img id="jrLightboxImg" alt="journey photo, full size"><video id="jrLightboxVid" controls playsinline style="display:none"></video></div>
 <div class="jr-picker" id="jrPicker">
@@ -446,6 +530,7 @@
 <script src="js/journeys.js"></script>
 <script src="js/duel.js"></script>
 <script src="js/twenty.js"></script>
+<script src="js/food.js"></script>
 <script src="js/cycle.js"></script>
 <script src="js/lock.js"></script>
 <script src="js/init.js"></script>

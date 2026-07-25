@@ -164,10 +164,30 @@ JOURNEYS block of `index.html`:
   and re-apply it in the SQL editor (see docs/SUPABASE.md) — the DB copy
   and hardcoded copy must stay identical or the daily pick diverges.
 
+**Photo storage (🍜 Food, 2026-07-25)** is the one feature with files rather
+than rows. Conventions worth copying:
+
+- Bucket `food`, public read, created by `supabase/food.sql`. The anon key
+  **cannot** create a bucket, so this migration genuinely must be run by
+  hand — the tab detects it and switches itself off with an honest message.
+- **Resize in the browser before uploading** (`fdResize`, 1600px long edge,
+  JPEG 0.82 ≈ 300KB). The free tier is about a gigabyte; raw phone photos
+  are 4-8MB each.
+- **Read EXIF from the original bytes first** — drawing to a canvas to
+  resize discards every tag. `fdExif` in `js/food.js` is a hand-rolled
+  reader (no dependencies allowed) for date + GPS only.
+- **A photo date is a wall clock, not an instant.** EXIF has no timezone,
+  so `taken_at` stores what the camera wrote and everything renders with
+  `timeZone: "UTC"`. Convert it through a real zone instead and a 23:30
+  dinner shows as a different DAY on the other phone — Riu and Lucia are an
+  hour apart for half the year. This bit us in testing; keep the pattern.
+
 **Serverless functions** live in `api/` (Vercel auto-deploys them with the
 static site — sanctioned by ROADMAP). Current: `api/album.js` (iCloud
 shared-album proxy; iCloud sends no CORS headers so the browser can't call
-it directly). The app must still degrade if a function is unreachable —
+it directly), `api/geocode.js` (GPS → city/country via OpenStreetMap, which
+needs a server-side User-Agent and ≤1 req/s), `api/food-import.js` (copies
+shared-album bytes into our bucket). The app must still degrade if a function is unreachable —
 they're an enhancement, like Supabase. The Claude API proxy will join it.
 
 External requests are still forbidden **except**: Supabase, and iCloud's

@@ -51,6 +51,12 @@
   .tfd-text { font-size: 27px; }
   #page-home .qotd-q { font-size: 20px; }
 
+  /* ---- FOOD: wider grid, roomier month rail ---- */
+  #page-food.active { max-width: 940px; margin: 0 auto; }
+  #page-food .fd-grid { grid-template-columns: repeat(5, 1fr); }
+  #page-food .fd-rail { width: 84px; font-size: 12px; }
+  #page-food .fd-albumgrid { grid-template-columns: repeat(6, 1fr); }
+
   /* ---- JOURNEYS: wider timeline, 4-up photo grid ---- */
   #page-journeys.active { max-width: 880px; }
   .jr-photos { grid-template-columns: repeat(4, 1fr); }

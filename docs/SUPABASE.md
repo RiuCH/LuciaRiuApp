@@ -30,6 +30,7 @@ falls back to the hardcoded copies and in-memory state ("local mode").
 | `settings` | `lock_keys` (password), `reunion_date` (shared countdown), `home_photo` (home photo: URL, upload data-URL, or `album:<link>`), `duel_state` + `duel_first` (Word Duel — see below), `q20_state` (20 Questions, JSON) | hardcoded `LOCK_KEYS`, `#reunion=` / `#photo=` hash params |
 | `questions` | the full question bank (`category`, `text`) | hardcoded `BANK` |
 | `questions` | the full prompt bank (`category`, `text`) — 345 rows in 11 categories: the Question-of-the-Day pool, the Talk/Flirt decks, and both Dare decks | hardcoded `BANK` |
+| `food_photos` / `food_tags` / `food_photo_tags` | the 🍜 Food library: one row per photo (url, path, `taken_at`, GPS), the tag catalogue with a `kind`, and the links between them | none — the tab says to run `supabase/food.sql` |
 | `album_cache` | slimmed iCloud shared-album metadata, keyed by album token — written and read by `api/album.js`, never by the browser | fetch straight from iCloud (correct, just slow) |
 
 - **Change the password:** Table editor → `settings` → edit the `lock_keys`
@@ -43,6 +44,10 @@ falls back to the hardcoded copies and in-memory state ("local mode").
 
 Projects set up before v6 need one-off migrations, run in the SQL editor:
 
+- `supabase/food.sql` — the 🍜 Food tab: three tables, the `food` storage
+  bucket and its policies. Until it's run, the Food tab is switched off and
+  says so. This is the only feature that needs a **storage bucket**, which
+  is why it can't create itself: the anon key may not create buckets.
 - `supabase/album_cache.sql` — adds the `album_cache` table (v6.3). Until
   you run it, the app still works — album metadata is simply fetched from
   iCloud every time, which is the ~50s wait it exists to remove.

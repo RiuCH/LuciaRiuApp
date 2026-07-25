@@ -6,8 +6,11 @@ description: Use when adding a new game or tab to the Lucia & Riu app (e.g. "Stu
 # Adding a new game tab
 
 The 🕹️ Soon™ placeholder slot was consumed by **Word Duel** (`#page-duel`,
-2026-07-24) — new games now add their own tab. Watch nav width at ~420px:
-four tabs fit, five probably won't; consider replacing/merging instead.
+2026-07-24) — new games now add their own tab. **The nav is FULL at five
+buttons** (Home / Talk / Trips / Food / Games) as of the 🍜 Food tab, with
+labels already trimmed to fit 375px. A sixth will not fit: use the 🎮 Games
+hub pattern (two games in one tab) or the 🌙 Moon no-nav-button pattern,
+both described below.
 
 Word Duel is also the reference implementation of a "one phone runs it
 during a call" game: live `Math.random()` is fine for those (no seed
