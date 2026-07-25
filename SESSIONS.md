@@ -42,7 +42,7 @@ out of each other's way.
 
 | Session | Who | Feature | Regions of index.html claimed | Status |
 |---|---|---|---|---|
-| 2026-07-24-photo | Riu | Couple photo on home (branch `feature/couple-photo`) | `cp-` CSS block, photo panel HTML (top of home), COUPLE PHOTO script block, one additive line in `loadSettings()` | 🔃 PR open |
+| 2026-07-24-desktop | Riu | Desktop/laptop layout (branch `feature/desktop-layout`) | trailing `@media (min-width:900px)` CSS block only + 3 markup hooks (`#homeClocks`, `#homeCd`, `.wd-scorepanel`) | 🔃 PR open |
 
 <!-- Row template:
 | 2026-07-24-login | Riu | Login page | lock CSS block, lock HTML block, LOCK SCREEN script block | ✅ shipped |
@@ -53,6 +53,7 @@ out of each other's way.
 | Date | Who | Feature | Notes |
 |---|---|---|---|
 | 2026-07-24 | Riu | Journeys v6.1: paged picker (24/page), videos in albums | `api/album` gained `page`/`per`/`guids` params; `jrPickerNav`, `jr-vwrap`/`jr-vbadge`; lightbox plays video; `fetchICloudAlbum()` kept as one-shot wrapper (couple-photo hero uses it) |
+| 2026-07-24 | Riu | Couple photo on home (💞 hero) | `cp*` prefix; `settings.home_photo` (URL / upload data-URL / `album:<link>` photo-of-the-day, offset 15485863); `#photo=` fallback (PR #4) |
 | 2026-07-24 | Riu | Journeys v6: edit, photo picker, sort chips, album CORS fix | `jr-edit`/`jrPicker*`; `journeys.photo_guids` column (migrate_journey_photos.sql); first serverless function `api/album.js` |
 | 2026-07-24 | Riu | Journeys timeline (✈️ Trips tab) + Supabase backend | New tab, `jr*` prefix; Supabase REST (`journeys`/`settings`/`questions` tables), password + reunion date + question bank DB-backed with fallbacks; Apple Shared Album embeds. Setup: docs/SUPABASE.md |
 | 2026-07-24 | Riu | Word Duel (🔤 Duel tab) | Took over the Soon™ slot; `wd*` prefix; one-phone session game (PR #2) |
@@ -89,6 +90,12 @@ out of each other's way.
 `nav*` (nav buttons), `tick*` (home widget functions), `jr*` (journeys
 timeline), `wd*` (Word Duel), `cp*` (couple photo). New features should
 pick their own short prefix and list it here.
+
+**Layout hooks** (ids/classes that exist purely so the desktop grid can
+place a panel): `#homeClocks`, `#homeCd`, `.wd-scorepanel`. If you add a
+panel to Home or Duel, give it an id and place it in the `@media
+(min-width: 900px)` grid at the end of the CSS — otherwise it lands in the
+implicit rows and breaks the composition.
 
 **Global constants / backends:** `SUPABASE_URL` + `SUPABASE_ANON_KEY`
 (journeys feature owns the Supabase config constants; future Supabase
