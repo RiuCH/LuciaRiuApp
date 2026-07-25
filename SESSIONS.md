@@ -52,6 +52,7 @@ out of each other's way.
 
 | Date | Who | Feature | Notes |
 |---|---|---|---|
+| 2026-07-24 | Riu | Journeys v6.1: paged picker (24/page), videos in albums | `api/album` gained `page`/`per`/`guids` params; `jrPickerNav`, `jr-vwrap`/`jr-vbadge`; lightbox plays video; `fetchICloudAlbum()` kept as one-shot wrapper (couple-photo hero uses it) |
 | 2026-07-24 | Riu | Couple photo on home (💞 hero) | `cp*` prefix; `settings.home_photo` (URL / upload data-URL / `album:<link>` photo-of-the-day, offset 15485863); `#photo=` fallback (PR #4) |
 | 2026-07-24 | Riu | Journeys v6: edit, photo picker, sort chips, album CORS fix | `jr-edit`/`jrPicker*`; `journeys.photo_guids` column (migrate_journey_photos.sql); first serverless function `api/album.js` |
 | 2026-07-24 | Riu | Journeys timeline (✈️ Trips tab) + Supabase backend | New tab, `jr*` prefix; Supabase REST (`journeys`/`settings`/`questions` tables), password + reunion date + question bank DB-backed with fallbacks; Apple Shared Album embeds. Setup: docs/SUPABASE.md |

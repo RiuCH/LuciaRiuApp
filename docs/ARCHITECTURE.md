@@ -87,8 +87,11 @@ link into a journey and the app pulls thumbnails from iCloud's unofficial
 ever breaks, the card falls back to an "Open album ↗" link. iCloud sends
 no CORS headers, so the browser calls our own Vercel serverless proxy
 (`api/album.js`, same origin) which fetches the album server-side — the
-repo's first serverless function. Per-journey photo picks live in
-`journeys.photo_guids` (chosen in the in-app picker).
+repo's first serverless function. The proxy pages the album (24 items
+per request: `?page=N` / `?guids=a,b` for saved picks) so big albums
+load lazily, and includes videos (poster-frame thumb, playable in the
+lightbox). Per-journey photo picks live in `journeys.photo_guids`
+(chosen in the in-app picker, Prev/Next paged).
 
 Still to come (see ROADMAP): Google login (tightens the wide-open anon
 policies), Supabase Storage photo album, answer-and-compare, and Claude
