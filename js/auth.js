@@ -26,6 +26,26 @@
 // is run — the app works under the old wide-open policies and the new locked
 // ones, so the deploy and the lockdown don't have to be simultaneous.
 
+// The two of us — for the "wrong account" message only.
+//
+// ⚠️ THIS LIST EXISTS TWICE, and the copies do different jobs. The one that
+// actually protects anything is public.is_us() in supabase/auth_policies.sql:
+// it runs inside Postgres, where nobody can reach it, and it is what makes a
+// stranger's session return zero rows.
+//
+// THIS copy runs on the phone and is COSMETIC. Without it, someone signing in
+// with the wrong Google account sees an app that looks broken rather than one
+// that refuses them. Anyone can delete it in devtools and gain exactly
+// nothing, because the database still won't hand them a single row. Never
+// treat it as a control.
+//
+// If either of us changes Google account, edit BOTH: forgetting the SQL one
+// locks you out of your own data; forgetting this one only mislabels a toast.
+const AUTH_ALLOWED = [
+  "rew.cherdchu@gmail.com",
+  "lucia@example.com"          // ← replace with Lucia's Google address
+];
+
 const AUTH_STORE_KEY = "lr_session";
 // Refresh tokens can't be used without persisting them, so a session lasts as
 // long as its access token. Treat it as expired a minute early rather than
@@ -117,17 +137,24 @@ function authSignIn() {
     encodeURIComponent(target);
 }
 
-function authSignOut() {
-  const token = authToken();
+// Drop the local session and best-effort tell Supabase to kill it too. Shared
+// by the sign-out button and the wrong-account path, which both need the token
+// gone here AND the refresh token invalidated there — otherwise a rejected
+// account keeps a live server-side session it can never use, and Google
+// silently re-authorises it on the next attempt.
+function authRevoke(token) {
   authSave(null);
-  // Best-effort server-side revoke; the local session is already gone either way.
   if (token && supaOn()) {
     fetch(SUPABASE_URL + "/auth/v1/logout", {
       method: "POST",
       headers: { apikey: SUPABASE_ANON_KEY, Authorization: "Bearer " + token }
-    }).catch(() => {});
+    }).catch(() => {});   // the local session is already gone either way
   }
   authRender();
+}
+
+function authSignOut() {
+  authRevoke(authToken());
   popToast("Signed out 👋");
 }
 
@@ -153,12 +180,24 @@ function authCapture() {
   if (err) { popToast("Google sign-in failed: " + err); return true; }
   if (!token) return true;
 
+  // the JWT's payload is base64url and readable client-side; we only want the
+  // email, so a parse failure is harmless — see the null case below
+  const email = authEmailFromJWT(token);
+
+  // Wrong Google account? Say so, instead of handing them an app that loads
+  // perfectly and is empty in every panel. Cosmetic only — see AUTH_ALLOWED.
+  // A null email means we couldn't parse the JWT, which is our problem and not
+  // theirs, so let it through: public.is_us() is what decides either way.
+  if (email && !AUTH_ALLOWED.includes(email)) {
+    authRevoke(token);
+    popToast("That's not one of our accounts 😌");
+    return true;
+  }
+
   authSave({
     access_token: token,
     expires_at: Date.now() + (expiresIn > 0 ? expiresIn : 3600) * 1000,
-    // the JWT's payload is base64url and readable client-side; we only want
-    // the email for the "signed in as" line, so a parse failure is harmless
-    email: authEmailFromJWT(token)
+    email: email
   });
   return true;
 }
