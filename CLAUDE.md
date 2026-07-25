@@ -21,6 +21,13 @@ June 2, 2026). Fun is a feature — keep the tone playful.
    enhancements only, the app must work without them.)
 2. **No localStorage / sessionStorage / cookies.** They break in the preview
    environments we use. State lives in memory or in URL-hash params —
+   **ONE carve-out, agreed 2026-07-25: the Google-login session** (and only
+   that) may sit in `sessionStorage` under `lr_session`, because otherwise
+   every refresh bounces you through Google again. `js/auth.js` feature-detects
+   it and falls back to an in-memory session if the browser throws, so the
+   original reason for this rule still holds — nothing breaks, you just re-auth
+   on refresh. Don't widen this to anything else.
+   Everything else lives in memory or URL-hash params —
    always via the `getHashParam`/`setHashParam` helpers so params coexist
    (current: `#reunion=YYYY-MM-DD`, `#unlocked=1`, `#photo=<url>`,
    `#me=lucia|riu`, `#moon=1`). Private data is the exception — the 🌙 Moon
@@ -67,11 +74,12 @@ and the `<link>`/`<script src>` tags.
 | `js/duel.js` | Word Duel (`wd*`) |
 | `js/twenty.js` | 20 Questions (`q20*`) **and** the Games-tab chooser (`gamesShow`) |
 | `js/cycle.js` | 🌙 Moon: cycle calendar + our tally (`cy*`) — the hidden tab |
-| `js/lock.js` | login gate |
+| `js/auth.js` | Google sign-in via Supabase Auth (`auth*`) — session, JWT, URL scrub |
+| `js/lock.js` | login gate (offline door; real auth skips it) |
 | `js/init.js` | boot order — **loads last** |
 
 Script order in `index.html` is load-bearing: `core` → `supabase` →
-`questions` → `home` → `journeys` → `food` → `duel` → `twenty` → `cycle` →
+`auth` → `questions` → `home` → `journeys` → `food` → `duel` → `twenty` → `cycle` →
 `lock` → `init`.
 Anything
 running at *top level* may only reference things defined in an
@@ -149,6 +157,18 @@ can reference anything.
   deployed page ships the anon key and RLS is wide open, so the app URL is
   all anyone needs to read it; same honesty as the lock screen. (The repo
   itself IS private — don't cite repo visibility as the reason.)
+- Auth (`js/auth.js`): **Google sign-in via Supabase Auth, no SDK.** PKCE is
+  impossible here (its `code_verifier` needs storage rule 2 bans), so it uses
+  the implicit flow — tokens come back in the URL fragment and `authCapture()`
+  reads them into memory and `history.replaceState()`s them away in the same
+  tick. `authSignIn()` parks the app's own hash params in a `?rehash=` query so
+  the round trip doesn't eat `#unlocked`/`#me`. `supa()` sends the user JWT
+  when signed in and **falls back to the anon key when not**, which is what
+  lets the build ship before `supabase/auth_policies.sql` is run. Signed in ⇒
+  the lock screen is skipped. **`js/auth.js` self-initialises at parse time**
+  (documented exception to "boot work goes in init.js") because `js/lock.js`
+  needs the answer before `init.js` runs. Sign-in cannot work from `file://`
+  — a double-clicked `index.html` runs offline-only
 - Couple photo: `cp*` block — home hero image from `settings.home_photo`
   (URL / upload data-URL / `album:<link>` = Apple-album photo-of-the-day,
   seed offset 15485863); `#photo=` hash + session fallbacks

@@ -12,13 +12,24 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 function supaOn() { return SUPABASE_URL.length > 0 && SUPABASE_ANON_KEY.length > 0; }
 
+// `apikey` always identifies the project; the Authorization bearer is what
+// PostgREST actually derives your role from. Signed in ⇒ send the user's JWT
+// (role `authenticated`, gated by public.is_us() — see supabase/auth_policies.sql).
+// Signed out ⇒ fall back to the anon key.
+//
+// That fallback is deliberate and load-bearing for the rollout: it means this
+// build works under the OLD wide-open policies *and* the new locked ones, so
+// the deploy and the lockdown don't have to happen in the same instant.
+// js/auth.js loads after this file, so authToken may not exist yet at parse
+// time — it's only ever called from inside a request, by which point it does.
 async function supa(path, opts) {
   opts = opts || {};
+  const token = (typeof authToken === "function" && authToken()) || SUPABASE_ANON_KEY;
   const res = await fetch(SUPABASE_URL + "/rest/v1/" + path, {
     method: opts.method || "GET",
     headers: {
       "apikey": SUPABASE_ANON_KEY,
-      "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+      "Authorization": "Bearer " + token,
       "Content-Type": "application/json",
       "Prefer": (opts.prefer ? opts.prefer + "," : "") + "return=representation"
     },

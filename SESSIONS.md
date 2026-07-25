@@ -116,7 +116,7 @@ array in `js/core.js`, which is what `switchTab` actually iterates):
 **Element id / CSS class prefixes:** `lock*` (login), `cd*` (countdown),
 `nav*` (nav buttons), `fd*` (🍜 Food), `q20*` (20 Questions), `tick*` (home widget functions), `tfd*` (Talk · Flirt ·
 Dare), `qotd*` (home Question of the Day), `jr*` (journeys
-timeline), `wd*` (Word Duel), `cp*` (couple photo), `cy*` (🌙 Moon calendar).
+timeline), `wd*` (Word Duel), `cp*` (couple photo), `cy*` (🌙 Moon calendar), `auth*` (Google sign-in).
 New features should pick their own short prefix and list it here.
 One-off id outside any prefix: `#secretHeart` (the header `♥`, which is also
 the long-press door into the Moon tab).
@@ -133,6 +133,8 @@ breaks the composition.
 features reuse them — see docs/SUPABASE.md). Supabase table names are
 global identifiers too: `journeys`, `settings`, `questions`, `album_cache`
 are claimed.
+Non-hash browser storage claimed (the ONE carve-out to golden rule 2): `sessionStorage['lr_session']` — the Google-login session, js/auth.js.
+Postgres objects claimed: function `public.is_us()` (the email allowlist every RLS policy calls).
 Settings keys claimed: `lock_keys`, `reunion_date`, `home_photo` (couple
 photo: image URL, upload data-URL, or `album:<link>` for photo-of-the-day),
 `duel_state` + `duel_first` (Word Duel shared game), `cycle_periods` +

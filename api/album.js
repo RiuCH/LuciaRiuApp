@@ -79,11 +79,22 @@ function pickVideoDerivative(p) {
 const META_TTL_MS = 60 * 60 * 1000;   // refresh in the background after an hour
 const metaCache = new Map();          // token -> { at, photos, name, refreshing }
 
-// Supabase gives the cache a home that survives cold starts. Env vars win so
-// the keys can be rotated in the Vercel dashboard; the literals are the same
-// public anon credentials the client already ships (see docs/SUPABASE.md).
+// Supabase gives the cache a home that survives cold starts.
+//
+// This runs SERVER-SIDE ONLY, so it uses the service-role key — set
+// SUPABASE_SERVICE_ROLE_KEY in the Vercel dashboard, never in the repo and
+// never anywhere the browser can reach. service_role bypasses RLS, which is
+// what lets `album_cache` carry no policy at all after
+// supabase/auth_policies.sql runs.
+//
+// It falls back to the anon key so the endpoint keeps working before that env
+// var is set. Once the lockdown SQL has run, anon can't write `album_cache`
+// any more: the cache silently stops persisting and every cold token pays the
+// ~50s iCloud call again. Slower, never broken — but set the env var.
 const SB_URL = process.env.SUPABASE_URL || "https://kpoxnurehcggqgbkptrf.supabase.co";
-const SB_KEY = process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtwb3hudXJlaGNnZ3FnYmtwdHJmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4NjQ2NzYsImV4cCI6MjEwMDQ0MDY3Nn0.pK8zXiJnB0iwxAmy2gGXMIE7rGAM6mkui3UbzM5KQAc";
+const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_ANON_KEY ||
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtwb3hudXJlaGNnZ3FnYmtwdHJmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4NjQ2NzYsImV4cCI6MjEwMDQ0MDY3Nn0.pK8zXiJnB0iwxAmy2gGXMIE7rGAM6mkui3UbzM5KQAc";
 
 // Store only what the response builder reads — guid, media type and the
 // derivative checksums/sizes. Never the signed asset URLs: those expire, and

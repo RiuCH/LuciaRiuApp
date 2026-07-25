@@ -2,6 +2,11 @@
 // Boot order. Loaded LAST: every function it calls is already defined.
 
 // ---------------- INIT ----------------
+// NOTE: the session is NOT set up here. js/auth.js settles it at parse time
+// (see the comment at the bottom of that file) because js/lock.js needs to
+// know whether you're signed in before init.js ever runs. So everything below
+// already carries your JWT if you have one.
+
 qotdRender();
 wdRollLetters(false);   // local letters so the duel works offline…
 wdRenderAll();
