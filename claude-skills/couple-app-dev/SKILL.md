@@ -38,7 +38,12 @@ session's claims, ask the user before proceeding.
    `location.hash` directly (it clobbers the other params).
    Current hash params: `reunion` (countdown date), `unlocked` (login gate),
    `photo` (couple photo link when the DB is off), `me` (which of us is on
-   this phone, for the Word Duel).
+   this phone, for the Word Duel), `moon` (backup door into the hidden 🌙
+   Moon tab).
+   **Private data is the exception to the hash-param ladder.** The hash shows
+   in the address bar and travels in any shared link, so the 🌙 Moon log
+   (`js/cycle.js`) deliberately has no hash fallback: DB when it's up,
+   memory-only when it isn't, and the panel says which.
 3. Anything "shared" between the two partners without a server must be
    **derived deterministically from the date** (see pattern below), because
    the app runs as two independent copies with no communication.
@@ -184,9 +189,13 @@ just covers it.
   a new file missing its `<script src>` tag).
 - Lock screen: wrong date shakes + sasses; `06/02/2026` (or "june 2")
   unlocks with hearts; reload with `#unlocked=1` skips straight in.
-- All four tabs switch; bottom nav highlights correctly and fits at 420px.
+- All four nav tabs switch; bottom nav highlights correctly and fits at
+  420px. Then the hidden fifth: long-press the header `♥` for ~1.2s → 🌙
+  Moon opens with NO nav button lit; `✕` goes Home; a refresh lands on Home.
 - Reload twice: daily question identical both times (determinism).
-- Toggle After Dark: only spicy/nasty appear; theme turns red; toggle back.
+- Talk · Flirt · Dare: flip 💞 Together / ✈️ Apart — the deck contents, the
+  hot red theme, the subtitle and the chips all move together (one switch,
+  `tfdSetMode`). Flip back.
 - If you changed clocks/countdowns: check a simulated date (override `Date`
   in DevTools or temporarily change the constant — remember to change it back).
 

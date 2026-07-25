@@ -14,6 +14,28 @@ during a call" game: live `Math.random()` is fine for those (no seed
 offset needed) because only one device generates state. Deterministic
 seeding is only required when BOTH phones must independently agree.
 
+## Or: a tab with no nav button (the 🌙 Moon pattern)
+
+`#page-cycle` (2026-07-25) is the reference for a tab that shouldn't be
+advertised, and it's also how you dodge the four-tabs-at-420px ceiling —
+a hidden tab costs no nav width at all. What makes it work:
+
+- `switchTab()` iterates the `TABS` array in `js/core.js`, and only touches
+  the nav when `NAVIDS[tab]` exists. So: add your key to `TABS` and
+  `SUBTITLES`, and **leave `NAVIDS` alone**. No button, no highlight.
+- Give it its own way out — Moon has a `✕` that `switchTab("home")`s,
+  since there's no nav button to tap.
+- Don't make it sticky. Moon isn't stored in the hash, so a refresh always
+  lands on Home and the tab re-hides itself.
+- The door is a long-press on `#secretHeart` (the header `♥`, 1.2s,
+  `CY_HOLD_MS` in `js/core.js`) plus `#moon=1` as a typed backup. If you
+  add a second hidden tab, reuse the long-press handler with a different
+  target rather than inventing a second gesture — and `preventDefault()`
+  the `contextmenu`, or iOS pops its copy/look-up callout mid-gesture.
+- **Say what it is.** Hidden ≠ protected: the repo is public and the page
+  source is readable. Same honesty as the lock screen — never let the UI
+  imply more privacy than there is.
+
 ## Scaffold (6 steps)
 
 1. **Make your two files first** — `js/mygame.js` and `css/mygame.css`,
@@ -35,14 +57,14 @@ seeding is only required when BOTH phones must independently agree.
    ```html
    <button id="navMygame">🎯 My Game</button>
    ```
-4. **Register the tab** — in `js/core.js`, extend both maps:
+4. **Register the tab** — in `js/core.js`, extend the `TABS` array (that's
+   what `switchTab` iterates) and both maps:
    ```js
+   TABS.push("mygame");            // or add it to the literal
    SUBTITLES.mygame = "Some Cute Subtitle";
-   NAVIDS.mygame = "navMygame";
+   NAVIDS.mygame = "navMygame";    // omit this one for a hidden tab
    ```
-   …and make sure `switchTab` iterates your tab (extend the
-   `["home","tfd","journeys","duel"]` array) and add the click listener
-   like the others.
+   …then add the click listener like the others.
 5. **Teaser (optional but nice)** — add a tappable `.panel.teaser` card on
    Home that `switchTab`s to your game, like the Question of the Day teaser.
    On desktop it needs a grid area in `css/desktop.css` (see the Home grid).

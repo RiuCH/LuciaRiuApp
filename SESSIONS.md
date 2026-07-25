@@ -58,6 +58,7 @@ out of each other's way.
 
 | Date | Who | Feature | Notes |
 |---|---|---|---|
+| 2026-07-25 | Riu | 🌙 Moon tab — cycle calendar + our tally (hidden) | First **nav-less tab**: `switchTab` now walks a `TABS` array and skips the nav highlight when `NAVIDS[tab]` is absent, so a page can exist with no button. Reached by long-pressing the `♥` in the header (`#secretHeart`, 1.2s, js/core.js "quiet door") or `#moon=1`; `✕` returns Home, and a refresh always lands on Home. Month grid marks logged periods, predicted periods, the fertile window and 💞 days; stats give cycle day / average cycle / next period, and total · month · year · 🏆 best day · 🔥 longest streak. Two `settings` rows (`cycle_periods`, `love_log`) — **no migration to run**. Deliberately NOT mirrored to the URL hash. Hidden ≠ private: the repo is public, so this only stops a shoulder-glance |
 | 2026-07-25 | Riu | Duel sync actually works (no migration needed) | Moved off the unrun `duel` table onto `settings.duel_state` + `duel_first`, so sharing needs zero setup; poll 2.5s → 2s plus a pull on `visibilitychange`/`focus` (phones freeze timers in background tabs); sync status line now tells the truth instead of always claiming "shared" |
 | 2026-07-25 | Riu | Word Duel v7: shared hearts, typing race, 100 situation-based penalties | New `duel` table (one row, polled every 2.5s on-tab); `me` hash param picks your side; race settled by a `first_by=is.null` PATCH so Postgres decides, not two clocks; "I lost" no longer rerolls letters; penalties reorganised into two situation pools — 🏠 in person (35) and 💌 long distance (65, the complete one), each mixing funny/spicy/nasty with the flavour shown as a tag. Superseded next day: that `duel` table was never created, so nothing synced — sync was rebuilt on `settings.duel_state`/`duel_first`, no migration needed. |
 | 2026-07-25 | Riu | Question of the Day moved to Home; Daily Q tab replaced by Talk · Flirt · Dare | New `js/tfd.js` + `css/tfd.css`; tab key `game` → `tfd`; one 💞 Together / ✈️ Apart switch picks the decks and drives the hot theme (`hotMode` + `.hot`, replacing the After Dark toggle). Bank 215 → 345 prompts: `filthy` + four Dare decks (apart/together × normal/explicit). Home's card draws from `QOTD_CATS` only |
@@ -94,26 +95,32 @@ out of each other's way.
 | `unlocked` | Login gate |
 | `photo` | Couple photo (link/album fallback when DB is off) |
 | `me` | Which of us is on this phone (`lucia`/`riu`) — Word Duel |
+| `moon` | Backup door into the hidden 🌙 Moon tab (`#moon=1`) |
 
-**Tabs** (`page-*` section ids + `NAVIDS`/`SUBTITLES` keys):
+**Tabs** (`page-*` section ids + `NAVIDS`/`SUBTITLES` keys — plus the `TABS`
+array in `js/core.js`, which is what `switchTab` actually iterates):
 | Tab key | Feature |
 |---|---|
 | `home` | Home |
 | `tfd` | Talk · Flirt · Dare |
 | `journeys` | Journeys timeline |
 | `duel` | Word Duel (took over the retired `soon` placeholder slot) |
+| `cycle` | 🌙 Moon — cycle calendar + our tally. **Hidden: no nav button**, so it has a `TABS`/`SUBTITLES` entry but deliberately NO `NAVIDS` one |
 
 **Element id / CSS class prefixes:** `lock*` (login), `cd*` (countdown),
 `nav*` (nav buttons), `tick*` (home widget functions), `tfd*` (Talk · Flirt ·
 Dare), `qotd*` (home Question of the Day), `jr*` (journeys
-timeline), `wd*` (Word Duel), `cp*` (couple photo). New features should
-pick their own short prefix and list it here.
+timeline), `wd*` (Word Duel), `cp*` (couple photo), `cy*` (🌙 Moon calendar).
+New features should pick their own short prefix and list it here.
+One-off id outside any prefix: `#secretHeart` (the header `♥`, which is also
+the long-press door into the Moon tab).
 
 **Layout hooks** (ids/classes that exist purely so the desktop grid can
-place a panel): `#homeClocks`, `#homeCd`, `.wd-scorepanel`. If you add a
-panel to Home or Duel, give it an id and place it in the `@media
-(min-width: 900px)` grid at the end of the CSS — otherwise it lands in the
-implicit rows and breaks the composition.
+place a panel): `#homeClocks`, `#homeCd`, `.wd-scorepanel`, `.cy-calpanel`,
+`#cyDayPanel`, `#cyMoonPanel`, `#cyUsPanel`. If you add a panel to Home,
+Duel or Moon, give it an id and place it in the `@media (min-width: 900px)`
+grid at the end of the CSS — otherwise it lands in the implicit rows and
+breaks the composition.
 
 **Global constants / backends:** `SUPABASE_URL` + `SUPABASE_ANON_KEY`
 (journeys feature owns the Supabase config constants; future Supabase
@@ -122,7 +129,9 @@ global identifiers too: `journeys`, `settings`, `questions`, `album_cache`
 are claimed.
 Settings keys claimed: `lock_keys`, `reunion_date`, `home_photo` (couple
 photo: image URL, upload data-URL, or `album:<link>` for photo-of-the-day),
-`duel_state` + `duel_first` (Word Duel shared game).
+`duel_state` + `duel_first` (Word Duel shared game), `cycle_periods` +
+`love_log` (🌙 Moon calendar — `start:len` and `date:count` lists, both
+plain text so they can be repaired by hand in the table editor).
 
 **Serverless endpoints (`api/`):** `album` (iCloud shared-album proxy,
 journeys feature). Claim new endpoint paths here before using them.

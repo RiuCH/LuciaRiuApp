@@ -75,6 +75,29 @@
   #page-duel #wdPenaltyPanel  { grid-area: penalty; }
   .wd-letters .wd-l { font-size: 76px; }
 
+  /* ---- MOON: the calendar beside the numbers ---- */
+  #page-cycle.active {
+    max-width: 940px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    grid-template-areas:
+      "daybar daybar"
+      "cal day"
+      "cal moon"
+      "cal us";
+    grid-auto-rows: min-content;
+    gap: 18px;
+    align-items: start;
+  }
+  #page-cycle .daybar      { grid-area: daybar; margin-bottom: 0; }
+  #page-cycle .panel       { margin-bottom: 0; }
+  #page-cycle .cy-calpanel { grid-area: cal; }
+  #page-cycle #cyDayPanel  { grid-area: day; }
+  #page-cycle #cyMoonPanel { grid-area: moon; }
+  #page-cycle #cyUsPanel   { grid-area: us; }
+  .cy-day { font-size: 15px; }
+
   /* ---- NAV: a touch bigger, still the signature floating pill ---- */
   .nav { bottom: 22px; padding: 7px; }
   .nav button { padding: 11px 22px; font-size: 14px; }
