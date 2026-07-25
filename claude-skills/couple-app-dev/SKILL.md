@@ -37,7 +37,8 @@ session's claims, ask the user before proceeding.
    script) — they let multiple params coexist as `#a=1&b=2`. Never assign
    `location.hash` directly (it clobbers the other params).
    Current hash params: `reunion` (countdown date), `unlocked` (login gate),
-   `photo` (couple photo link when the DB is off).
+   `photo` (couple photo link when the DB is off), `me` (which of us is on
+   this phone, for the Word Duel).
 3. Anything "shared" between the two partners without a server must be
    **derived deterministically from the date** (see pattern below), because
    the app runs as two independent copies with no communication.
@@ -119,7 +120,11 @@ JOURNEYS block of `index.html`:
   in-memory state, or hash param) and swallows fetch errors quietly —
   offline is normal, not an error state.
 - New shared state? Prefer a `settings` key/value row; claim the key (and
-  any new table name) in SESSIONS.md. Render user-entered DB text with
+  any new table name) in SESSIONS.md. For state both phones *write*
+  concurrently, let Postgres arbitrate instead of comparing clocks — the
+  duel's "who answered first" uses a PATCH filtered on `first_by=is.null`,
+  so only the first writer matches. Poll on a timer guarded by
+  `activeTab === "<tab>"`; there's no realtime SDK (no-SDK rule). Render user-entered DB text with
   `textContent`/DOM APIs, never `innerHTML` (XSS).
 - Editing `BANK`? Regenerate the seed (`python3 supabase/generate_seed.py`)
   and re-apply it in the SQL editor (see docs/SUPABASE.md) — the DB copy

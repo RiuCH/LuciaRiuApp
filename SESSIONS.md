@@ -58,17 +58,15 @@ out of each other's way.
 
 | Date | Who | Feature | Notes |
 |---|---|---|---|
+| 2026-07-24 | Riu | Word Duel v7: shared hearts, typing race, Nasty LDR | New `duel` table (one row, polled every 2.5s on-tab); `me` hash param picks your side; race settled by a `first_by=is.null` PATCH so Postgres decides, not two clocks; "I lost" no longer rerolls letters; penalties reorganised into two situation pools (`inperson`/`ldr`) each mixing funny/spicy/nasty |
 | 2026-07-25 | Riu | Question of the Day moved to Home; Daily Q tab replaced by Talk · Flirt · Dare | New `js/tfd.js` + `css/tfd.css`; tab key `game` → `tfd`; one 💞 Together / ✈️ Apart switch picks the decks and drives the hot theme (`hotMode` + `.hot`, replacing the After Dark toggle). Bank 215 → 345 prompts: `filthy` + four Dare decks (apart/together × normal/explicit). Home's card draws from `QOTD_CATS` only |
 | 2026-07-25 | Riu | Deep Talk mode + 80 new questions + no-repeat seeding | New `deep` category (30 Qs, Deep Talk mode only, offset 32452843) and +10 per existing category — bank 135 → 215, appended to the DB non-destructively via `supabase/append_questions.py`. `dailyQuestion()` now deals a seeded deck (`shuffledOrder`/`deckForCycle`) instead of one blind draw, so no question repeats until the pool is exhausted and consecutive days can never match |
 | 2026-07-24 | Riu | Album metadata cache (picker 50s → ~1s) | iCloud `webstream` measured at 50.4s for a 365-photo album vs 0.95s for `webasseturls`; it was called on every request. Now 3-tier cached: memory → `album_cache` table → iCloud (PR #11 + #12) |
 | 2026-07-24 | Riu | Journey photos fetched only when Trips is opened | `TAB_HOOKS` registry in `js/core.js` for on-screen-only work; `jrPrewarmAlbums` warms album JSON at idle; iCloud CDN preconnect. Boot photo cost 384KB → 0 (and ~5.8MB → 0 at 30 trips) (PR #10) |
 | 2026-07-24 | Riu | **Modular split — one tab, one js + one css** | `index.html` 2483 → 263 lines; `css/*` + `js/*`. Classic scripts, NEVER ES modules (they break `file://`). Script order load-bearing: core → supabase → questions → home → journeys → duel → lock → init. Golden rule #1 is now "no build step" (PR #8) |
-<<<<<<< HEAD
 | 2026-07-24 | Riu | Desktop/laptop layout | One trailing `@media (min-width:900px)` block (now `css/desktop.css`); hooks `#homeClocks`, `#homeCd`, `.wd-scorepanel` (PR #6) |
-=======
 | 2026-07-25 | Riu | Fix white overscroll strip on iOS | `html` now owns a themed `background-color` (canvas colour); `.afterdark` class toggles on `<html>` + `<body>`; `theme-color` meta follows the theme |
 | 2026-07-24 | Riu | Journeys v6.1: paged picker (24/page), videos in albums | `api/album` gained `page`/`per`/`guids` params; `jrPickerNav`, `jr-vwrap`/`jr-vbadge`; lightbox plays video; `fetchICloudAlbum()` kept as one-shot wrapper (couple-photo hero uses it) |
->>>>>>> origin/main
 | 2026-07-24 | Riu | Couple photo on home (💞 hero) | `cp*` prefix; `settings.home_photo` (URL / upload data-URL / `album:<link>` photo-of-the-day, offset 15485863); `#photo=` fallback (PR #4) |
 | 2026-07-24 | Riu | Journeys v6: edit, photo picker, sort chips, album CORS fix | `jr-edit`/`jrPicker*`; `journeys.photo_guids` column (migrate_journey_photos.sql); first serverless function `api/album.js` |
 | 2026-07-24 | Riu | Journeys timeline (✈️ Trips tab) + Supabase backend | New tab, `jr*` prefix; Supabase REST (`journeys`/`settings`/`questions` tables), password + reunion date + question bank DB-backed with fallbacks; Apple Shared Album embeds. Setup: docs/SUPABASE.md |
@@ -94,6 +92,7 @@ out of each other's way.
 | `reunion` | Reunion countdown date |
 | `unlocked` | Login gate |
 | `photo` | Couple photo (link/album fallback when DB is off) |
+| `me` | Which of us is on this phone (`lucia`/`riu`) — Word Duel |
 
 **Tabs** (`page-*` section ids + `NAVIDS`/`SUBTITLES` keys):
 | Tab key | Feature |
@@ -118,14 +117,14 @@ implicit rows and breaks the composition.
 **Global constants / backends:** `SUPABASE_URL` + `SUPABASE_ANON_KEY`
 (journeys feature owns the Supabase config constants; future Supabase
 features reuse them — see docs/SUPABASE.md). Supabase table names are
-global identifiers too: `journeys`, `settings`, `questions`, `album_cache`
-are claimed.
+global identifiers too: `journeys`, `settings`, `questions`, `album_cache`,
+`duel` are claimed.
 Settings keys claimed: `lock_keys`, `reunion_date`, `home_photo` (couple
 photo: image URL, upload data-URL, or `album:<link>` for photo-of-the-day).
 
 **Serverless endpoints (`api/`):** `album` (iCloud shared-album proxy,
 journeys feature). Claim new endpoint paths here before using them.
 
-**Note:** Word Duel uses live `Math.random()` (session state, one phone
-runs the game) — no seed offset claimed. Now that the DB exists (v5),
-revisit if the duel becomes two-phone synced.
+**Note:** Word Duel letters are still live `Math.random()` — but as of v7
+the *result* is shared through the `duel` table rather than recomputed, so
+no seed offset is needed: one phone rolls, both read the same row.

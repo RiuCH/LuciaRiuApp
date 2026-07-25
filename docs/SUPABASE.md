@@ -28,6 +28,8 @@ falls back to the hardcoded copies and in-memory state ("local mode").
 |---|---|---|
 | `journeys` | timeline entries (place, dates, description, album link) | seed entry + in-memory adds |
 | `settings` | `lock_keys` (password), `reunion_date` (shared countdown), `home_photo` (home photo: URL, upload data-URL, or `album:<link>`) | hardcoded `LOCK_KEYS`, `#reunion=` / `#photo=` hash params |
+| `questions` | the full question bank (`category`, `text`) | hardcoded `BANK` |
+| `duel` | Word Duel shared state: hearts, round, current letters, typed answers, who answered first, penalty (`penalty_mode` is `inperson` or `ldr`) | in-memory one-phone game (exactly how it worked before v7) |
 | `questions` | the full prompt bank (`category`, `text`) — 345 rows in 11 categories: the Question-of-the-Day pool, the Talk/Flirt decks, and both Dare decks | hardcoded `BANK` |
 | `album_cache` | slimmed iCloud shared-album metadata, keyed by album token — written and read by `api/album.js`, never by the browser | fetch straight from iCloud (correct, just slow) |
 
@@ -42,6 +44,8 @@ falls back to the hardcoded copies and in-memory state ("local mode").
 
 Projects set up before v6 need one-off migrations, run in the SQL editor:
 
+- `supabase/duel.sql` — adds the `duel` table (v7). Until you run it the
+  duel still plays, but each phone keeps its own score.
 - `supabase/album_cache.sql` — adds the `album_cache` table (v6.3). Until
   you run it, the app still works — album metadata is simply fetched from
   iCloud every time, which is the ~50s wait it exists to remove.

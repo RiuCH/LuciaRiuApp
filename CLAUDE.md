@@ -22,7 +22,8 @@ June 2, 2026). Fun is a feature — keep the tone playful.
 2. **No localStorage / sessionStorage / cookies.** They break in the preview
    environments we use. State lives in memory or in URL-hash params —
    always via the `getHashParam`/`setHashParam` helpers so params coexist
-   (current: `#reunion=YYYY-MM-DD`, `#unlocked=1`, `#photo=<url>`).
+   (current: `#reunion=YYYY-MM-DD`, `#unlocked=1`, `#photo=<url>`,
+   `#me=lucia|riu`).
 3. **The daily question must stay deterministic and shared.** The pool is
    shuffled by a seeded PRNG (`mulberry32`) into a *deck* and dealt one per
    day since July 24, 2026, so every question comes up once before any
@@ -91,7 +92,10 @@ can reference anything.
   pool comes from `QUESTION_SOURCE` (= `BANK`, swapped to the DB copy once
   `loadQuestions()` succeeds — content identical, so the pick doesn't change)
 - Word Duel: `WD_STARTS`/`WD_ENDS` (weighted letters), `WD_PENALTIES`
-  (funny/spicy/ldr), `wd*` functions — one-phone session game, live random
+  (two situation pools: `inperson`/`ldr`, each mixing funny/spicy/nasty
+  flavours), `wd*` functions. v7: hearts/round/letters/
+  answers live in the one-row `duel` table, polled while the tab is open;
+  `#me` picks your side; falls back to a one-phone session game offline
 - Couple photo: `cp*` block — home hero image from `settings.home_photo`
   (URL / upload data-URL / `album:<link>` = Apple-album photo-of-the-day,
   seed offset 15485863); `#photo=` hash + session fallbacks

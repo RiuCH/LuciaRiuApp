@@ -202,6 +202,21 @@
         <span class="wd-l" id="wdL2">?</span>
       </div>
       <div class="wd-sub" id="wdSub">Rolling the letters…</div>
+
+      <div class="wd-modes wd-playmodes" id="wdPlayModes">
+        <span class="chip sel" data-play="say">🗣️ Say it</span>
+        <span class="chip" data-play="type">⌨️ Type it</span>
+      </div>
+
+      <div class="wd-typebox" id="wdTypeBox" style="display: none;">
+        <div class="cp-linkrow">
+          <input type="text" id="wdWordInput" autocomplete="off" autocapitalize="off"
+                 spellcheck="false" placeholder="your word…">
+          <button class="primary" id="wdSubmitWord">Submit ⚡</button>
+        </div>
+        <div class="wd-race" id="wdRace"></div>
+      </div>
+
       <div class="btnrow" style="margin-top: 0;">
         <button class="primary" id="wdReroll">🎲 New letters</button>
       </div>
@@ -221,21 +236,26 @@
           <button class="wd-lostbtn" id="wdLostRiu">I lost 💔</button>
         </div>
       </div>
-      <div class="hint">One phone runs the duel while we're on a call — synced hearts arrive with the database 🔮</div>
+      <div class="wd-whoami" id="wdWhoAmI">
+        <span class="wd-whoami-lbl">I'm playing as</span>
+        <span class="chip" data-me="lucia">Lucia</span>
+        <span class="chip" data-me="riu">Riu</span>
+      </div>
+      <div class="hint" id="wdSyncHint">Hearts are shared — you'll both see the same score 💞</div>
     </div>
 
     <div class="panel" id="wdPenaltyPanel" style="display: none;">
       <div class="ptitle">Judgment time</div>
       <div style="font-size: 17px; font-weight: 600;" id="wdLoserLine">💀 Someone is out of hearts!</div>
       <div class="wd-modes">
-        <span class="chip sel" data-mode="funny">😂 Funny</span>
-        <span class="chip" data-mode="spicy">🌶️ Spicy</span>
-        <span class="chip" data-mode="ldr">💌 Long Distance</span>
+        <span class="chip" data-mode="inperson">🏠 In person</span>
+        <span class="chip sel" data-mode="ldr">💌 Long distance</span>
       </div>
       <div class="rowbtns">
         <button class="primary" id="wdSpin">🎰 Spin the penalty</button>
         <button id="wdRematch">💞 Rematch</button>
       </div>
+      <div class="wd-flavor chip" id="wdFlavor" style="display: none;"></div>
       <div class="missyou" id="wdPenalty"></div>
     </div>
 
