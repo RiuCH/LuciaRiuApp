@@ -72,7 +72,10 @@
 
     <div class="panel" id="annivBar">
       <div class="ptitle">Us, so far</div>
-      <div class="together" id="togetherLine">💞 Together for …</div>
+      <!-- the numbers are separate nodes so the 1s tick writes textContent
+           on the one that changed, instead of reparsing the whole line -->
+      <div class="together" id="togetherLine">💞 Together for
+        <b id="tgD">0</b>d <b id="tgH">0</b>h <b id="tgM">0</b>m <b id="tgS">0</b>s</div>
       <div class="nextanniv" id="annivLine"></div>
     </div>
 

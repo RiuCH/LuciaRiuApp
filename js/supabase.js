@@ -32,8 +32,13 @@ async function supa(path, opts) {
 // --- shared settings (lock password + reunion date live in the DB) ---
 const DB = { lockKeys: null };
 
+// Fetches EVERY settings row, so it is also the boot handoff for the features
+// that keep their state in this table (the duel, 20 Questions, Moon). They used
+// to each fire their own near-identical GET a millisecond later; now js/init.js
+// hands them these rows. Returns null when there was nothing to fetch (local
+// mode) or the fetch failed — callers fall back to their own pull.
 async function loadSettings() {
-  if (!supaOn()) return;
+  if (!supaOn()) return null;
   try {
     const rows = await supa("settings?select=key,value");
     const map = {};
@@ -47,7 +52,9 @@ async function loadSettings() {
       tickCountdown();
     }
     if (map.home_photo) cpApply(map.home_photo); // couple-photo feature
+    return rows;
   } catch (e) { /* offline or not set up — fallbacks carry on */ }
+  return null;
 }
 
 async function saveReunion(val) {

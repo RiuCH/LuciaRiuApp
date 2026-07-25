@@ -117,27 +117,50 @@ async function q20Push() {
   finally { q20Pushing = false; q20RenderSync(); }
 }
 
+// Adopt one raw q20_state value. Throws on malformed JSON — both callers below
+// treat that the same way a failed fetch is treated: we're not in sync.
+function q20Adopt(val) {
+  if (val) {
+    const next = JSON.parse(val);
+    // don't yank the keyboard away from someone mid-question
+    const typing = document.activeElement === document.getElementById("q20Ask") ||
+                   document.activeElement === document.getElementById("q20Word");
+    q20 = next;
+    if (!typing) q20Render(); else q20RenderCount();
+  }
+  q20Synced = true;
+}
+
+// Boot handoff: js/init.js already holds every settings row, so pick ours out
+// of that snapshot rather than spending a second round trip on one column.
+function q20AdoptRows(rows) {
+  const row = (rows || []).find(r => r.key === Q20_KEY);
+  try { q20Adopt(row ? row.value : null); }
+  catch (e) { q20Synced = false; }
+  q20RenderSync();
+}
+
 async function q20Pull() {
   if (!supaOn() || q20Pushing) { if (!supaOn()) { q20Synced = false; q20RenderSync(); } return; }
   const seen = q20Writes;
   try {
     const rows = await supa("settings?key=eq." + Q20_KEY + "&select=value");
     if (q20Writes !== seen) return;   // we acted mid-flight — this snapshot is stale
-    if (rows && rows.length && rows[0].value) {
-      const next = JSON.parse(rows[0].value);
-      // don't yank the keyboard away from someone mid-question
-      const typing = document.activeElement === document.getElementById("q20Ask") ||
-                     document.activeElement === document.getElementById("q20Word");
-      q20 = next;
-      if (!typing) q20Render(); else q20RenderCount();
-    }
-    q20Synced = true;
+    q20Adopt(rows && rows.length ? rows[0].value : null);
   } catch (e) { q20Synced = false; }
   q20RenderSync();
 }
 
 // Poll only while this game is the one on screen.
-setInterval(() => { if (activeTab === "duel" && gamesPick === "q20") q20Pull(); }, 2000);
+// Backs off to ~30s while hidden rather than stopping — same reasoning as the
+// duel's poll in js/duel.js.
+let q20Ticks = 0;
+setInterval(() => {
+  if (activeTab !== "duel" || gamesPick !== "q20") return;
+  q20Ticks++;
+  if (document.hidden && q20Ticks % 15 !== 0) return;   // 15 × 2s ≈ 30s
+  q20Pull();
+}, 2000);
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden && activeTab === "duel" && gamesPick === "q20") q20Pull();
 });

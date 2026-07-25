@@ -23,16 +23,33 @@ const MISSYOU = [
 // ---------------- ANNIVERSARY ----------------
 const ANNIVERSARY = new Date(2026, 5, 2); // June 2, 2026 💞
 
-function tickAnniversary() {
-  const now = new Date();
-  let ms = Math.max(0, now - ANNIVERSARY);
-  const d = Math.floor(ms / 86400000);
-  const h = Math.floor(ms / 3600000) % 24;
-  const m = Math.floor(ms / 60000) % 60;
-  const s = Math.floor(ms / 1000) % 60;
-  document.getElementById("togetherLine").innerHTML =
-    "💞 Together for <b>" + d + "</b>d <b>" + h + "</b>h <b>" + m + "</b>m <b>" + s + "</b>s";
+// Write only when the value actually moved. Of the four counters below, three
+// are unchanged on any given second — this keeps them out of the DOM entirely.
+function setNum(el, val) {
+  const s = String(val);
+  if (el.textContent !== s) el.textContent = s;
+}
 
+const elTgD = document.getElementById("tgD");
+const elTgH = document.getElementById("tgH");
+const elTgM = document.getElementById("tgM");
+const elTgS = document.getElementById("tgS");
+
+// FAST path — runs every second while Home is on screen. Nothing here parses
+// HTML or builds a formatter; it's four integer writes at most.
+function tickAnniversary() {
+  const ms = Math.max(0, new Date() - ANNIVERSARY);
+  setNum(elTgD, Math.floor(ms / 86400000));
+  setNum(elTgH, Math.floor(ms / 3600000) % 24);
+  setNum(elTgM, Math.floor(ms / 60000) % 60);
+  setNum(elTgS, Math.floor(ms / 1000) % 60);
+}
+
+// SLOW path — the date line changes once a day, so it rode the 1s tick for no
+// reason (including a toLocaleDateString on every pass). Driven by the 60s
+// timer in js/init.js instead.
+function tickAnnivDate() {
+  const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const thisYears = new Date(now.getFullYear(), 5, 2);
   const bar = document.getElementById("annivBar");
@@ -63,45 +80,76 @@ let reunionDate = null;
   } catch (e) {}
 })();
 
-function fmtTime(tz) {
-  return new Intl.DateTimeFormat("en-US", {
-    hour: "2-digit", minute: "2-digit", hour12: false, timeZone: tz
-  }).format(new Date());
-}
-function tzOffsetHours(tz) {
-  const now = new Date();
+// Building an Intl.DateTimeFormat costs one to two orders of magnitude more
+// than calling .format() on one, and these two never change — so build them
+// once here rather than four times a second inside the tick.
+const FMT_RIU = new Intl.DateTimeFormat("en-US", {
+  hour: "2-digit", minute: "2-digit", hour12: false, timeZone: TZ_RIU.tz
+});
+const FMT_LUCIA = new Intl.DateTimeFormat("en-US", {
+  hour: "2-digit", minute: "2-digit", hour12: false, timeZone: TZ_LUCIA.tz
+});
+
+function tzOffsetHours(tz, now) {
   const loc = new Date(now.toLocaleString("en-US", { timeZone: tz }));
   return Math.round((loc - now) / 3600000 * 2) / 2;
 }
 
+const elTimeRiu = document.getElementById("timeRiu");
+const elTimeLucia = document.getElementById("timeLucia");
+let lastRiu = "", lastLucia = "";
+
+// FAST path — two formats and (at most) two text writes.
 function tickClocks() {
-  document.getElementById("timeRiu").textContent = fmtTime(TZ_RIU.tz);
-  document.getElementById("timeLucia").textContent = fmtTime(TZ_LUCIA.tz);
-  const diff = tzOffsetHours(TZ_LUCIA.tz) - tzOffsetHours(TZ_RIU.tz);
+  const now = new Date();
+  const r = FMT_RIU.format(now);
+  if (r !== lastRiu) { lastRiu = r; elTimeRiu.textContent = r; }
+  const l = FMT_LUCIA.format(now);
+  if (l !== lastLucia) { lastLucia = l; elTimeLucia.textContent = l; }
+}
+
+// SLOW path — Phoenix doesn't do DST and San Francisco does, so this gap moves
+// exactly twice a year. It used to be recomputed (with two string-parsed Dates)
+// every single second. Driven by the 60s timer in js/init.js.
+function tickTzDiff() {
+  const now = new Date();
+  const diff = tzOffsetHours(TZ_LUCIA.tz, now) - tzOffsetHours(TZ_RIU.tz, now);
   const el = document.getElementById("tzdiff");
-  if (diff === 0) el.textContent = "Same clock right now — zero excuses not to call 📞";
-  else el.textContent = "Lucia is " + Math.abs(diff) + "h " + (diff > 0 ? "ahead" : "behind") + " — plan those calls 📞";
+  const txt = diff === 0
+    ? "Same clock right now — zero excuses not to call 📞"
+    : "Lucia is " + Math.abs(diff) + "h " + (diff > 0 ? "ahead" : "behind") + " — plan those calls 📞";
+  if (el.textContent !== txt) el.textContent = txt;
+}
+
+const elCdLabel = document.getElementById("cdLabel");
+const elCdBox = document.getElementById("countdown");
+const elCdD = document.getElementById("cdD");
+const elCdH = document.getElementById("cdH");
+const elCdM = document.getElementById("cdM");
+let lastCdLabel = "";
+
+function setLabel(txt) {
+  if (lastCdLabel !== txt) { lastCdLabel = txt; elCdLabel.textContent = txt; }
 }
 
 function tickCountdown() {
-  const label = document.getElementById("cdLabel");
-  const box = document.getElementById("countdown");
+  // With no date set this used to rewrite the same string 86,400 times a day.
   if (!reunionDate) {
-    box.style.display = "none";
-    label.textContent = "Until we're together again — set the date!";
+    elCdBox.style.display = "none";
+    setLabel("Until we're together again — set the date!");
     return;
   }
   const ms = reunionDate - new Date();
   if (ms <= 0) {
-    box.style.display = "none";
-    label.textContent = "IT'S REUNION DAY!! 🎉💞";
+    elCdBox.style.display = "none";
+    setLabel("IT'S REUNION DAY!! 🎉💞");
     return;
   }
-  box.style.display = "flex";
-  label.textContent = "Until we're together again";
-  document.getElementById("cdD").textContent = Math.floor(ms / 86400000);
-  document.getElementById("cdH").textContent = Math.floor(ms / 3600000) % 24;
-  document.getElementById("cdM").textContent = Math.floor(ms / 60000) % 60;
+  elCdBox.style.display = "flex";
+  setLabel("Until we're together again");
+  setNum(elCdD, Math.floor(ms / 86400000));   // changes once a day
+  setNum(elCdH, Math.floor(ms / 3600000) % 24); // once an hour
+  setNum(elCdM, Math.floor(ms / 60000) % 60);   // once a minute
 }
 
 const reunionInput = document.getElementById("reunionInput");
