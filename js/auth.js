@@ -46,6 +46,15 @@ const AUTH_ALLOWED = [
   "lucia@example.com"          // ← replace with Lucia's Google address
 ];
 
+// Until AUTH_ALLOWED is actually filled in, the check disables itself.
+// A placeholder left in place would reject Lucia's real address with the very
+// message this exists to avoid — a cosmetic nicety must never be the thing
+// that locks somebody out. public.is_us() in the SQL is unaffected either way;
+// that one is the real gate and it fails CLOSED on purpose.
+function authAllowlistReady() {
+  return !AUTH_ALLOWED.some(e => e.endsWith("@example.com"));
+}
+
 const AUTH_STORE_KEY = "lr_session";
 // Refresh tokens can't be used without persisting them, so a session lasts as
 // long as its access token. Treat it as expired a minute early rather than
@@ -188,7 +197,7 @@ function authCapture() {
   // perfectly and is empty in every panel. Cosmetic only — see AUTH_ALLOWED.
   // A null email means we couldn't parse the JWT, which is our problem and not
   // theirs, so let it through: public.is_us() is what decides either way.
-  if (email && !AUTH_ALLOWED.includes(email)) {
+  if (authAllowlistReady() && email && !AUTH_ALLOWED.includes(email)) {
     authRevoke(token);
     popToast("That's not one of our accounts 😌");
     return true;
