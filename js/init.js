@@ -15,7 +15,13 @@ if (reunionDate) document.getElementById("setDateBtn").textContent = "📅 Chang
 tickAnniversary();
 tickClocks();
 tickCountdown();
-loadJourneys();
+// Journey photo BYTES are only fetched once the Trips tab is opened, but we
+// warm the (small) album JSON once the page is idle so that tap feels instant.
+loadJourneys().then(() => {
+  const warm = () => jrPrewarmAlbums();
+  if (window.requestIdleCallback) requestIdleCallback(warm, { timeout: 3000 });
+  else setTimeout(warm, 1200);
+});
 loadSettings();
 loadQuestions();
 setInterval(() => { tickAnniversary(); tickClocks(); tickCountdown(); }, 1000);
