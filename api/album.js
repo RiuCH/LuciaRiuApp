@@ -65,6 +65,42 @@ function pickVideoDerivative(p) {
   return best;
 }
 
+// --- album metadata cache -------------------------------------------------
+// Measured on our 365-photo "SF trip" album: iCloud's `webstream` call takes
+// ~50 SECONDS and returns 217KB describing every photo, while `webasseturls`
+// (the signed links we actually need) takes ~1s. We were paying that 50s on
+// every single request — including each of the picker's 61 pages.
+//
+// That metadata barely changes, so keep it per-token on the warm instance and
+// serve it stale while refreshing in the background: only the first request
+// on a cold instance waits. Asset URLs are still fetched fresh every time, so
+// nothing served to the browser is ever an expired link. The one trade-off is
+// that photos added to the album in the last META_TTL may not appear yet.
+const META_TTL_MS = 15 * 60 * 1000;
+const metaCache = new Map(); // token -> { at, photos, name, refreshing }
+
+async function fetchMeta(token) {
+  const host = `p${partition(token)}-sharedstreams.icloud.com`;
+  const stream = await icloudPost(host, token, "webstream", { streamCtag: null });
+  return { at: Date.now(), photos: (stream.photos || []).filter(Boolean), name: stream.streamName || "" };
+}
+
+async function albumMeta(token) {
+  const hit = metaCache.get(token);
+  if (hit) {
+    if (Date.now() - hit.at > META_TTL_MS && !hit.refreshing) {
+      hit.refreshing = true;
+      fetchMeta(token)
+        .then(fresh => metaCache.set(token, fresh))
+        .catch(() => { hit.refreshing = false; }); // keep serving what we have
+    }
+    return hit;
+  }
+  const fresh = await fetchMeta(token);
+  metaCache.set(token, fresh);
+  return fresh;
+}
+
 export default async function handler(req, res) {
   const q = req.query || {};
   const token = String(q.token || "");
@@ -77,8 +113,8 @@ export default async function handler(req, res) {
   const wantGuids = String(q.guids || "").split(",").filter(Boolean).slice(0, 100);
   try {
     const host = `p${partition(token)}-sharedstreams.icloud.com`;
-    const stream = await icloudPost(host, token, "webstream", { streamCtag: null });
-    const all = (stream.photos || []).filter(Boolean);
+    const meta = await albumMeta(token);
+    const all = meta.photos;
     const total = all.length;
     const pages = Math.max(1, Math.ceil(total / per));
     const subset = wantGuids.length
@@ -104,7 +140,7 @@ export default async function handler(req, res) {
     }).filter(p => p.thumb);
     // asset URLs are short-lived signed links — cache briefly only
     res.setHeader("Cache-Control", "s-maxage=300, stale-while-revalidate=600");
-    res.status(200).json({ photos: out, total, page, per, pages, name: stream.streamName || "" });
+    res.status(200).json({ photos: out, total, page, per, pages, name: meta.name });
   } catch (e) {
     res.status(e.status === 404 ? 404 : 502).json({ error: String(e.message || e) });
   }
