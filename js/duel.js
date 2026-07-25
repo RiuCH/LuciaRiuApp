@@ -249,16 +249,22 @@ function wdApply(state, firstBy) {
   wdRenderAll();
 }
 
+// Adopt a settings snapshot. Takes any rows containing our two keys, which is
+// why the one boot fetch in js/init.js can feed this directly instead of us
+// firing a second, nearly identical GET one millisecond later.
+function wdAdopt(rows) {
+  const map = {};
+  (rows || []).forEach(r => { map[r.key] = r.value; });
+  let state = null;
+  if (map[WD_KEY]) { try { state = JSON.parse(map[WD_KEY]); } catch (e) {} }
+  wdSynced = true;
+  wdApply(state, map[WD_FIRST] || null);
+}
+
 async function wdPull() {
   if (!supaOn() || wdPushing) return;
   try {
-    const rows = await supa("settings?key=in.(" + WD_KEY + "," + WD_FIRST + ")&select=key,value");
-    const map = {};
-    (rows || []).forEach(r => { map[r.key] = r.value; });
-    let state = null;
-    if (map[WD_KEY]) { try { state = JSON.parse(map[WD_KEY]); } catch (e) {} }
-    wdSynced = true;
-    wdApply(state, map[WD_FIRST] || null);
+    wdAdopt(await supa("settings?key=in.(" + WD_KEY + "," + WD_FIRST + ")&select=key,value"));
   } catch (e) {
     wdSynced = false;      // offline — keep playing locally, but say so
     wdRenderWhoAmI();
@@ -268,7 +274,19 @@ async function wdPull() {
 // Poll while the duel is on screen. 2s is brisk enough that a fresh letter
 // pair lands on the other phone almost immediately, without a realtime SDK
 // (which the no-SDK rule bars anyway).
-setInterval(() => { if (activeTab === "duel" && gamesPick === "duel") wdPull(); }, 2000);
+// Polling while nobody is looking is 1,800 requests an hour buying nothing, so
+// back off hard when hidden — but DON'T stop outright. Some webviews (the
+// preview browsers this project already distrusts among them) report
+// hidden === true while perfectly visible, and a duel that silently stopped
+// syncing would look like a broken game. Backing off to ~30s keeps ~93% of the
+// saving and still converges even in a browser that lies to us.
+let wdTicks = 0;
+setInterval(() => {
+  if (activeTab !== "duel" || gamesPick !== "duel") return;
+  wdTicks++;
+  if (document.hidden && wdTicks % 15 !== 0) return;   // 15 × 2s ≈ 30s
+  wdPull();
+}, 2000);
 // the tab hook runs for whichever game is showing
 TAB_HOOKS.duel = () => { if (gamesPick === "duel") wdPull(); else if (typeof q20Pull === "function") q20Pull(); };
 

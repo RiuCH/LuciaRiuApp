@@ -191,17 +191,23 @@ function cyApplyRows(rows) {
   if (typeof map[CY_LOVE] === "string") cyLove = cyParseLove(map[CY_LOVE]);
 }
 
+// Boot handoff: js/init.js already fetched every settings row, and cyApplyRows
+// only reads the two it cares about — so adopt those instead of re-asking.
+function cyAdopt(rows) {
+  cyApplyRows(rows);
+  cySynced = true;
+  cyRender();
+}
+
 async function cyPull() {
   if (!supaOn()) { cySynced = false; cyRender(); return; }
   if (cyBusy) return;
   try {
-    const rows = await supa("settings?key=in.(" + CY_PERIODS + "," + CY_LOVE + ")&select=key,value");
-    cyApplyRows(rows);
-    cySynced = true;
+    cyAdopt(await supa("settings?key=in.(" + CY_PERIODS + "," + CY_LOVE + ")&select=key,value"));
   } catch (e) {
     cySynced = false;   // offline — keep logging locally, but say so
+    cyRender();
   }
-  cyRender();
 }
 
 // Re-read, apply the change to the FRESH state, write it back. Without the
@@ -229,7 +235,15 @@ async function cyMutate(change) {
   }
 }
 
-setInterval(() => { if (activeTab === "cycle") cyPull(); }, 5000);
+// Backs off to ~30s while hidden rather than stopping — same reasoning as the
+// duel's poll in js/duel.js.
+let cyTicks = 0;
+setInterval(() => {
+  if (activeTab !== "cycle") return;
+  cyTicks++;
+  if (document.hidden && cyTicks % 6 !== 0) return;   // 6 × 5s = 30s
+  cyPull();
+}, 5000);
 TAB_HOOKS.cycle = cyPull;
 // Phones freeze timers in a backgrounded tab, so catch up when looked at again.
 document.addEventListener("visibilitychange", () => {

@@ -124,6 +124,40 @@ card twice), and remember growing the pool reshuffles every future day.
 - Voice: playful, flirty, a little dramatic. Emojis welcome. British-serious
   tone is a bug.
 
+## Idle cost — the app must do nothing when nobody is looking
+
+This runs on two phones all day. Anything on a timer is a battery and data
+bill, so four rules:
+
+1. **Split timers by how often the value actually changes.** Home has
+   `homeTickFast()` (1s: the seconds counters) and `homeTickSlow()` (60s: the
+   anniversary date, the SF/Phoenix gap). A date string that changes once a
+   day has no business on a 1s timer. New widget ⇒ put it on the slower one
+   unless it visibly moves every second.
+2. **Never build an `Intl.DateTimeFormat` inside a tick.** Constructing one
+   costs ~100× calling `.format()` on a cached instance — the old
+   `tickClocks()` built four a second. Hoist formatters to module scope
+   (`FMT_RIU`/`FMT_LUCIA` in `js/home.js`).
+3. **Guard on-screen work with `activeTab`,** since every other tab is
+   `display:none`. Repaint on the way back in via `TAB_HOOKS.<tab>` so the
+   numbers are right before an eye lands on them. Use `setNum(el, val)`-style
+   write-only-if-changed helpers rather than assigning unconditionally.
+4. **`document.hidden` may throttle a poll, but must never gate the UI.**
+   Some webviews (including the preview browsers this project already
+   distrusts) report `hidden === true` while perfectly visible. So:
+   - **Pollers** back off — `wdTicks`/`q20Ticks`/`cyTicks` drop to ~30s while
+     hidden instead of stopping. A missed poll is self-healing; a poll that
+     stops forever makes the duel look broken.
+   - **Clocks and counters** aren't hidden-gated at all. Backgrounded phones
+     freeze timers on their own, so the gate buys almost nothing and risks a
+     frozen clock that never recovers.
+
+`loadSettings()` is the **boot handoff** for every settings-backed feature: it
+already fetches the whole `settings` table, so `js/init.js` passes its rows to
+`wdAdopt`/`q20AdoptRows`/`cyAdopt` instead of each firing its own GET. Adding a
+settings-backed feature? Give it an `*Adopt(rows)` that its poll also reuses,
+and hook it in there — don't add a fifth boot request.
+
 ## The Supabase backend (v5) — fallback-first, always
 
 Shared state now syncs through Supabase via plain `fetch` against its REST
