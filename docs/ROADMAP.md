@@ -108,11 +108,11 @@
      file in Supabase Storage. Same trick, new bucket (or a `kind` column).
    - **Sort/filter by giver and by occasion**, so "everything Lucia has given
      me" and "every anniversary" are each one tap.
-   - **The quietly useful part: it's also a wishlist.** Let an entry be marked
-     *wanted* instead of *given* — then the other person has somewhere to look
-     before a birthday, and a gift graduates from wanted → given with a date.
-     That's the same table with one `status` field, and it's the bit that
-     stops this being a scrapbook nobody opens between anniversaries.
+   - **The wanted/given half of this is now #5 (Someday).** A gift you *want*
+     is the same kind of thing as a restaurant you want to try, so it lives
+     there rather than being a `status` column only Gifts gets. This entry is
+     the record of what was actually **given**; #5 owns the wishing. Build #5
+     first and Gifts becomes "the given half", not a separate table.
    - **Deliberately no prices.** The 💸 Money feature is for what we owe each
      other; putting a number on a gift makes it an expense. If we ever want
      "what did that cost", it belongs there, not here.
@@ -120,13 +120,48 @@
      key/value rows. Ships with a migration in `supabase/`, and per golden
      rule 6 it must still render from memory when the DB is unreachable.
    - ~~Do Google login first~~ **— done in v10**, same reasoning as Money.
-     **Unblocked.** The photos still inherit whatever we decide in #5 about
+     **Unblocked.** The photos still inherit whatever we decide in #6 about
      private buckets.
    - **Where it lives:** the nav is full (five buttons at 375px), so this is a
      card on Home that opens a full page, or a section inside a tab — not a
      sixth nav button. See the 🎮 Games hub and 🌙 Moon quiet-door patterns.
 
-5. **Private food bucket** 🔒 — the `food` Storage bucket is `public = true`,
+5. **Someday** ⭐ — **one list of everything we want: places to go, restaurants
+   to try, and things we want.** The app is currently all past tense — trips
+   we took, meals we ate, gifts we gave. This is the other half: the stuff we
+   haven't done yet.
+
+   **The insight that makes it worth building: every kind here already has a
+   "done" home in the app.** A place graduates into ✈️ Trips, a restaurant into
+   🍜 Food, a thing into 🎁 Gifts. So this isn't a fourth silo — it's the
+   inbox that feeds the three logs we already have.
+
+   - **One list, three kinds:** 📍 place · 🍜 restaurant · 🎁 thing. Same row
+     shape (`kind`, `title`, `note`, `link`, `added_by`, `status`), filtered by
+     chips — the 🍜 Food tag rail is the pattern to copy, not a new UI.
+   - **Tick it off → it graduates.** Marking a restaurant *done* should offer
+     to open the Food uploader; a place, to start a Journey; a thing, to file
+     a Gift with a date. Even if v1 just marks it done and links across, the
+     shape should assume that flow — it's what stops this becoming a list
+     nobody revisits.
+   - **`added_by` is the whole point of the gift kind.** "What does Lucia
+     actually want" is the question this answers, and it only works if the
+     other person can browse it. So: no hiding who added what.
+   - **A 🎲 "pick one" button.** Two people staring at a list of 40 restaurants
+     choose nothing; the app already has `mulberry32`, `burst()` and `popToast`
+     to make one choice feel like an event. If it should be the *same* pick on
+     both phones that day, seed it — claim an offset in SESSIONS.md first.
+   - **Where it lives:** the nav is full at five buttons (375px), so this is a
+     Home card that opens a full page, or a section inside 🍜 Food / ✈️ Trips.
+     See the 🎮 Games hub and 🌙 Moon quiet-door patterns.
+   - **Needs a real table** (`wishes`) — one table, not three, with `kind`
+     doing the separating. Ships with a migration in `supabase/`; per golden
+     rule 6 it must still render from memory when the DB is unreachable.
+   - Login shipped in v10, so this is **unblocked**. Do it before 🎁 Gifts —
+     Gifts then becomes the "given" half of the same idea instead of a second
+     table that also has a wanted flag.
+
+6. **Private food bucket** 🔒 — the `food` Storage bucket is `public = true`,
    so every photo is served over an unauthenticated URL and storage policies
    don't apply to that path. `supabase/auth_policies.sql` closes the
    enumeration route (the rows holding those URLs become us-only) and revokes
