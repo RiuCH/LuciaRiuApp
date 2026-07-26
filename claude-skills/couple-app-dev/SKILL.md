@@ -84,6 +84,22 @@ Two gotchas if you build one: bake any anti-repeat fix-up into the deck for
 *every* day of the cycle (applying it only on the boundary day deals that
 card twice), and remember growing the pool reshuffles every future day.
 
+## js/init.js is a single statement list — guard every step
+
+An exception in ANY line of `js/init.js` kills every line after it. This has
+already broken the live app once: a refactor deleted `fdRenderFold` from
+`js/food.js` and left the call in `init.js`, so the Home clock and the
+together-counter froze at their static markup ("0d 0h 0m 0s", "--:--") and the
+DB question bank never loaded — with **no console error visible** to anyone
+who wasn't looking for one.
+
+So: **new boot work goes through `boot("label", fn)`**, which catches and
+warns, and the Home widgets are painted first and alone. One tab's dead
+function must never stop another tab's clock.
+
+**If you delete or rename a function, grep `js/init.js` for it in the same
+commit.** That is the whole bug, and it costs one grep.
+
 ## Style conventions
 
 - Theme via CSS variables in `:root`; the hot (Together-mode) palette
