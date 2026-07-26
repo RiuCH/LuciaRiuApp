@@ -63,6 +63,7 @@ out of each other's way.
 
 | Session | Who | Feature | Regions of index.html claimed | Status |
 |---|---|---|---|---|
+| 2026-07-26-gifts | Riu | **Task D1** — 🎁 Gifts (the *given* half) | The `gifts` half of `#page-treats` ONLY — A1 already left the chip and the empty pane. New `js/gifts.js` + `css/gifts.css` and their two tags. Does NOT touch `<nav>`, the TABS maps, `js/food.js` or the chooser itself | 🚧 in progress |
 | 2026-07-26-treats | Riu | **Track A** — the nav reshuffle (A1 ✅ · A2 ✅ · A3 next) | `<nav>` and the `TABS`/`NAVIDS`/`SUBTITLES` maps in `js/core.js` — held for A2/A3 | 🚧 in progress |
 
 <!-- Row template:
@@ -121,7 +122,7 @@ Track A only trivially (A never edits the Home section).
 ### Track D — needs A1 merged
 | Task | Roadmap | Owns | Claims | Who |
 |---|---|---|---|---|
-| **D1** | #4 Gifts 🎁 (the *given* half only — wishing belongs to E1) | js/gifts.js, css/gifts.css | table `gifts`, prefix `gf*` | _(free)_ |
+| **D1** | #4 Gifts 🎁 (the *given* half only — wishing belongs to E1) | js/gifts.js, css/gifts.css | table `gifts`, prefix `gf*` | **2026-07-26-gifts** 🚧 |
 
 ### Track E — needs A2 merged; E2 needs E1
 | Task | Roadmap | Owns | Claims | Who |
