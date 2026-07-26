@@ -302,17 +302,6 @@ function qotdRender() {
   qotdCurrent = q;
   document.getElementById("qotdText").textContent = q.text;
   styleChip(document.getElementById("qotdChip"), q.cat);
-  document.getElementById("qotdDay").textContent = "Day " + dayNumber();
   return q;
 }
 
-document.getElementById("qotdCopy").addEventListener("click", async (e) => {
-  e.stopPropagation();
-  const text = (qotdCurrent ? qotdCurrent.text : "") + "  — Lucia ♥ Riu, Day " + dayNumber();
-  try {
-    await navigator.clipboard.writeText(text);
-    popToast("Copied! Send it 💌");
-  } catch {
-    popToast("Couldn't copy — long-press the question instead");
-  }
-});

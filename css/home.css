@@ -129,33 +129,48 @@ input[type="date"] {
   font-weight: 500;
   transition: opacity 0.25s ease;
 }
-.qotd .qotd-foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 14px;
-  font-size: 12px;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--text-dim);
-}
-.qotd .qotd-foot button { padding: 8px 16px; font-size: 13px; }
 @media (max-width: 420px) { .qotd .qotd-q { font-size: 17px; } }
 
 /* ------- Trips card on Home (jrh*) -------
    Journeys data, Home placement. Styled here rather than in journeys.css
    because it's a Home widget — journeys.css is the timeline's own look. */
-.jrh-stats { display: flex; justify-content: center; gap: 26px; margin: 2px 0 10px; }
-.jrh-stat b { display: block; font-size: 26px; font-weight: 700; line-height: 1.1; }
+.jrh-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  margin: 6px 0 14px;
+}
+.jrh-stat b {
+  display: block;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.05;
+  color: var(--accent);
+}
 .jrh-stat span {
   display: block;
-  margin-top: 2px;
-  font-size: 10.5px;
-  letter-spacing: 1.4px;
+  margin-top: 4px;
+  font-size: 10px;
+  letter-spacing: 1.6px;
   text-transform: uppercase;
   color: var(--text-dim);
 }
-.jrh-latest { font-size: 13.5px; line-height: 1.5; }
-.jrh-place { font-weight: 600; }
-.jrh-when { color: var(--text-dim); font-size: 12.5px; }
+/* hairline between the two numbers, so they read as a pair rather than a row */
+.jrh-sep {
+  width: 1px;
+  align-self: stretch;
+  min-height: 34px;
+  background: linear-gradient(transparent, var(--card-border), transparent);
+}
+.jrh-label {
+  font-size: 9.5px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  opacity: 0.75;
+  margin-bottom: 4px;
+}
+.jrh-place { font-size: 16px; font-weight: 600; letter-spacing: 0.2px; }
+.jrh-when { color: var(--text-dim); font-size: 12.5px; margin-top: 2px; }
+.jrh-empty { color: var(--text-dim); font-size: 13.5px; line-height: 1.5; }

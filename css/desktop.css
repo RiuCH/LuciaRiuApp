@@ -21,6 +21,12 @@
       "photo cd"
       "qotd teased"
       "qotd trips";
+    /* The Question card spans the last two rows. Without this, grid splits its
+       extra height BETWEEN rows 4 and 5 — which padded the Word Duel teaser
+       with dead space and left the visible gap above the Trips card. Pinning
+       rows 1-4 to their content sends all the slack to row 5, where the Trips
+       card absorbs it. */
+    grid-template-rows: min-content min-content min-content min-content 1fr;
     grid-auto-rows: min-content;
     gap: 18px;
     align-items: start;

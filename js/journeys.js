@@ -84,9 +84,12 @@ function jrRenderHomeCard() {
   const card = document.getElementById("jrHomeCard");
   if (!card) return;
   const list = (journeys || []).filter(j => j.start_date);
+  const days = list.reduce((n, j) => n + jrDays(j), 0);
   document.getElementById("jrhTrips").textContent = list.length;
-  document.getElementById("jrhDays").textContent =
-    list.reduce((n, j) => n + jrDays(j), 0);
+  document.getElementById("jrhDays").textContent = days;
+  // "1 trips" is the kind of thing you only notice once and then can't unsee
+  document.getElementById("jrhTripsLbl").textContent = list.length === 1 ? "trip" : "trips";
+  document.getElementById("jrhDaysLbl").textContent = days === 1 ? "day away" : "days away";
 
   // Compare dates rather than taking the last element: the query orders ASC,
   // but a local edit or the offline seed can leave `journeys` in another
@@ -98,10 +101,15 @@ function jrRenderHomeCard() {
   const box = document.getElementById("jrhLatest");
   box.innerHTML = "";
   if (!latest) {
-    box.textContent = "No trips logged yet — add the first one ✈️";
-    document.getElementById("jrhGo").textContent = "Start the timeline →";
+    box.className = "jrh-latest jrh-empty";
+    box.textContent = "No trips yet — the timeline is waiting ✈️";
     return;
   }
+  box.className = "jrh-latest";
+  const label = document.createElement("div");
+  label.className = "jrh-label";
+  label.textContent = "Latest";
+  box.appendChild(label);
   const place = document.createElement("div");
   place.className = "jrh-place";
   place.textContent = latest.place;        // user text — textContent, never innerHTML
@@ -110,7 +118,6 @@ function jrRenderHomeCard() {
   when.textContent = fmtJourneyDates(latest.start_date, latest.end_date);
   box.appendChild(place);
   box.appendChild(when);
-  document.getElementById("jrhGo").textContent = "Plan the next one →";
 }
 
 function renderJourneys() {
