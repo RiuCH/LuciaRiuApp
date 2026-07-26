@@ -65,6 +65,7 @@ out of each other's way.
 |---|---|---|---|---|
 | 2026-07-26-answer-compare | Riu | **Task C1** — Answer & compare ✍️ | The Question-of-the-Day card inside `#page-home` ONLY (plus `js/home.js`); new `js/answers.js` + `css/answers.css` and their two tags. Does NOT touch `<nav>`, `TABS`/`NAVIDS`/`SUBTITLES`, or any other tab — no overlap with A1 | 🚧 in progress |
 | 2026-07-26-treats | Riu | **Task A1** — 💝 Treats tab (Food behind a chooser + Gifts placeholder) | `<nav>`, the `#page-food` section (becomes `#page-treats`), and the `TABS`/`NAVIDS`/`SUBTITLES` maps in `js/core.js` | 🚧 in progress |
+| 2026-07-26-food-bucket | Riu | **Task B1** — #7 private food bucket: flip the bucket to `public = false` and mint signed URLs | none — no `index.html` changes expected; edits confined to the URL-resolution path in `js/food.js` plus `supabase/*.sql` | 🚧 in progress |
 
 <!-- Row template:
 | 2026-07-24-login | Riu | Login page | lock CSS block, lock HTML block, LOCK SCREEN script block | ✅ shipped |
@@ -98,7 +99,7 @@ Neither touches `index.html`'s nav or `js/core.js`. Safe to run beside anything.
 
 | Task | Roadmap | Owns | Claims | Who |
 |---|---|---|---|---|
-| **B1** | #7 Private food bucket 🔒 | js/food.js, supabase/*.sql | — | _(free)_ |
+| **B1** | #7 Private food bucket 🔒 | js/food.js, supabase/*.sql | — | `2026-07-26-food-bucket` ⚠️ overlaps A1 on js/food.js |
 | **B2** | #2 Claude features 🤖 | api/claude.js (new) + one caller | endpoint `claude`, prefix `ai*` | _(free)_ |
 
 ### Track C — Home only
