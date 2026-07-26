@@ -63,7 +63,7 @@ out of each other's way.
 
 | Session | Who | Feature | Regions of index.html claimed | Status |
 |---|---|---|---|---|
-| _(none)_ | | | | |
+| 2026-07-26-treats | Riu | **Task A1** — 💝 Treats tab (Food behind a chooser + Gifts placeholder) | `<nav>`, the `#page-food` section (becomes `#page-treats`), and the `TABS`/`NAVIDS`/`SUBTITLES` maps in `js/core.js` | 🚧 in progress |
 
 <!-- Row template:
 | 2026-07-24-login | Riu | Login page | lock CSS block, lock HTML block, LOCK SCREEN script block | ✅ shipped |
@@ -88,7 +88,7 @@ including the four traps — three of them have already bitten this repo once.
 
 | Task | What | Owns | Claims | Who |
 |---|---|---|---|---|
-| **A1** | 💝 Treats tab: move 🍜 Food into it behind a chooser, plus an empty 🎁 Gifts chip | index.html, core.js, init.js, base.css, desktop.css, food.js | tab key `treats`, `#navTreats`, global `treatsPick` | _(free)_ |
+| **A1** | 💝 Treats tab: move 🍜 Food into it behind a chooser, plus an empty 🎁 Gifts chip | index.html, core.js, init.js, base.css, desktop.css, food.js | tab key `treats`, `#navTreats`, global `treatsPick` | **2026-07-26-treats 🚧 in progress** |
 | **A2** | 📋 Plan tab: new tab, empty ⭐ Someday + 🗓️ Trip Plan chips, 💸 Money strip placeholder | same five | tab key `plan`, `#navPlan`, global `planPick` | _(free)_ |
 | **A3** | 🎮 Games: fold 🎭 Talk in as a third chip; nav drops to five | same five + tfd.js | (reuses `gamesPick`) | _(free)_ |
 
