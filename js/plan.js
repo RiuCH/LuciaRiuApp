@@ -30,13 +30,18 @@ function planShow(which) {
     document.getElementById("subtitle").textContent =
       PLAN_SUBTITLES[which] || SUBTITLES.plan;
   }
+  // Only the visible sub-view does work. sdLoad() is the one that touches the
+  // network, and only until it has the list; tpRender() reads `journeys`,
+  // which loadJourneys() has already fetched for ✈️ Trips.
+  if (which === "someday" && typeof sdLoad === "function") {
+    if (sdReady === null) sdLoad(); else sdRender();
+  }
+  if (which === "trip" && typeof tpRender === "function") tpRender();
 }
 
 document.querySelectorAll("#planPicker .chip").forEach(chip =>
   chip.addEventListener("click", () => planShow(chip.dataset.plan)));
 
-// Nothing to fetch until E1/E2 land, but the hook is wired now so those tasks
-// only have to add their load inside planShow() — not rediscover this shape.
 TAB_HOOKS.plan = () => planShow(planPick);
 
 

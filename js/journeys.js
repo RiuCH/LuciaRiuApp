@@ -72,20 +72,28 @@ document.querySelectorAll("#jrSort .chip").forEach(ch => {
   });
 });
 
+// ✈️ Trips shows the trips we took. A row with status = 'planned' is a 🗓️ Trip
+// Plan and belongs to 📋 Plan (js/someday.js) — same table, two views, so a
+// plan graduates into a memory in place rather than being copied across.
+function jrPast() { return journeys.filter(j => j.status !== "planned"); }
+
 function renderJourneys() {
   const box = document.getElementById("jrTimeline");
   box.innerHTML = "";
   // this render replaces every container the queued hydrations pointed at,
   // so drop them — otherwise re-renders while away from Trips pile up
   jrPendingHydration = [];
-  if (!journeys.length) {
+  const past = jrPast();
+  if (!past.length) {
     const empty = document.createElement("div");
     empty.className = "jr-empty";
-    empty.textContent = "No journeys yet — add our first one ✈️";
+    empty.textContent = journeys.length
+      ? "Nothing yet — the ones ahead of us are in 📋 Plan ✈️"
+      : "No journeys yet — add our first one ✈️";
     box.appendChild(empty);
     return;
   }
-  journeys.slice().sort(JR_SORTS[jrSort] || JR_SORTS.oldest).forEach(j => {
+  past.sort(JR_SORTS[jrSort] || JR_SORTS.oldest).forEach(j => {
     const item = document.createElement("div");
     item.className = "jr-item";
     const card = document.createElement("div");
