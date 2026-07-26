@@ -391,6 +391,13 @@ function tpRender() {
     cd.textContent = "⏳ Count down to this";
     cd.addEventListener("click", () => tpSetCountdown(j));
     row.appendChild(cd);
+    // Task F1 lives in js/trip.js; guarded so this card still works without it.
+    if (typeof trOpen === "function") {
+      const plan = document.createElement("button");
+      plan.textContent = "🗓️ Itinerary";
+      plan.addEventListener("click", () => trOpen(j));
+      row.appendChild(plan);
+    }
     card.appendChild(row);
     frag.appendChild(card);
   });

@@ -94,6 +94,7 @@ because skipping them broke something.
 | `js/home.js` | `MISSYOU`, anniversary/clock/countdown ticks, couple photo (`cp*`) |
 | `js/journeys.js` | timeline CRUD + sort, iCloud album, lightbox (`jr*`) |
 | `js/gifts.js` | 🎁 Gifts: the given-half log, giver/occasion filters (`gf*`) |
+| `js/trip.js` | 🗓️ Itinerary: days, saved bucket, tap-to-assign (`tr*`) |
 | `js/plan.js` | 📋 Plan: the ⭐/🗓️/💸 chooser + the money line (`planShow`) |
 | `js/money.js` | 💸 Money: the pot, the ledger, the committed sums (`mn*`) |
 | `js/someday.js` | ⭐ Someday **and** 🗓️ Trip Plan — one file, because a wish graduates into a plan (`sd*`, `tp*`) |
