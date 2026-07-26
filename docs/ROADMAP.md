@@ -14,26 +14,57 @@
   date), `questions` (the whole bank). Everything degrades gracefully to
   the old hardcoded/in-memory behavior when Supabase is unreachable or not
   configured. Setup: docs/SUPABASE.md.
+- **v6 (Jul 24 2026): Journeys polish + the modular split.** Trips gained
+  edit, a paged photo picker (`journeys.photo_guids`), sort chips and videos;
+  the couple photo landed on Home (`settings.home_photo`, incl. Apple-album
+  photo-of-the-day). First serverless function, `api/album.js` (iCloud sends
+  no CORS headers), later 3-tier cached — the picker went **50s → ~1s**. Photo
+  bytes now load only when Trips is opened (`TAB_HOOKS`). Desktop layout as a
+  single `@media (min-width:900px)` block. And the big one: `index.html`
+  2483 → 263 lines, split into `css/*` + `js/*`, one tab per file. Golden
+  rule #1 became "no build step" — **classic scripts only, never ES modules**.
+- **v7 (Jul 25 2026): Talk · Flirt · Dare, and the bank got serious.** The
+  Daily Q tab became 🎭 Talk (`tfd`): three decks, one 💞 Together / ✈️ Apart
+  switch that also runs the app hot (replacing After Dark). Question of the
+  Day moved to a Home card. Bank **135 → 345 prompts** across 11 categories,
+  and `dailyQuestion()` now deals from a seeded, shuffled *deck* — no repeat
+  until the pool is exhausted, still identical on both phones with no server.
+- **v8 (Jul 25 2026): the 🎮 Games hub.** Word Duel got shared hearts, a
+  typing race settled by Postgres (`first_by=is.null`, not two phone clocks)
+  and 100 situation-based penalties; then 🎯 20 Questions joined it behind a
+  chooser (`gamesPick`). Both sync through `settings` key/value rows, so
+  **neither needed a migration**. Plus 🌙 Moon: the first **nav-less tab** —
+  cycle calendar and our tally, reached by long-pressing the header ♥.
+- **v9 (Jul 25–26 2026): 🍜 Food.** Every meal we've eaten together. First use
+  of **Supabase Storage**; uploads resized to 1600px in-browser, EXIF capture
+  date and GPS read by hand (no deps), `api/geocode.js` turning GPS into
+  city/country tags, `api/food-import.js` copying shared-album photos into our
+  bucket (Apple's album API is read-only). Tag catalogue with search, and a
+  foldable organise panel.
+- **v10 (Jul 26 2026): login, the app icon, and the idle bill.**
+  - 🔐 **Google sign-in** via Supabase Auth, no SDK — PKCE is impossible under
+    our storage rule, so it uses the implicit flow and scrubs the tokens out
+    of the URL in the same tick. `supabase/auth_policies.sql` closes the
+    database to everyone but the two of us; signed out, the app now falls
+    back to its offline copy instead of reading real data.
+  - 📱 **It installs to the home screen** (PR #25): manifest, 💞 icons,
+    standalone launch, safe-area insets. Share → Add to Home Screen and it's
+    an app — **no App Store, no fee, nothing that expires**.
+  - ⚡ **Idle cost** (PR #22): Home's 1s tick was building four
+    `Intl.DateTimeFormat`s a second — now **110× faster** and paused when Home
+    is off-screen; the game polls back off while hidden; boot went from four
+    `settings` requests to one.
 
-## Next up (v5 candidates — pick one, keep PRs small)
+## Next up (pick one, keep PRs small)
 
-1. **Stupid Game #2** 🕹️ — the reserved tab. Ideas: guess-my-answer duel,
-   couple trivia, daily dare generator, emoji-story decoder. No backend
-   needed if it follows the shared-daily pattern (see add-new-game skill).
-2. **Google login** 🔐 — Supabase Auth, allowlist exactly two emails
-   (Riu + Lucia). The backend now exists (v5) with wide-open anon RLS
-   policies — this feature tightens them to just the two of us.
-3. **Photo album** 📸 — ~~Supabase Storage + a gallery tab~~ **shipped as the
-   🍜 Food tab (2026-07-25)**: uploads, EXIF dates, GPS→city tags, a tag
-   system and shared-album import. Still worth doing after login: the
-   bucket is world-readable today, same as every other table.
-4. **Answer & compare** ✍️ — both type answers to the daily question, reveal
-   together. Needs Supabase DB. This is the feature that makes the daily
-   question 10x better, but do login first.
-5. **Claude features** 🤖 — a Vercel serverless function proxying the Claude
+1. **Answer & compare** ✍️ — both type answers to the daily question, reveal
+   together. **The blocker is gone** — login shipped in v10 — and this is
+   still the feature that makes the daily question 10× better. Fits on the
+   existing Home card, so it costs no nav space. Do this one.
+2. **Claude features** 🤖 — a Vercel serverless function proxying the Claude
    API (key stays server-side). Ideas: generate fresh questions weekly,
    "settle our debate" button, date-night idea generator.
-6. **Money** 💸 — **Splitwise, but for two.** Log a shared expense (who paid,
+3. **Money** 💸 — **Splitwise, but for two.** Log a shared expense (who paid,
    how much, what for) and the app keeps a running "who owes whom".
 
    The thing that makes this small: **with exactly two people the entire
@@ -54,14 +85,12 @@
      to a session-only ledger when the DB is unreachable, and *say so*
      instead of pretending it saved. Money silently not saving is worse
      than money visibly not saving.
-   - **Do Google login (#2) FIRST — this is the feature that makes it
-     non-optional.** Today the anon key ships in the deployed page source
-     and the RLS policies let that key read *and write* every table, so
-     anyone who has the app URL has the data — repo visibility doesn't
-     enter into it (see "Security, honestly" in docs/SUPABASE.md). That's a
-     fine trade for questions and trip photos; it is the wrong trade for a
-     record of what we owe each other.
-   - **Where it lives:** the nav is full at four buttons, so it goes either
+   - ~~Do Google login first~~ **— done in v10.** This was the feature that
+     made login non-optional: the anon key ships in the page source, and the
+     old policies let it read *and write* every table. `auth_policies.sql`
+     closed that, so a ledger of what we owe each other is now a reasonable
+     thing to store. **Unblocked.**
+   - **Where it lives:** the nav is full at **five** buttons, so it goes
      inside ✈️ Trips or behind its own entry point (see the 🎮 Games hub and
      the 🌙 Moon quiet-door patterns in the `add-new-game` skill).
    - Currency: we're both in USD day to day, so don't build FX up front —
@@ -69,7 +98,7 @@
      currency eventually. Leave room for the column; don't write the
      converter yet.
 
-7. **Gifts** 🎁 — **one tap that shows everything we've ever given each other.**
+4. **Gifts** 🎁 — **one tap that shows everything we've ever given each other.**
    A running log: what it was, who gave it, when, and the occasion (birthday,
    anniversary, Christmas, "it was a Tuesday").
 
@@ -90,24 +119,32 @@
    - **Needs a real table** (`gifts`) — like Money, it's outgrown `settings`
      key/value rows. Ships with a migration in `supabase/`, and per golden
      rule 6 it must still render from memory when the DB is unreachable.
-   - **Do Google login (#2) first**, same reasoning as Money — and the photos
-     inherit whatever we decide in #8 about private buckets.
+   - ~~Do Google login first~~ **— done in v10**, same reasoning as Money.
+     **Unblocked.** The photos still inherit whatever we decide in #5 about
+     private buckets.
    - **Where it lives:** the nav is full (five buttons at 375px), so this is a
      card on Home that opens a full page, or a section inside a tab — not a
      sixth nav button. See the 🎮 Games hub and 🌙 Moon quiet-door patterns.
 
-8. **Private food bucket** 🔒 — the `food` Storage bucket is `public = true`,
+5. **Private food bucket** 🔒 — the `food` Storage bucket is `public = true`,
    so every photo is served over an unauthenticated URL and storage policies
    don't apply to that path. `supabase/auth_policies.sql` closes the
    enumeration route (the rows holding those URLs become us-only) and revokes
    anon insert/delete, but the objects themselves stay publicly fetchable by
    URL. Real fix: flip the bucket to private and have `js/food.js` mint signed
-   URLs instead of using the plain public ones. Do it after Google login.
+   URLs instead of using the plain public ones. ~~Do it after Google login~~
+   — login shipped in v10, so this is **unblocked** and now the only known
+   hole left in the lockdown.
 
 ## Agreed platform plan
-- **Hosting:** Vercel (static now; serverless functions when needed)
-- **Backend when needed:** Supabase — Postgres + file storage + auth
-  (Google sign-in), free tier
+- **Hosting:** Vercel — static, plus serverless functions in `api/`
+  (`album`, `geocode`, `food-import`)
+- **Backend:** Supabase — Postgres, Storage and Google auth, free tier. All of
+  it is live; auth and the locked-down RLS policies shipped in v10
+- **Distribution:** the web app IS the app — Share → Add to Home Screen on
+  both phones. Deliberately not the App Store (a wrapped web view is a 4.2
+  rejection, the adult decks are a content-rating problem, and a review queue
+  would break "both partners run the same version")
 - **Repo:** private, both partners collaborators, deploy = push to `main`
 
 ## Parking lot
