@@ -64,39 +64,46 @@
 2. **Claude features** 🤖 — a Vercel serverless function proxying the Claude
    API (key stays server-side). Ideas: generate fresh questions weekly,
    "settle our debate" button, date-night idea generator.
-3. **Money** 💸 — **Splitwise, but for two.** Log a shared expense (who paid,
-   how much, what for) and the app keeps a running "who owes whom".
+3. **Money** 💸 — **what we have together, and what each plan would cost.**
 
-   The thing that makes this small: **with exactly two people the entire
-   ledger collapses to one signed number.** No debt-simplification graph, no
-   shares matrix, no group members — just a balance that swings toward Riu or
-   toward Lucia. Most of Splitwise is machinery for the N-person case we
-   don't have.
+   **Decided 2026-07-26: this is a pot, NOT Splitwise.** The earlier version of
+   this entry was who-owes-whom with a settle-up flow. We don't want that. We
+   want one shared balance and the ability to ask *"can we afford Japan?"* —
+   so per-expense splits, the signed who-owes-whom number and settle-up are
+   **deliberately dropped**. That's roughly half the original feature, gone.
 
-   - **Split per expense:** 50/50 (default), "this one's on me", or a custom
-     amount. An expense is `{ payer, total, your_share, what, when }`.
-   - **Settle up** writes a zeroing entry rather than deleting rows — we want
-     the history, and a delete-based settle makes the balance unauditable.
-   - **Hook it to ✈️ Trips:** let an expense carry a `journey_id`, so a trip
-     can show what it cost us. That's the feature's best excuse to exist.
-   - **This one needs a real table** (`expenses`), unlike everything since
-     v7 which has fitted into `settings` key/value rows. So it ships with a
-     migration in `supabase/` — and per golden rule 6 it must still degrade
-     to a session-only ledger when the DB is unreachable, and *say so*
-     instead of pretending it saved. Money silently not saving is worse
-     than money visibly not saving.
+   - **The pot is one number.** Every row is a `topup` (money in) or a `spend`
+     (money out); the balance is the difference. No shares, no debts, no
+     settling. If we ever genuinely need "you got dinner, I'll get the
+     flights", revisit — but don't build it on spec.
+   - **Simulation is the point, and it's just arithmetic.** Every ⭐ Someday
+     wish and 🗓️ Trip Plan carries an optional `est_cost`. Plan then shows
+     `pot − committed = what's left`, and toggling an item moves the number.
+     No forecasting engine — a sum over rows we already need.
+   - **It's a strip, not a chip.** Money is *context* for Someday and Trip
+     Plan, not a third thing you switch away to. It belongs pinned at the top
+     of the 📋 Plan tab, visible while the chips swap beneath it. See "Agreed
+     tab structure" below.
+   - **Home gets the glanceable number** ("Together: $4,820") next to the
+     reunion countdown — the same relationship the countdown has to Trip Plan:
+     Home shows the headline, Plan owns the detail.
+   - **Spends can carry a `journey_id`**, so ✈️ Trips can show what a trip
+     actually cost — and afterwards, what it cost vs. what we estimated. The
+     data links even though the UI lives in Plan.
+   - **Needs a real table** (`expenses`), plus an `est_cost` column on
+     `wishes` and on `journeys`. Ships with a migration in `supabase/`, and
+     per golden rule 6 it must still work from memory when the DB is
+     unreachable — and *say so* rather than pretending it saved. Money
+     silently not saving is worse than money visibly not saving.
    - ~~Do Google login first~~ **— done in v10.** This was the feature that
-     made login non-optional: the anon key ships in the page source, and the
+     made login non-optional: the anon key ships in the page source and the
      old policies let it read *and write* every table. `auth_policies.sql`
-     closed that, so a ledger of what we owe each other is now a reasonable
-     thing to store. **Unblocked.**
-   - **Where it lives:** its own 💸 nav button — the slot freed by the merges
-     in "Agreed tab structure" below. If we'd rather stay at three tabs plus
-     Home, it becomes a Home card that opens a full page instead.
-   - Currency: we're both in USD day to day, so don't build FX up front —
-     but if it's hooked to Trips, an abroad trip will want a per-expense
-     currency eventually. Leave room for the column; don't write the
-     converter yet.
+     closed that. **Unblocked.**
+   - Currency: we're both in USD day to day, so don't build FX up front — but
+     an abroad trip will want a per-expense currency eventually. Leave room
+     for the column; don't write the converter yet.
+   - **Build order:** ⭐ Someday and 🗓️ Trip Plan first — they're what the
+     simulation sums over. A pot with nothing to spend it on is a calculator.
 
 4. **Gifts** 🎁 — **one tap that shows everything we've ever given each other.**
    A running log: what it was, who gave it, when, and the occasion (birthday,
@@ -120,10 +127,10 @@
      key/value rows. Ships with a migration in `supabase/`, and per golden
      rule 6 it must still render from memory when the DB is unreachable.
    - ~~Do Google login first~~ **— done in v10**, same reasoning as Money.
-     **Unblocked.** The photos still inherit whatever we decide in #6 about
+     **Unblocked.** The photos still inherit whatever we decide in #7 about
      private buckets.
-   - **Where it lives:** a chip inside the 📖 Us tab, alongside ✈️ Trips and
-     🍜 Food — see "Agreed tab structure" below. Not a nav button.
+   - **Where it lives:** a chip in the 💝 Treats tab, beside 🍜 Food — see
+     "Agreed tab structure" below. Not a nav button.
 
 5. **Someday** ⭐ — **one list of everything we want: places to go, restaurants
    to try, and things we want.** The app is currently all past tense — trips
@@ -150,9 +157,9 @@
      choose nothing; the app already has `mulberry32`, `burst()` and `popToast`
      to make one choice feel like an event. If it should be the *same* pick on
      both phones that day, seed it — claim an offset in SESSIONS.md first.
-   - **Where it lives:** a chip inside the 📖 Us tab — it's a status filter
-     over the same rows, not a place of its own. See "Agreed tab structure"
-     below; building 📖 Us is what unblocks this and 🎁 Gifts together.
+   - **Where it lives:** a chip in the 📋 Plan tab, beside 🗓️ Trip Plan — see
+     "Agreed tab structure" below. A place wish graduates into a Trip Plan; a
+     restaurant into 🍜 Food; a thing into 🎁 Gifts.
    - **Needs a real table** (`wishes`) — one table, not three, with `kind`
      doing the separating. Ships with a migration in `supabase/`; per golden
      rule 6 it must still render from memory when the DB is unreachable.
@@ -160,7 +167,25 @@
      Gifts then becomes the "given" half of the same idea instead of a second
      table that also has a wanted flag.
 
-6. **Private food bucket** 🔒 — the `food` Storage bucket is `public = true`,
+6. **Trip Plan** 🗓️ — **the trip we're actually taking next.** Where a ⭐ Someday
+   place goes once it has dates.
+
+   **We already have one, badly.** `settings.reunion_date` is a trip plan
+   collapsed to a single date and parked on Home as the countdown. This gives
+   it a real home; the Home countdown stays, as a *view* of it.
+
+   - **Same table as ✈️ Trips, not a new one.** `journeys` already has
+     `start_date`/`end_date` — a plan is simply a row whose dates are ahead of
+     us. Add a status (or split on the date) and a plan **graduates into a
+     memory in place**: same rows, same photos, no copy step to drift.
+     ✈️ Trips shows the past ones, 📋 Plan shows the future ones.
+   - Carries an `est_cost` for 💸 Money's simulation, and afterwards the
+     `journey_id` on real spends gives us estimated-vs-actual for free.
+   - Whatever we plan should feed the countdown — one upcoming trip is the
+     "next time we're together", which is the number Home already shows.
+   - **Where it lives:** a chip in 📋 Plan, beside ⭐ Someday.
+
+7. **Private food bucket** 🔒 — the `food` Storage bucket is `public = true`,
    so every photo is served over an unauthenticated URL and storage policies
    don't apply to that path. `supabase/auth_policies.sql` closes the
    enumeration route (the rows holding those URLs become us-only) and revokes
@@ -170,38 +195,59 @@
    — login shipped in v10, so this is **unblocked** and now the only known
    hole left in the lockdown.
 
-## Agreed tab structure (decided 2026-07-26 — build it when you build #4/#5)
+## Agreed tab structure (decided 2026-07-26 — build it when you build #4/#5/#6)
 
 **The constraint:** five nav buttons already need their own media query to fit
-a 375px phone (`@media (max-width: 560px)` in `css/base.css`, "five tabs have
-to fit"). A sixth won't fit — and #3 Money, #4 Gifts and #5 Someday each want a
-home. So the nav gets *reorganised*, not extended.
+a 375px phone (`@media (max-width: 560px)` in `css/base.css` drops the type to
+11.5px, and 400px drops it again — "five tabs have to fit"). A sixth won't fit.
+So the nav is **reorganised, not extended**, and this spends the last slot:
+everything after these features goes inside a tab as a chip.
 
 ```
-Now (5, already cramped)
-🏠 Home · 🎭 Talk · ✈️ Trips · 🍜 Food · 🎮 Games          + 🌙 Moon (hidden)
+Now
+🏠 Home · 🎭 Talk · ✈️ Trips · 🍜 Food · 🎮 Games            + 🌙 Moon (hidden)
 
-Agreed (4, with room to grow)
-🏠 Home · 🎮 Play · 📖 Us · 💸 Money                        + 🌙 Moon (hidden)
-             │        │
-             │        └─ ✈️ Trips · 🍜 Food · 🎁 Gifts · ⭐ Someday
-             └─ 🎭 Talk · 🔤 Word Duel · 🎯 20 Questions
+Agreed
+🏠 Home · ✈️ Trips · 💝 Treats · 📋 Plan · 🎮 Games          + 🌙 Moon (hidden)
+              │          │          │         │
+              │          │          │         └─ 🎭 Talk · 🔤 Duel · 🎯 20Q
+              │          │          └─ 💸 Money (strip) + ⭐ Someday · 🗓️ Trip Plan
+              │          └─ 🍜 Food · 🎁 Gifts
+              └─ the past ones (same `journeys` table as Trip Plan)
 ```
 
-**Two honest families.** 🎮 Play is ephemeral and prompt-driven — draw a card,
-play a round, keep no history. 📖 Us is everything with a date and a photo:
-Trips, Food and Gifts are *already the same shape* (dated rows + Supabase
-Storage + tags), which is why grouping them is a data argument and not just a
-space-saving one. Answer & compare (#1) stays a card on Home and costs no nav.
+**It splits by tense, which is the durable line.** ✈️ Trips is the big things
+that happened; 💝 Treats the small things eaten and given; 📋 Plan everything
+ahead; 🎮 Games is now. Answer & compare (#1) stays a Home card and costs no nav.
 
-**⭐ Someday is a chip, not a tab.** It's a status filter over the same rows —
-a wish "graduates" into a Trip / Food entry / Gift (see #5). Building 📖 Us
-therefore absorbs *two* roadmap items for zero nav cost, which is why it comes
-first.
+**The point of the layout — the lifecycle is visible:**
 
-**Order: 📖 Us first, then 🎮 Play. Two PRs, never one.** Merging four tabs and
-two choosers in a single change is how `main` ends up broken, and every push is
-a deploy to both phones.
+```
+⭐ Someday        →   🗓️ Trip Plan      →   ✈️ Trips
+"Japan someday"       "Tokyo, Dec 20–28"     the album, afterwards
+```
+
+A wish becomes a plan becomes a memory. The first two sit together in 📋 Plan;
+the payoff gets its own tab. Same shape for the other kinds: a restaurant wish
+graduates into 🍜 Food, a thing into 🎁 Gifts — both in 💝 Treats.
+
+**💸 Money is a strip, not a chip.** It's context for the other two, not a peer
+view: pinned at the top of 📋 Plan, visible while the chips swap beneath it, so
+`pot − committed = what's left` is on screen while you browse what you want.
+Home shows the headline number beside the reunion countdown. See #3.
+
+**Why the names.** "Us" was rejected: the app already uses it as a heading
+everywhere (`Us, in one picture`, `Us, so far`, `Us, by the numbers`, and
+Trips' own `Us, but with luggage`), so a tab called Us says nothing. 💝 Treats
+covers food and gifts honestly. And the games tab **keeps its 🎮 Games label
+rather than becoming "Play"** — `Plan` and `Play` are four letters starting
+`Pla`, adjacent, at 11px on a phone. That is a misfire waiting to happen.
+
+**Order: 💝 Treats first, then 📋 Plan, then 🎮 Games. One PR each, never one
+big one** — every push is a deploy to both phones. Treats is first because it
+unblocks 🎁 Gifts; Plan is second because 💸 Money's simulation needs ⭐ Someday
+and 🗓️ Trip Plan to exist to sum over; folding 🎭 Talk into Games is the small
+tidy-up at the end and blocks nothing.
 
 **Four traps, three of them already bitten once:**
 1. The desktop grid is keyed on `#page-*.active` (`css/desktop.css`) — e.g.
@@ -209,10 +255,10 @@ a deploy to both phones.
    container, and the chooser must set `display = ""` **not** `"block"`, or the
    inline style kills the grid. `gamesShow()` carries that comment already.
 2. `TAB_HOOKS.food` calls `fdLoad()` and `TAB_HOOKS.journeys` hydrates photos,
-   both on tab open. Merged naively, opening 📖 Us fires **both** — undoing
-   "journey photos only when Trips is opened". It needs a `usPick` guard
-   mirroring `gamesPick`.
-3. `gamesPick` lives in `js/core.js` and guards each game's poll. A second
+   both on tab open. Merged naively, opening 💝 Treats fires **both** — undoing
+   "journey photos only when Trips is opened". Each merged tab needs a `*Pick`
+   guard mirroring `gamesPick`.
+3. `gamesPick` lives in `js/core.js` and guards each game's poll. Every new
    chooser needs its own global — **claim it in SESSIONS.md first**.
 4. Each chooser must remember its last pick in memory (like `gamesPick`), or
    🎭 Talk costs two taps every time — and that's the one used live on a call.
