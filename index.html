@@ -343,6 +343,7 @@
         <div class="gf-progress" id="gfProgress" style="display:none"></div>
 
         <div class="gf-form" id="gfForm" style="display:none" data-giver="">
+          <div class="ptitle gf-formtitle" id="gfFormTitle">New gift</div>
           <input type="text" id="gfTitle" placeholder="what was it? — e.g. the ridiculous blue scarf" maxlength="80">
           <div class="wd-whoami gf-giver" id="gfGiver">
             <span class="wd-whoami-lbl">from</span>
@@ -354,11 +355,12 @@
             <select id="gfOccasion" class="fd-select"><option value="">occasion…</option></select>
           </div>
           <textarea id="gfNote" rows="2" placeholder="anything worth remembering about it…" maxlength="300"></textarea>
+          <div class="gf-phototray" id="gfPhotoTray"></div>
           <div class="rowbtns">
             <button id="gfPhotoBtn">📸 Add a photo</button>
-            <input type="file" id="gfPhoto" accept="image/*" style="display:none">
+            <input type="file" id="gfPhoto" accept="image/*" multiple style="display:none">
           </div>
-          <div class="gf-photoname" id="gfPhotoName"></div>
+          <div class="gf-photoname" id="gfPhotoHint"></div>
           <div class="rowbtns">
             <button class="primary" id="gfSave">💾 Log it</button>
             <button id="gfCancel">Cancel</button>
@@ -765,7 +767,16 @@
     </div>
   </div>
 </div>
-<div class="fd-lightbox gf-lightbox" id="gfLightbox"><img id="gfLbImg" alt="gift"></div>
+<div class="fd-lightbox gf-lightbox" id="gfLightbox">
+  <div class="gf-lbbox">
+    <img id="gfLbImg" alt="gift">
+    <div class="gf-lbnav" id="gfLbNav" style="display:none">
+      <button id="gfLbPrev">‹</button>
+      <span id="gfLbCount"></span>
+      <button id="gfLbNext">›</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast">Copied!</div>
 <div class="jr-lightbox" id="jrLightbox"><img id="jrLightboxImg" alt="journey photo, full size"><video id="jrLightboxVid" controls playsinline style="display:none"></video></div>
 <div class="jr-picker" id="jrPicker">

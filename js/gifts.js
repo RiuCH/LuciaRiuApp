@@ -29,11 +29,25 @@ const GF_OCCASIONS = [
 let gfGifts = [];        // [{id, title, giver, given_on, occasion, note, url, path, viewUrl}]
 let gfReady = null;      // null unknown · true table exists · false needs the SQL
 let gfFilter = "all";    // all | riu | lucia | occasion:<key>
-let gfPendingFile = null;
+let gfEditing = null;      // the gift being edited, or null when adding
+let gfPendingFiles = [];   // newly chosen File objects, not yet uploaded
+let gfKeptPhotos = [];     // existing [{url, path}] kept while editing
+let gfMultiOK = null;      // does the DB have gifts.photos yet? (gifts_photos.sql)
+const GF_MAX_PHOTOS = 3;
 
 const gfEl = id => document.getElementById(id);
 const gfOccasion = key => GF_OCCASIONS.find(o => o.key === key);
 const gfGiverName = g => (g === "riu" ? "Riu" : "Lucia");
+
+// One shape for both schemas: `photos` when the migration has been run,
+// otherwise the original single url/path pair. Callers never branch.
+function gfPhotoList(gift) {
+  if (gift && Array.isArray(gift.photos) && gift.photos.length) {
+    return gift.photos.filter(p => p && (p.url || p.path));
+  }
+  if (gift && (gift.url || gift.path)) return [{ url: gift.url, path: gift.path }];
+  return [];
+}
 
 // ---------------- data ----------------
 async function gfLoad() {
@@ -45,10 +59,18 @@ async function gfLoad() {
   try {
     gfGifts = await supa("gifts?select=*&order=given_on.desc") || [];
     gfReady = true;
+    if (gfMultiOK === null) {
+      // one cheap probe: has supabase/gifts_photos.sql been run?
+      try { await supa("gifts?select=photos&limit=1"); gfMultiOK = true; }
+      catch (e) { gfMultiOK = false; }
+    }
     gfRender();
-    // signed views come from Food's resolver — same bucket, same expiry cache
+    // signed views come from Food's resolver — same bucket, same expiry cache.
+    // Every photo of every gift, so the 2nd and 3rd resolve too.
     if (typeof fdResolveViews === "function") {
-      try { if (await fdResolveViews(gfGifts)) gfRender(); } catch (e) { /* fallback URL renders */ }
+      const all = [];
+      gfGifts.forEach(g => gfPhotoList(g).forEach(p => all.push(p)));
+      try { if (await fdResolveViews(all)) gfRender(); } catch (e) { /* fallback renders */ }
     }
     return;
   } catch (e) {
@@ -69,43 +91,87 @@ async function gfSave() {
   if (!giver) { popToast("Who gave it? 💝"); return; }
 
   gfBusy(true);
-  let url = null, path = null;
   try {
-    if (gfPendingFile && typeof fdResize === "function" && typeof fdUploadBlob === "function") {
-      gfProgress("Shrinking the photo…");
-      const blob = await fdResize(gfPendingFile);
-      path = "gifts/" + (typeof fdStamp === "function" ? fdStamp() : Date.now().toString(36)) + ".jpg";
-      gfProgress("Uploading…");
-      url = await fdUploadBlob(blob, path, "image/jpeg");
+    // upload only what's new; kept photos already live in the bucket
+    const photos = gfKeptPhotos.slice();
+    for (let i = 0; i < gfPendingFiles.length; i++) {
+      if (photos.length >= GF_MAX_PHOTOS) break;
+      gfProgress(`Uploading photo ${i + 1} of ${gfPendingFiles.length}…`);
+      const blob = await fdResize(gfPendingFiles[i]);
+      const path = "gifts/" + (typeof fdStamp === "function" ? fdStamp() : Date.now().toString(36) + i) + ".jpg";
+      const url = await fdUploadBlob(blob, path, "image/jpeg");
+      photos.push({ url, path });
     }
+
     const row = {
-      title, giver, occasion: occasion || null, note: note || null, url, path,
-      // a date you type is a calendar date, so pin it as a wall clock the way
-      // food.taken_at does — otherwise it can render a day earlier elsewhere
+      title, giver, occasion: occasion || null, note: note || null,
+      // url/path keep pointing at the first photo: rows stay readable by a
+      // client that predates gifts_photos.sql, and by the DB if it does too
+      url: photos.length ? photos[0].url : null,
+      path: photos.length ? photos[0].path : null,
       given_on: on ? on + "T12:00:00Z"
         : (typeof fdWallClock === "function" ? fdWallClock() : new Date().toISOString())
     };
-    await supa("gifts", { method: "POST", body: row });
-    popToast("Logged 🎁");
+    if (gfMultiOK !== false) row.photos = photos.length ? photos : null;
+
+    if (gfEditing) {
+      await supa("gifts?id=eq." + gfEditing.id, { method: "PATCH", body: row });
+      // whatever the edit dropped is now orphaned in the bucket
+      const keep = new Set(photos.map(p => p.path).filter(Boolean));
+      for (const old of gfPhotoList(gfEditing)) {
+        if (old.path && !keep.has(old.path)) await gfDeleteObject(old.path);
+      }
+      popToast("Updated 🎁");
+    } else {
+      await supa("gifts", { method: "POST", body: row });
+      popToast("Logged 🎁");
+    }
     gfResetForm();
     await gfLoad();
   } catch (e) {
-    popToast("Couldn't save that: " + e.message);
+    // the one predictable failure: photos written before the migration ran
+    if (/photos/i.test(e.message) && gfMultiOK !== false) {
+      gfMultiOK = false;
+      popToast("Saved with one photo — run supabase/gifts_photos.sql for three");
+    } else {
+      popToast("Couldn't save that: " + e.message);
+    }
   } finally {
     gfBusy(false);
     gfProgress("");
   }
 }
 
+function gfStartEdit(gift) {
+  gfEditing = gift;
+  gfKeptPhotos = gfPhotoList(gift).slice();
+  gfPendingFiles = [];
+  gfEl("gfTitle").value = gift.title || "";
+  gfEl("gfForm").dataset.giver = gift.giver || "";
+  gfEl("gfDate").value = gift.given_on ? String(gift.given_on).slice(0, 10) : "";
+  gfEl("gfOccasion").value = gift.occasion || "";
+  gfEl("gfNote").value = gift.note || "";
+  gfEl("gfFormTitle").textContent = "Edit gift";
+  gfEl("gfSave").textContent = "💾 Save changes";
+  gfEl("gfForm").style.display = "block";
+  gfRenderGiverPick();
+  gfRenderPhotoTray();
+  gfEl("gfForm").scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+async function gfDeleteObject(path) {
+  try {
+    await fetch(`${SUPABASE_URL}/storage/v1/object/food/${path}`, {
+      method: "DELETE",
+      headers: typeof fdStorageHeaders === "function" ? fdStorageHeaders() : {}
+    });
+  } catch (e) { /* an orphaned file is not worth failing the save over */ }
+}
+
 async function gfDelete(gift) {
   if (!confirm('Delete "' + gift.title + '" for both of us?')) return;
   try {
-    if (gift.path) {
-      await fetch(`${SUPABASE_URL}/storage/v1/object/food/${gift.path}`, {
-        method: "DELETE",
-        headers: typeof fdStorageHeaders === "function" ? fdStorageHeaders() : {}
-      });
-    }
+    for (const p of gfPhotoList(gift)) { if (p.path) await gfDeleteObject(p.path); }
     await supa("gifts?id=eq." + gift.id, { method: "DELETE" });
   } catch (e) { popToast("Couldn't delete: " + e.message); return; }
   popToast("Gone 🗑️");
@@ -123,15 +189,58 @@ function gfProgress(msg) {
   el.style.display = msg ? "block" : "none";
 }
 function gfResetForm() {
+  gfEditing = null;
+  gfPendingFiles = [];
+  gfKeptPhotos = [];
   gfEl("gfTitle").value = "";
   gfEl("gfDate").value = "";
   gfEl("gfNote").value = "";
   gfEl("gfOccasion").value = "";
   gfEl("gfForm").dataset.giver = "";
-  gfPendingFile = null;
-  gfEl("gfPhotoName").textContent = "";
+  gfEl("gfFormTitle").textContent = "New gift";
+  gfEl("gfSave").textContent = "💾 Log it";
   gfRenderGiverPick();
+  gfRenderPhotoTray();
   gfEl("gfForm").style.display = "none";
+}
+
+// The photos currently attached to the form: kept ones first, then the newly
+// picked files. Each is removable before you save.
+function gfRenderPhotoTray() {
+  const tray = gfEl("gfPhotoTray");
+  tray.innerHTML = "";
+  const total = gfKeptPhotos.length + gfPendingFiles.length;
+  gfKeptPhotos.forEach((p, i) => tray.appendChild(gfTrayItem(
+    (typeof fdViewUrl === "function" ? fdViewUrl(p) : p.url), "kept", () => {
+      gfKeptPhotos.splice(i, 1); gfRenderPhotoTray();
+    })));
+  gfPendingFiles.forEach((f, i) => tray.appendChild(gfTrayItem(
+    URL.createObjectURL(f), "new", () => {
+      gfPendingFiles.splice(i, 1); gfRenderPhotoTray();
+    })));
+  gfEl("gfPhotoBtn").disabled = total >= GF_MAX_PHOTOS;
+  gfEl("gfPhotoBtn").textContent = total
+    ? `📸 Add another (${total}/${GF_MAX_PHOTOS})`
+    : "📸 Add a photo";
+  gfEl("gfPhotoHint").textContent =
+    gfMultiOK === false && total > 0
+      ? "Only the first is saved until supabase/gifts_photos.sql is run"
+      : total >= GF_MAX_PHOTOS ? "Three is the limit — remove one to swap it" : "";
+}
+
+function gfTrayItem(src, kind, onRemove) {
+  const wrap = document.createElement("div");
+  wrap.className = "gf-trayitem";
+  const img = document.createElement("img");
+  img.src = src;
+  img.alt = kind === "new" ? "photo to upload" : "attached photo";
+  const x = document.createElement("button");
+  x.className = "gf-trayx";
+  x.textContent = "✕";
+  x.title = "Remove this photo";
+  x.addEventListener("click", onRemove);
+  wrap.append(img, x);
+  return wrap;
 }
 function gfRenderGiverPick() {
   const picked = gfEl("gfForm").dataset.giver || "";
@@ -180,16 +289,39 @@ function gfCard(gift) {
   del.addEventListener("click", () => gfDelete(gift));
   card.appendChild(del);
 
-  const view = typeof fdViewUrl === "function" ? fdViewUrl(gift) : (gift.viewUrl || gift.url);
-  if (view) {
-    const img = document.createElement("img");
-    img.className = "gf-photo";
-    img.loading = "lazy";
-    img.decoding = "async";
-    img.src = view;
-    img.alt = gift.title;
-    img.addEventListener("click", () => gfOpenPhoto(view, gift.title));
-    card.appendChild(img);
+  const edit = document.createElement("button");
+  edit.className = "gf-edit";
+  edit.textContent = "✎";
+  edit.title = "Edit this gift";
+  edit.addEventListener("click", () => gfStartEdit(gift));
+  card.appendChild(edit);
+
+  const shots = gfPhotoList(gift);
+  const srcOf = p => (typeof fdViewUrl === "function" ? fdViewUrl(p) : (p.viewUrl || p.url));
+  if (shots.length) {
+    const main = document.createElement("img");
+    main.className = "gf-photo";
+    main.loading = "lazy";
+    main.decoding = "async";
+    main.src = srcOf(shots[0]);
+    main.alt = gift.title;
+    main.addEventListener("click", () => gfOpenPhoto(shots.map(srcOf), 0, gift.title));
+    card.appendChild(main);
+
+    if (shots.length > 1) {
+      const strip = document.createElement("div");
+      strip.className = "gf-strip";
+      shots.slice(1).forEach((p, i) => {
+        const t = document.createElement("img");
+        t.loading = "lazy";
+        t.decoding = "async";
+        t.src = srcOf(p);
+        t.alt = gift.title + " (" + (i + 2) + ")";
+        t.addEventListener("click", () => gfOpenPhoto(shots.map(srcOf), i + 1, gift.title));
+        strip.appendChild(t);
+      });
+      card.appendChild(strip);
+    }
   }
 
   const title = document.createElement("div");
@@ -253,20 +385,43 @@ function gfRender() {
 }
 
 // ---------------- photo lightbox ----------------
-function gfOpenPhoto(src, alt) {
-  const box = gfEl("gfLightbox");
-  gfEl("gfLbImg").src = src;
+let gfLbShots = [], gfLbAt = 0;
+
+function gfOpenPhoto(srcs, index, alt) {
+  gfLbShots = Array.isArray(srcs) ? srcs : [srcs];
+  gfLbAt = index || 0;
   gfEl("gfLbImg").alt = alt || "gift";
-  box.classList.add("show");
+  gfPaintLightbox();
+  gfEl("gfLightbox").classList.add("show");
 }
-gfEl("gfLightbox") && gfEl("gfLightbox").addEventListener("click", () =>
-  gfEl("gfLightbox").classList.remove("show"));
+
+function gfPaintLightbox() {
+  gfEl("gfLbImg").src = gfLbShots[gfLbAt] || "";
+  const many = gfLbShots.length > 1;
+  gfEl("gfLbNav").style.display = many ? "flex" : "none";
+  if (many) gfEl("gfLbCount").textContent = (gfLbAt + 1) + " / " + gfLbShots.length;
+}
+
+function gfStep(by) {
+  if (!gfLbShots.length) return;
+  gfLbAt = (gfLbAt + by + gfLbShots.length) % gfLbShots.length;
+  gfPaintLightbox();
+}
+if (gfEl("gfLightbox")) {
+  // only the backdrop closes it — the arrows and the photo itself must not
+  gfEl("gfLightbox").addEventListener("click", (e) => {
+    if (e.target === gfEl("gfLightbox")) gfEl("gfLightbox").classList.remove("show");
+  });
+  gfEl("gfLbPrev").addEventListener("click", (e) => { e.stopPropagation(); gfStep(-1); });
+  gfEl("gfLbNext").addEventListener("click", (e) => { e.stopPropagation(); gfStep(1); });
+}
 
 // ---------------- wiring ----------------
 if (gfEl("gfAddBtn")) {
   gfEl("gfAddBtn").addEventListener("click", () => {
-    const form = gfEl("gfForm");
-    form.style.display = form.style.display === "none" ? "block" : "none";
+    const wasHidden = gfEl("gfForm").style.display === "none";
+    gfResetForm();                       // never leave edit mode half-open
+    if (wasHidden) gfEl("gfForm").style.display = "block";
   });
   gfEl("gfCancel").addEventListener("click", gfResetForm);
   gfEl("gfSave").addEventListener("click", gfSave);
@@ -279,11 +434,16 @@ if (gfEl("gfAddBtn")) {
 
   gfEl("gfPhotoBtn").addEventListener("click", () => gfEl("gfPhoto").click());
   gfEl("gfPhoto").addEventListener("change", (e) => {
-    gfPendingFile = (e.target.files && e.target.files[0]) || null;
-    gfEl("gfPhotoName").textContent = gfPendingFile ? "📸 " + gfPendingFile.name : "";
+    const room = GF_MAX_PHOTOS - (gfKeptPhotos.length + gfPendingFiles.length);
+    const picked = Array.from(e.target.files || []).filter(f => /^image\//.test(f.type));
+    if (picked.length > room) popToast(`Three photos per gift — keeping the first ${room} 🎁`);
+    const taken = picked.slice(0, Math.max(0, room));
+    gfPendingFiles = gfPendingFiles.concat(taken);
+    e.target.value = "";
+    gfRenderPhotoTray();
     // a photo usually knows when it was taken — offer that as the date
-    if (gfPendingFile && !gfEl("gfDate").value && typeof fdExif === "function") {
-      gfPendingFile.arrayBuffer().then(buf => {
+    if (taken[0] && !gfEl("gfDate").value && typeof fdExif === "function") {
+      taken[0].arrayBuffer().then(buf => {
         const exif = fdExif(buf);
         if (exif && exif.takenAt) gfEl("gfDate").value = exif.takenAt.slice(0, 10);
       }).catch(() => {});
