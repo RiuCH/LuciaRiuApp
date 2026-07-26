@@ -26,12 +26,17 @@
 .sd-filters .chip.sel { opacity: 1; box-shadow: 0 0 14px var(--accent-soft); }
 /* Four chips wrap to a second row on a 375px phone and make the panel a
    thumb taller. Same trim the nav and the Games picker already use. */
+/* Five kinds since 🎢 Do joined, and at 375px the panel gives the row 297px.
+   Measured: the chips wanted 329px and left "🎁 Things" stranded alone on a
+   second line, which reads as a mistake rather than a wrap. Trimmed to fit
+   one row; `flex-wrap` above is still the backstop for anything narrower. */
 @media (max-width: 560px) {
   .sd-filters { gap: 5px; }
-  .sd-filters .chip { padding: 7px 9px; letter-spacing: 0.8px; font-size: 11.5px; }
+  .sd-filters .chip { padding: 7px 8px; letter-spacing: 0.5px; font-size: 11.5px; }
 }
 @media (max-width: 400px) {
-  .sd-filters .chip { padding: 6px 7px; letter-spacing: 0.3px; font-size: 11px; }
+  .sd-filters { gap: 4px; }
+  .sd-filters .chip { padding: 6px 5px; letter-spacing: 0; font-size: 10.5px; }
 }
 
 /* the 🎲 result */
