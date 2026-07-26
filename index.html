@@ -29,10 +29,21 @@
 <div class="lock" id="lock">
   <div class="lockheart">💞</div>
   <div class="locktitle">Lucia <span class="amp">♥</span> Riu</div>
-  <div class="prompt">Members only. Population: 2.<br>When did we become <i>us</i>?</div>
-  <input type="text" id="lockInput" inputmode="numeric" placeholder="MM/DD/YYYY" autocomplete="off">
-  <button class="primary" id="lockBtn">Unlock 💘</button>
-  <div class="lockhint" id="lockHint"></div>
+  <!-- stage 1: the anniversary. A cute door, and the offline one. -->
+  <div id="lockStep1">
+    <div class="prompt">Members only. Population: 2.<br>When did we become <i>us</i>?</div>
+    <input type="text" id="lockInput" inputmode="numeric" placeholder="MM/DD/YYYY" autocomplete="off">
+    <button class="primary" id="lockBtn">Unlock 💘</button>
+    <div class="lockhint" id="lockHint"></div>
+  </div>
+  <!-- stage 2: the real one. Only shown once stage 1 passes AND there's a
+       backend to sign into — see js/lock.js. -->
+  <div id="lockStep2" style="display:none">
+    <div class="prompt">Right date 💘<br>Now prove it's actually you.</div>
+    <button class="primary" id="lockGoogle">🔐 Sign in with Google</button>
+    <div class="lockhint" id="lockStep2Hint"></div>
+    <button class="locklater" id="lockSkip">Skip — just browse offline</button>
+  </div>
 </div>
 
 <div class="app">
@@ -45,7 +56,21 @@
     <div class="authbar" id="authBar">
       <span class="auth-who" id="authWho">…</span>
       <button id="authSignIn">🔐 Sign in with Google</button>
+      <button id="authWhoCan" style="display:none">👥 Who can sign in</button>
       <button id="authSignOut" style="display:none">Sign out</button>
+    </div>
+
+    <!-- Editing `allowed_emails`, which the Before User Created hook checks
+         (supabase/allowlist.sql). Signed-in-only, and RLS gates it anyway. -->
+    <div class="panel authpanel" id="authAllowPanel" style="display:none">
+      <div class="ptitle">Who can sign in</div>
+      <div class="auth-allow-list" id="authAllowList"></div>
+      <div class="cp-linkrow">
+        <input type="email" id="authAllowInput" placeholder="someone@gmail.com"
+               autocomplete="off" spellcheck="false">
+        <button class="primary" id="authAllowAdd">Add</button>
+      </div>
+      <div class="hint" id="authAllowHint"></div>
     </div>
   </header>
 

@@ -22,11 +22,15 @@ June 2, 2026). Fun is a feature — keep the tone playful.
 2. **No localStorage / sessionStorage / cookies.** They break in the preview
    environments we use. State lives in memory or in URL-hash params —
    **ONE carve-out, agreed 2026-07-25: the Google-login session** (and only
-   that) may sit in `sessionStorage` under `lr_session`, because otherwise
-   every refresh bounces you through Google again. `js/auth.js` feature-detects
-   it and falls back to an in-memory session if the browser throws, so the
-   original reason for this rule still holds — nothing breaks, you just re-auth
-   on refresh. Don't widen this to anything else.
+   that) may be stored under the key `lr_session` — `localStorage` preferred,
+   `sessionStorage` next, memory last, each feature-detected in `js/auth.js`.
+   Without it every refresh, and every reopen of the home-screen app, bounces
+   you through Google again. It holds a **refresh token**, which is why
+   `localStorage` and not just `sessionStorage`: sessionStorage dies with the
+   tab, and iOS kills backgrounded web apps constantly. The original reason for
+   this rule still holds — if the browser throws, it degrades to memory and the
+   app keeps working, you just re-auth more often. **Don't widen this to
+   anything else**, and note the app's own data still never goes near storage.
    Everything else lives in memory or URL-hash params —
    always via the `getHashParam`/`setHashParam` helpers so params coexist
    (current: `#reunion=YYYY-MM-DD`, `#unlocked=1`, `#photo=<url>`,

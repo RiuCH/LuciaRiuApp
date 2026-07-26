@@ -24,6 +24,12 @@ function supaOn() { return SUPABASE_URL.length > 0 && SUPABASE_ANON_KEY.length >
 // time — it's only ever called from inside a request, by which point it does.
 async function supa(path, opts) {
   opts = opts || {};
+  // If a token renewal is in flight, wait for it rather than firing a request
+  // with an access token we already know is dead. Matters most on boot, where
+  // init.js starts half a dozen fetches in the same tick.
+  if (typeof authPending !== "undefined" && authPending) {
+    try { await authPending; } catch (e) { /* renewal failed — fall through to anon */ }
+  }
   const token = (typeof authToken === "function" && authToken()) || SUPABASE_ANON_KEY;
   const res = await fetch(SUPABASE_URL + "/rest/v1/" + path, {
     method: opts.method || "GET",

@@ -56,29 +56,41 @@ function authAllowlistReady() {
 }
 
 const AUTH_STORE_KEY = "lr_session";
-// Refresh tokens can't be used without persisting them, so a session lasts as
-// long as its access token. Treat it as expired a minute early rather than
-// letting a request fail mid-flight.
+// Treat the access token as expired a minute early rather than letting a
+// request fail mid-flight, and start renewing it five minutes out.
 const AUTH_SKEW_MS = 60 * 1000;
+const AUTH_RENEW_AHEAD_MS = 5 * 60 * 1000;
 
-let authSession = null;     // { access_token, expires_at, email }
-let authStorageOK = null;   // null = untested, then true/false
+let authSession = null;     // { access_token, refresh_token, expires_at, email }
+let authStore = undefined;  // undefined = untested, then a Storage or null
+let authRenewTimer = null;
 
 // ---------------- storage (best-effort, never fatal) ----------------
+// localStorage FIRST, and that's the whole point of the refresh-token work:
+// sessionStorage dies with the tab, so an Add-to-Home-Screen app that iOS
+// kills in the background would ask for Google again on every open — which is
+// the exact complaint this is meant to fix. localStorage survives that.
+//
+// This widens the golden-rule-2 carve-out from sessionStorage to localStorage.
+// The technical risk is identical (both throw in the same locked-down
+// browsers, and both are probed below); what changes is that a refresh token
+// now sits on the device. That's the standard posture — supabase-js itself
+// defaults to localStorage — and the honest threat model is that anyone who
+// can unlock the phone already has the app. Downgrade the order below to
+// sessionStorage if you'd rather trade the convenience back.
 function authStorage() {
-  if (authStorageOK === false) return null;
-  try {
-    const s = window.sessionStorage;
-    if (authStorageOK === null) {         // probe once — Safari private mode throws on write
-      s.setItem("lr_probe", "1");
+  if (authStore !== undefined) return authStore;
+  authStore = null;
+  for (const kind of ["localStorage", "sessionStorage"]) {
+    try {
+      const s = window[kind];
+      s.setItem("lr_probe", "1");         // Safari private mode throws on WRITE, not access
       s.removeItem("lr_probe");
-      authStorageOK = true;
-    }
-    return s;
-  } catch (e) {
-    authStorageOK = false;                // memory-only from here; sign-in still works
-    return null;
+      authStore = s;
+      break;
+    } catch (e) { /* try the next one, then give up and stay in memory */ }
   }
+  return authStore;
 }
 
 function authSave(session) {
@@ -106,18 +118,102 @@ function authValid(session) {
             session.expires_at && Date.now() < session.expires_at - AUTH_SKEW_MS);
 }
 
-// The single accessor everything else uses. Returns null when signed out or
-// expired, which is the signal for supa() to fall back to the anon key.
+
+// ---------------- renewal ----------------
+// Supabase hands back a refresh_token alongside the access token and we now
+// keep it, so a session lasts weeks of quiet renewals instead of one hour.
+//
+// authPending is the promise of an in-flight renewal. supa() awaits it (see
+// js/supabase.js) so a request that fires mid-renewal waits for the new token
+// instead of going out with a dead one — which matters on boot, where init.js
+// starts half a dozen fetches immediately.
+let authPending = null;
+
+async function authRenew() {
+  const rt = authSession && authSession.refresh_token;
+  if (!rt || !supaOn()) { authSave(null); return false; }
+  try {
+    const res = await fetch(SUPABASE_URL + "/auth/v1/token?grant_type=refresh_token", {
+      method: "POST",
+      headers: { apikey: SUPABASE_ANON_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token: rt })
+    });
+    if (!res.ok) throw new Error("refresh " + res.status);
+    const data = await res.json();
+    if (!data || !data.access_token) throw new Error("no token back");
+    authSave({
+      access_token: data.access_token,
+      // Supabase ROTATES the refresh token — storing the new one is what keeps
+      // the chain alive. Keep the old one only if it declines to send a new.
+      refresh_token: data.refresh_token || rt,
+      expires_at: Date.now() + (data.expires_in > 0 ? data.expires_in : 3600) * 1000,
+      email: (data.user && data.user.email) || authEmailFromJWT(data.access_token)
+    });
+    authScheduleRenew();
+    return true;
+  } catch (e) {
+    // Expired, revoked, or rotated out from under us by another tab. There is
+    // no recovering without the user, so drop it and let them sign in again.
+    authSave(null);
+    authRender();
+    return false;
+  }
+}
+
+// One renewal at a time; everyone else awaits the same promise.
+function authEnsureFresh() {
+  if (authPending) return authPending;
+  if (!authSession || !authSession.refresh_token) return Promise.resolve(false);
+  if (authValid(authSession) &&
+      Date.now() < authSession.expires_at - AUTH_RENEW_AHEAD_MS) {
+    return Promise.resolve(true);         // still comfortably fresh
+  }
+  authPending = authRenew().finally(() => { authPending = null; });
+  return authPending;
+}
+
+function authScheduleRenew() {
+  clearTimeout(authRenewTimer);
+  if (!authSession || !authSession.refresh_token) return;
+  const due = authSession.expires_at - Date.now() - AUTH_RENEW_AHEAD_MS;
+  authRenewTimer = setTimeout(authEnsureFresh, Math.max(15000, due));
+}
+
+// Phones freeze timers in backgrounded tabs, so the scheduled renewal above
+// may simply not have fired while the app sat in the background for a day.
+// Catch up the moment we're looked at again — same reason the pollers do it.
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) authEnsureFresh();
+});
+window.addEventListener("focus", authEnsureFresh);
+
+// "Do I have a token I can use RIGHT NOW?" — strict. Null is the signal for
+// supa() to fall back to the anon key.
+//
+// It used to bin any expired session on sight, which quietly defeated the
+// whole point of refresh tokens: reopening the app an hour later called
+// authRender() → authSignedIn() → here, and the session was destroyed a tick
+// before the renewal that would have saved it. Now a session with a refresh
+// token is left alone while authEnsureFresh() does its work; only one with
+// nothing left to renew with gets dropped.
 function authToken() {
   if (!authValid(authSession)) {
-    if (authSession) authSave(null);   // expired — drop it
+    if (authSession && !authSession.refresh_token) authSave(null);
     return null;
   }
   return authSession.access_token;
 }
 
-function authEmail() { return authValid(authSession) ? authSession.email : null; }
-function authSignedIn() { return !!authToken(); }
+// "Is there a session at all?" — deliberately looser than authToken(),
+// because a token that's merely stale is still a signed-in user as long as it
+// can be renewed. Without this, reopening the app after an hour would flash
+// (or stick on) the login screen, since js/lock.js decides the gate from here.
+// If a renewal then fails, authRenew() clears the session and re-renders.
+function authSignedIn() {
+  return !!(authToken() || (authSession && authSession.refresh_token));
+}
+
+function authEmail() { return authSession ? authSession.email : null; }
 
 // ---------------- the redirect dance ----------------
 function authRedirectTarget() {
@@ -205,9 +301,11 @@ function authCapture() {
 
   authSave({
     access_token: token,
+    refresh_token: p.get("refresh_token") || null,   // the thing that keeps you signed in
     expires_at: Date.now() + (expiresIn > 0 ? expiresIn : 3600) * 1000,
     email: email
   });
+  authScheduleRenew();
   return true;
 }
 
@@ -230,6 +328,8 @@ function authRender() {
   bar.classList.toggle("auth-on", signedIn);
   inBtn.style.display = signedIn ? "none" : "inline-block";
   outBtn.style.display = signedIn ? "inline-block" : "none";
+  document.getElementById("authWhoCan").style.display = signedIn ? "inline-block" : "none";
+  if (!signedIn) document.getElementById("authAllowPanel").style.display = "none";
   who.textContent = !supaOn()
     ? "Local mode — no backend configured"
     : signedIn
@@ -239,12 +339,101 @@ function authRender() {
 
 function authInit() {
   authCapture() || (authSession = authRestore());
-  if (authSession && !authValid(authSession)) authSave(null);
+
+  // An expired access token is no longer the end of the session — if we still
+  // hold a refresh token, this is the ordinary case after the app has been
+  // closed for a while, and renewing is the whole point. Only give up when
+  // there's nothing left to renew WITH.
+  if (authSession && !authValid(authSession) && !authSession.refresh_token) {
+    authSave(null);
+  }
+  if (authSession && authSession.refresh_token) {
+    // Kick it off now and let supa() await it, so the boot fetches in
+    // init.js don't race out carrying a stale token.
+    authEnsureFresh().then(authRender);
+    authScheduleRenew();
+  }
   authRender();
 }
 
 document.getElementById("authSignIn").addEventListener("click", authSignIn);
 document.getElementById("authSignOut").addEventListener("click", authSignOut);
+
+// ---------------- WHO CAN SIGN IN ----------------
+// The `allowed_emails` table backs the Before User Created hook in
+// supabase/allowlist.sql — a row here is what lets a Google account create an
+// auth user at all. Editing it needs no special credential: it's an ordinary
+// table behind the same "us only" RLS as everything else, so the JWT we
+// already carry is enough. (Deliberately NOT the Supabase Management API,
+// whose token can delete the whole project — see the comment in allowlist.sql.)
+//
+// Until allowlist.sql has been run, the table doesn't exist and every call
+// 404s. That's the expected pre-migration state, so it says so rather than
+// looking broken.
+const authAllowPanel = document.getElementById("authAllowPanel");
+
+async function authAllowLoad() {
+  const list = document.getElementById("authAllowList");
+  const hint = document.getElementById("authAllowHint");
+  list.innerHTML = "";
+  hint.textContent = "Loading…";
+  try {
+    const rows = await supa("allowed_emails?select=email,note&order=added_at.asc");
+    list.innerHTML = "";
+    (rows || []).forEach(r => {
+      const row = document.createElement("div");
+      row.className = "auth-allow-row";
+      const who = document.createElement("span");
+      who.textContent = r.note ? r.note + " · " + r.email : r.email;
+      const del = document.createElement("button");
+      del.textContent = "✕";
+      del.title = "Remove";
+      del.addEventListener("click", () => authAllowRemove(r.email));
+      row.appendChild(who);
+      row.appendChild(del);
+      list.appendChild(row);
+    });
+    hint.textContent = rows && rows.length
+      ? "Anyone not on this list is refused at sign-up. Removing someone does NOT sign them out — they keep access until their session expires."
+      : "Empty list = everyone allowed, on purpose: an empty table is far more likely to be a botched migration than a decision to lock us both out.";
+  } catch (e) {
+    hint.textContent = "Can't read the list — has supabase/allowlist.sql been run yet?";
+  }
+}
+
+async function authAllowAdd() {
+  const input = document.getElementById("authAllowInput");
+  const email = input.value.trim().toLowerCase();
+  if (!email || email.indexOf("@") === -1) { popToast("That's not an email 🤨"); return; }
+  try {
+    await supa("allowed_emails?on_conflict=email", {
+      method: "POST", prefer: "resolution=merge-duplicates", body: { email: email }
+    });
+    input.value = "";
+    popToast("Added — they can sign in now 💞");
+    authAllowLoad();
+  } catch (e) { popToast("Couldn't add that one 😕"); }
+}
+
+async function authAllowRemove(email) {
+  if (email === authEmail()) { popToast("That's you. Removing yourself is a bad plan 😅"); return; }
+  try {
+    await supa("allowed_emails?email=eq." + encodeURIComponent(email), { method: "DELETE" });
+    popToast("Removed 👋");
+    authAllowLoad();
+  } catch (e) { popToast("Couldn't remove that one 😕"); }
+}
+
+document.getElementById("authWhoCan").addEventListener("click", () => {
+  const open = authAllowPanel.style.display !== "none";
+  authAllowPanel.style.display = open ? "none" : "block";
+  if (!open) authAllowLoad();
+});
+document.getElementById("authAllowAdd").addEventListener("click", authAllowAdd);
+document.getElementById("authAllowInput").addEventListener("keydown", e => {
+  if (e.key === "Enter") authAllowAdd();
+});
+
 
 // DELIBERATE EXCEPTION to "boot work goes in js/init.js": this one has to run
 // at parse time, because two things that load before init.js depend on it.
