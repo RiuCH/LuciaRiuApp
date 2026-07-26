@@ -230,6 +230,8 @@ function authRender() {
   bar.classList.toggle("auth-on", signedIn);
   inBtn.style.display = signedIn ? "none" : "inline-block";
   outBtn.style.display = signedIn ? "inline-block" : "none";
+  document.getElementById("authWhoCan").style.display = signedIn ? "inline-block" : "none";
+  if (!signedIn) document.getElementById("authAllowPanel").style.display = "none";
   who.textContent = !supaOn()
     ? "Local mode — no backend configured"
     : signedIn
@@ -245,6 +247,82 @@ function authInit() {
 
 document.getElementById("authSignIn").addEventListener("click", authSignIn);
 document.getElementById("authSignOut").addEventListener("click", authSignOut);
+
+// ---------------- WHO CAN SIGN IN ----------------
+// The `allowed_emails` table backs the Before User Created hook in
+// supabase/allowlist.sql — a row here is what lets a Google account create an
+// auth user at all. Editing it needs no special credential: it's an ordinary
+// table behind the same "us only" RLS as everything else, so the JWT we
+// already carry is enough. (Deliberately NOT the Supabase Management API,
+// whose token can delete the whole project — see the comment in allowlist.sql.)
+//
+// Until allowlist.sql has been run, the table doesn't exist and every call
+// 404s. That's the expected pre-migration state, so it says so rather than
+// looking broken.
+const authAllowPanel = document.getElementById("authAllowPanel");
+
+async function authAllowLoad() {
+  const list = document.getElementById("authAllowList");
+  const hint = document.getElementById("authAllowHint");
+  list.innerHTML = "";
+  hint.textContent = "Loading…";
+  try {
+    const rows = await supa("allowed_emails?select=email,note&order=added_at.asc");
+    list.innerHTML = "";
+    (rows || []).forEach(r => {
+      const row = document.createElement("div");
+      row.className = "auth-allow-row";
+      const who = document.createElement("span");
+      who.textContent = r.note ? r.note + " · " + r.email : r.email;
+      const del = document.createElement("button");
+      del.textContent = "✕";
+      del.title = "Remove";
+      del.addEventListener("click", () => authAllowRemove(r.email));
+      row.appendChild(who);
+      row.appendChild(del);
+      list.appendChild(row);
+    });
+    hint.textContent = rows && rows.length
+      ? "Anyone not on this list is refused at sign-up. Removing someone does NOT sign them out — they keep access until their session expires."
+      : "Empty list = everyone allowed, on purpose: an empty table is far more likely to be a botched migration than a decision to lock us both out.";
+  } catch (e) {
+    hint.textContent = "Can't read the list — has supabase/allowlist.sql been run yet?";
+  }
+}
+
+async function authAllowAdd() {
+  const input = document.getElementById("authAllowInput");
+  const email = input.value.trim().toLowerCase();
+  if (!email || email.indexOf("@") === -1) { popToast("That's not an email 🤨"); return; }
+  try {
+    await supa("allowed_emails?on_conflict=email", {
+      method: "POST", prefer: "resolution=merge-duplicates", body: { email: email }
+    });
+    input.value = "";
+    popToast("Added — they can sign in now 💞");
+    authAllowLoad();
+  } catch (e) { popToast("Couldn't add that one 😕"); }
+}
+
+async function authAllowRemove(email) {
+  if (email === authEmail()) { popToast("That's you. Removing yourself is a bad plan 😅"); return; }
+  try {
+    await supa("allowed_emails?email=eq." + encodeURIComponent(email), { method: "DELETE" });
+    popToast("Removed 👋");
+    authAllowLoad();
+  } catch (e) { popToast("Couldn't remove that one 😕"); }
+}
+
+document.getElementById("authWhoCan").addEventListener("click", () => {
+  const open = authAllowPanel.style.display !== "none";
+  authAllowPanel.style.display = open ? "none" : "block";
+  if (!open) authAllowLoad();
+});
+document.getElementById("authAllowAdd").addEventListener("click", authAllowAdd);
+document.getElementById("authAllowInput").addEventListener("keydown", e => {
+  if (e.key === "Enter") authAllowAdd();
+});
+
 
 // DELIBERATE EXCEPTION to "boot work goes in js/init.js": this one has to run
 // at parse time, because two things that load before init.js depend on it.
