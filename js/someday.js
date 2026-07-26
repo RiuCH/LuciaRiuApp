@@ -114,6 +114,8 @@ function sdGraduate(wish) {
 function sdRender() {
   const box = sdEl("sdList");
   if (!box) return;
+  // The strip above sums these rows, so it has to move when they do.
+  if (typeof mnRender === "function") mnRender();
 
   // status line, in the food.js house style: say which copy you're looking at
   const status = sdEl("sdStatus");
@@ -214,6 +216,18 @@ function sdCard(w) {
     undo.addEventListener("click", () => sdPatch(w, { status: "wanted", done_at: null }));
     row.appendChild(undo);
   }
+  // The simulation toggle (task E2). Only worth offering when there's a price
+  // to count — this is what moves `pot − committed = left` in the strip above.
+  if (w.status !== "done" && w.est_cost != null && w.est_cost !== "") {
+    const inOut = document.createElement("button");
+    inOut.className = "sd-commit" + (w.committed ? " sd-committed" : "");
+    inOut.textContent = w.committed ? "💸 Counted in" : "💸 Count it in";
+    inOut.addEventListener("click", () => {
+      sdPatch(w, { committed: !w.committed });
+      if (typeof mnRender === "function") mnRender();
+    });
+    row.appendChild(inOut);
+  }
   const del = document.createElement("button");
   del.textContent = "🗑️";
   del.title = "Remove";
@@ -299,6 +313,7 @@ function tpPrefill(place, cost) {
 function tpRender() {
   const box = sdEl("tpList");
   if (!box) return;
+  if (typeof mnRender === "function") mnRender();   // planned trips are committed
   const list = tpUpcoming();
   box.innerHTML = "";
   if (!list.length) {

@@ -44,8 +44,26 @@ falls back to the hardcoded copies and in-memory state ("local mode").
 
 ## Migrations
 
-Projects set up before v6 need one-off migrations, run in the SQL editor:
+Projects set up before v6 need one-off migrations, run in the SQL editor.
 
+> **Status (2026-07-26): every migration below has been run on this project.**
+> A fresh clone still needs them in order; this list is also the record of what
+> exists, so add a bullet here in the same PR as any new `.sql` file — two were
+> missed and only caught later.
+
+- `supabase/money.sql` — 💸 Money (task E2): the `expenses` table (`topup` /
+  `spend` rows — a pot, not Splitwise) plus `wishes.committed`, the flag that
+  drives the `pot − committed = left` simulation. Needs `someday.sql` first,
+  since it alters `wishes`. Until it's run the 📋 Plan strip says so and keeps
+  the pot in memory.
+- `supabase/someday.sql` — ⭐ Someday + 🗓️ Trip Plan (task E1): the `wishes`
+  table, plus `journeys.status` and `journeys.est_cost`. Those two columns are
+  what make a 🗓️ Trip Plan a `journeys` row with `status = 'planned'` rather
+  than a second table — a plan graduates into a memory in place. Existing rows
+  are stamped `'past'` by the script.
+- `supabase/food_private.sql` — flips the `food` bucket to `public = false`
+  (task B1) so photos are served by signed URL instead of a permanent
+  unauthenticated one. Re-running `food.sql` afterwards would undo it.
 - `supabase/food_split_place.sql` — splits the Food tab's old `place` tag
   kind into `city` and `country` (2026-07-26). Optional: the app shows any
   leftover `place` tag under 🏙️ City regardless, and this repo's project was

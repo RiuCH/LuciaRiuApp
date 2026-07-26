@@ -105,3 +105,12 @@
 .sd-form input[type="number"] { -moz-appearance: textfield; }
 .sd-form input[type="number"]::-webkit-outer-spin-button,
 .sd-form input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+/* the 💸 simulation toggle (task E2) — on state uses the accent so it's
+   obvious at a glance which wishes are moving the number in the strip */
+.sd-commit { font-size: 13px; padding: 10px 14px; }
+.sd-commit.sd-committed {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--text);
+}
