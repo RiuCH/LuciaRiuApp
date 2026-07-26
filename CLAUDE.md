@@ -151,8 +151,14 @@ can reference anything.
   upload path under a `gifts/` prefix of the SAME `food` bucket, so they
   inherit B1's signed URLs — `js/gifts.js` calls `fdResize`/`fdUploadBlob`/
   `fdResolveViews` but never edits `js/food.js`, and feature-detects them
-  all. `given_on` is a wall clock rendered in UTC, like `taken_at`. Needs
-  `supabase/gifts.sql`
+  all. `given_on` is a wall clock rendered in UTC, like `taken_at`. **Up to
+  3 photos** per gift in `gifts.photos` (jsonb `[{url, path}]`), with
+  `url`/`path` still mirroring the first so pre-migration rows and older
+  clients keep working; `gfMultiOK` probes whether the column exists and
+  the form degrades to one photo when it doesn't. ✎ edits in place and
+  deletes any photo the edit dropped. Card photos are sized intrinsically
+  (never `object-fit: cover` at card width — that cropped 76% off a
+  portrait on a laptop). Needs `supabase/gifts.sql` + `gifts_photos.sql`
 - 🎮 Games tab (key `duel`, nav "🎮 Games") holds TWO games behind a chooser:
   Word Duel and 20 Questions. `gamesShow(which)` in `js/twenty.js` swaps
   `#gameDuel`/`#game20q` and sets `gamesPick` (declared in `js/core.js`),
