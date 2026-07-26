@@ -13,23 +13,36 @@
 
 // ---------------- the games hub ----------------
 // The tab is still keyed "duel" everywhere (TABS, NAVIDS, TAB_HOOKS); this
-// only swaps which game's panels are visible inside it.
+// only swaps which panel is visible inside it. Three sub-views since A2:
+// Word Duel, 20 Questions, and Talk · Flirt · Dare (which lost its own nav
+// button when the nav ran out of room — see "Agreed tab structure").
+const GAMES_VIEWS = { duel: "gameDuel", q20: "game20q", tfd: "gameTfd" };
+
+// Talk's subtitle depends on hotMode, which its own Together/Apart switch
+// flips (js/tfd.js) — so the label is computed, not read straight out of
+// SUBTITLES. switchTab() used to special-case this; now it doesn't have to.
+function gamesSubtitle(which) {
+  if (which === "q20") return "20 Questions";
+  if (which === "tfd") return hotMode ? "Together Edition" : SUBTITLES.tfd;
+  return "The Word Duel";
+}
+
 function gamesShow(which) {
   gamesPick = which;
-  const duel = document.getElementById("gameDuel");
-  const q20 = document.getElementById("game20q");
-  // "" not "block": the desktop grid lives on #gameDuel in css/desktop.css,
-  // and an inline display would override it.
-  if (duel) duel.style.display = which === "duel" ? "" : "none";
-  if (q20) q20.style.display = which === "q20" ? "" : "none";
+  // "" not "block": the desktop layouts live on these inner containers in
+  // css/desktop.css, and an inline display would override them.
+  Object.keys(GAMES_VIEWS).forEach(k => {
+    const el = document.getElementById(GAMES_VIEWS[k]);
+    if (el) el.style.display = k === which ? "" : "none";
+  });
   document.querySelectorAll("#gamesPicker .chip").forEach(c =>
     c.classList.toggle("sel", c.dataset.game === which));
   if (activeTab === "duel") {
-    document.getElementById("subtitle").textContent =
-      which === "q20" ? "20 Questions" : "The Word Duel";
+    document.getElementById("subtitle").textContent = gamesSubtitle(which);
   }
+  // Talk is a one-phone deck draw — nothing shared, so nothing to pull.
   if (which === "q20") q20Pull();
-  else if (typeof wdPull === "function") wdPull();
+  else if (which === "duel" && typeof wdPull === "function") wdPull();
 }
 
 document.querySelectorAll("#gamesPicker .chip").forEach(chip =>

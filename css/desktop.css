@@ -44,9 +44,12 @@
   /* teasers sit side by side — give them equal presence */
   #page-home .teaser { display: flex; flex-direction: column; justify-content: center; min-height: 132px; }
 
-  /* ---- TALK · FLIRT · DARE: roomier card, bigger type ---- */
-  #page-tfd.active, #page-journeys.active, #page-duel.active { margin: 0 auto; }
-  #page-tfd.active { max-width: 780px; }
+  /* ---- TALK · FLIRT · DARE: roomier card, bigger type ----
+     Talk lives inside 🎮 Games now, so its width keys off the SUB-VIEW rather
+     than a page. gamesShow() sets an inline display on #gameTfd, and an inline
+     style beats a rule here — which is why it sets "" and never "block". */
+  #page-journeys.active, #page-duel.active { margin: 0 auto; }
+  #gameTfd { max-width: 780px; margin: 0 auto; }
   .card { padding: 52px 40px 46px; }
   .tfd-text { font-size: 27px; }
   #page-home .qotd-q { font-size: 20px; }
