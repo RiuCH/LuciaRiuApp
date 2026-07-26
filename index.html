@@ -609,9 +609,12 @@
          while you browse Someday and Trip Plan. The detail (logging and the
          history) lives in the 💸 Money chip below — the number is context,
          the ledger is a view. -->
-    <div class="plan-moneyline" id="planMoneyLine">
-      <span class="plan-pot" id="planPot">—</span>
-      <span class="plan-sums" id="planSums">Nothing logged yet</span>
+    <!-- Starts hidden and empty: mnRender() shows it only once there's a
+         number worth reading, so the tab never flashes an em-dash and a
+         "nothing here yet" before the first paint. -->
+    <div class="plan-moneyline" id="planMoneyLine" style="display:none">
+      <span class="plan-pot" id="planPot"></span>
+      <span class="plan-sums" id="planSums" style="display:none"></span>
     </div>
 
     <div class="games-picker" id="planPicker">
