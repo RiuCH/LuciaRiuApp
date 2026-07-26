@@ -170,3 +170,32 @@
   transition: opacity 0.25s ease, box-shadow 0.25s ease;
 }
 .jr-sort .chip.sel { opacity: 1; box-shadow: 0 0 12px var(--accent-soft); }
+
+/* Photos we uploaded ourselves, above the borrowed Apple album. The cell is a
+   positioning context for its ✕ — the image itself keeps .jr-photos img. */
+/* display:block on the image kills the inline baseline gap that made cells
+   4px taller than the square photos, and keeps a broken image (deleted or
+   expired object) filling its cell instead of shrinking to its alt text
+   and colliding with the button below. */
+.jr-ourcell { position: relative; display: block; }
+.jr-ourcell img { display: block; }
+.jr-ourx {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  line-height: 1;
+  font-size: 11px;
+  border-radius: 999px;
+  border: none;
+  color: #fff;
+  background: rgba(0,0,0,0.55);
+  opacity: 0.5;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+/* Faint but always drawn rather than hover-only: this app is used on phones
+   first, and a control that only exists on hover doesn't exist there. */
+.jr-ourcell:hover .jr-ourx, .jr-ourx:focus { opacity: 1; }

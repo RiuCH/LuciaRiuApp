@@ -16,6 +16,17 @@ const JOURNEYS_SEED = [
 let journeys = [];
 const albumCache = {};
 
+// Photos we upload ourselves, as opposed to the Apple album we borrow.
+// Stored as journeys.photos = [{url, path}] — the same shape gifts uses — in
+// the same `food` bucket under a `trips/` prefix, so they inherit B1's signed
+// URLs. `jrUploadOK` is null until we know whether the column exists
+// (supabase/journey_photos.sql); false hides the button rather than failing.
+let jrUploadOK = null;
+
+function jrPhotoList(j) {
+  return (j && Array.isArray(j.photos) ? j.photos : []).filter(p => p && (p.url || p.path));
+}
+
 
 function jrStatusLine(msg) { document.getElementById("jrStatus").textContent = msg; }
 
@@ -29,8 +40,14 @@ async function loadJourneys() {
   try {
     journeys = await supa("journeys?select=*&order=start_date.asc");
     jrStatusLine("Synced 💞 — you both see the same timeline");
+    // `photos` arrived after `journeys` did; a project that hasn't run
+    // supabase/journey_photos.sql still loads fine, it just can't upload.
+    jrUploadOK = journeys.length ? Object.prototype.hasOwnProperty.call(journeys[0], "photos") : null;
+    if (jrUploadOK === null) await jrProbeUpload();
+    await jrResolveOurs();
   } catch (e) {
     if (!journeys.length) journeys = JOURNEYS_SEED.slice();
+    jrUploadOK = false;
     jrStatusLine("Couldn't reach Supabase — showing what we have (are we offline?)");
   }
   renderJourneys();
@@ -177,6 +194,40 @@ function renderJourneys() {
       desc.className = "jr-desc";
       desc.textContent = j.description;
       card.appendChild(desc);
+    }
+
+    const mine = jrPhotoList(j);
+    if (mine.length) {
+      const grid = document.createElement("div");
+      grid.className = "jr-photos jr-ours";
+      mine.forEach(p => {
+        const src = typeof fdViewUrl === "function" ? fdViewUrl(p) : (p.viewUrl || p.url);
+        const cell = document.createElement("span");
+        cell.className = "jr-ourcell";
+        const img = document.createElement("img");
+        img.loading = "lazy";
+        img.decoding = "async";
+        img.src = src;
+        img.alt = j.place;
+        img.addEventListener("click", () => openLightbox({ full: src, thumb: src }));
+        const x = document.createElement("button");
+        x.className = "jr-ourx";
+        x.textContent = "✕";
+        x.title = "Remove this photo";
+        x.addEventListener("click", (e) => { e.stopPropagation(); jrRemovePhoto(j, p); });
+        cell.append(img, x);
+        grid.appendChild(cell);
+      });
+      card.appendChild(grid);
+    }
+
+    if (jrUploadOK !== false) {
+      const up = document.createElement("button");
+      up.className = "jr-pickbtn";
+      up.textContent = mine.length ? "📸 Add more photos" : "📸 Add photos";
+      up.title = "Upload photos from this phone";
+      up.addEventListener("click", () => jrPickFiles(j));
+      card.appendChild(up);
     }
 
     if (j.album_url) {
@@ -666,3 +717,97 @@ jrLightbox.addEventListener("click", (e) => {
   jrLightboxVid.pause();
   jrLightboxVid.removeAttribute("src");
 });
+
+
+// ---------------- our own trip photos ----------------
+// Reuses 🍜 Food's upload path wholesale (resize → storage → signed URLs), the
+// same way 🎁 Gifts does. js/food.js is only ever READ from here, and every
+// call is feature-detected so a refactor there degrades this instead of
+// breaking it. Needs supabase/journey_photos.sql for the `photos` column.
+
+async function jrProbeUpload() {
+  if (jrUploadOK !== null) return jrUploadOK;
+  if (!supaOn() || (typeof authSignedIn === "function" && !authSignedIn())) return (jrUploadOK = false);
+  try { await supa("journeys?select=photos&limit=1"); jrUploadOK = true; }
+  catch (e) { jrUploadOK = false; }
+  return jrUploadOK;
+}
+
+let jrFileInput = null;
+
+function jrPickFiles(journey) {
+  if (typeof fdResize !== "function" || typeof fdUploadBlob !== "function") {
+    popToast("The uploader lives in the Food tab — open it once, then retry");
+    return;
+  }
+  if (!jrFileInput) {
+    jrFileInput = document.createElement("input");
+    jrFileInput.type = "file";
+    jrFileInput.accept = "image/*";
+    jrFileInput.multiple = true;
+    jrFileInput.style.display = "none";
+    document.body.appendChild(jrFileInput);
+  }
+  jrFileInput.onchange = async (e) => {
+    const files = Array.from(e.target.files || []).filter(f => /^image\//.test(f.type));
+    e.target.value = "";
+    if (files.length) await jrUploadPhotos(journey, files);
+  };
+  jrFileInput.click();
+}
+
+async function jrUploadPhotos(journey, files) {
+  const kept = jrPhotoList(journey).slice();
+  let done = 0;
+  for (let i = 0; i < files.length; i++) {
+    popToast("Uploading " + (i + 1) + " of " + files.length + "…");
+    try {
+      const blob = await fdResize(files[i]);
+      const path = "trips/" + (typeof fdStamp === "function" ? fdStamp() : Date.now().toString(36) + i) + ".jpg";
+      const url = await fdUploadBlob(blob, path, "image/jpeg");
+      kept.push({ url, path });
+      done++;
+    } catch (err) {
+      popToast("Upload failed: " + err.message);
+      break;
+    }
+  }
+  if (!done) return;
+  try {
+    await supa("journeys?id=eq." + journey.id, { method: "PATCH", body: { photos: kept } });
+    journey.photos = kept;
+    popToast(done + (done === 1 ? " photo added ✈️" : " photos added ✈️"));
+  } catch (e) {
+    popToast("Uploaded, but couldn't save: " + e.message);
+  }
+  await jrResolveOurs();
+  renderJourneys();
+}
+
+async function jrRemovePhoto(journey, photo) {
+  if (!confirm("Remove this photo from " + journey.place + "?")) return;
+  const kept = jrPhotoList(journey).filter(p => p !== photo);
+  try {
+    if (photo.path) {
+      const bucket = typeof FD_BUCKET === "string" ? FD_BUCKET : "food";
+      await fetch(SUPABASE_URL + "/storage/v1/object/" + bucket + "/" + photo.path, {
+        method: "DELETE",
+        headers: typeof fdStorageHeaders === "function" ? fdStorageHeaders() : {}
+      });
+    }
+    await supa("journeys?id=eq." + journey.id, { method: "PATCH", body: { photos: kept.length ? kept : null } });
+    journey.photos = kept;
+    popToast("Removed 🗑️");
+    renderJourneys();
+  } catch (e) { popToast("Couldn't remove that: " + e.message); }
+}
+
+// Mint signed URLs for every uploaded photo across every trip, in one request
+// — Food's resolver already batches, so hand it the flattened list.
+async function jrResolveOurs() {
+  if (typeof fdResolveViews !== "function") return false;
+  const all = [];
+  (typeof journeys === "undefined" ? [] : journeys).forEach(j => jrPhotoList(j).forEach(p => all.push(p)));
+  if (!all.length) return false;
+  try { return await fdResolveViews(all); } catch (e) { return false; }
+}
