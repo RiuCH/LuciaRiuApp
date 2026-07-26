@@ -33,9 +33,7 @@ function unlock(celebrate) {
 // work offline (golden rule 6). Same reason the skip button exists.
 function lockShowStep2() {
   document.getElementById("lockStep1").style.display = "none";
-  document.getElementById("lockStep2").style.display = "block";
-  document.getElementById("lockStep2Hint").textContent =
-    "Google decides; we just check the name on the list 😌";
+  document.getElementById("lockStep2").style.display = "flex";
 }
 
 function lockPassed() {
@@ -43,7 +41,16 @@ function lockPassed() {
   // ?rehash= and puts it back afterwards, so coming home from Google skips
   // straight past the date rather than asking for it twice.
   setHashParam("unlocked", "1");
-  if (supaOn() && !(typeof authSignedIn === "function" && authSignedIn())) {
+
+  // Only ask for the account when signing in could actually succeed. The skip
+  // button used to be the way out of this screen; without it, landing here
+  // with no way to reach Google would be a dead end, so the dead end has to be
+  // avoided rather than escaped. `navigator.onLine` is a weak signal (it's
+  // true on wifi with no internet), which is why `#guest=1` still works as a
+  // typed escape hatch — see the boot check at the bottom of this file.
+  const canSignIn = supaOn() && navigator.onLine !== false &&
+                    location.protocol !== "file:";
+  if (canSignIn && !(typeof authSignedIn === "function" && authSignedIn())) {
     lockShowStep2();
     return;
   }
@@ -73,18 +80,6 @@ function tryUnlock() {
 document.getElementById("lockBtn").addEventListener("click", tryUnlock);
 lockInput.addEventListener("keydown", e => { if (e.key === "Enter") tryUnlock(); });
 document.getElementById("lockGoogle").addEventListener("click", () => authSignIn());
-// The escape hatch stage 2 must always have: Supabase down, Google having a
-// bad day, or a phone with no signal shouldn't cost us the whole app. It only
-// hides the gate — signed out, the app is on its hardcoded copy anyway, and
-// once auth_policies.sql is live there's nothing behind it to read.
-document.getElementById("lockSkip").addEventListener("click", () => {
-  // `guest` is what makes skipping stick. Without it a refresh would land on
-  // `unlocked=1` with no session and ask for the account again, forever —
-  // which is no kind of escape hatch.
-  setHashParam("guest", "1");
-  unlock(true);
-  popToast("Browsing offline — sign in any time from up top 💞");
-});
 
 const lockSignedIn = typeof authSignedIn === "function" && authSignedIn();
 
@@ -93,7 +88,13 @@ if (lockSignedIn) {
   // displays and this screen's own hints spell out. Straight in.
   unlock(false);
 } else if (getHashParam("guest") === "1") {
-  unlock(false);                      // chose offline earlier; don't nag
+  // THE ESCAPE HATCH. There's no longer a button for this — stage 2 is meant
+  // to be the only way past, and lockPassed() avoids showing it when signing
+  // in can't work. But `navigator.onLine` lies (true on wifi with no
+  // internet), Google has outages, and being permanently locked out of your
+  // own scrapbook because a third party is down is not an acceptable failure.
+  // Add `&guest=1` to the URL and you're in, on the offline copy.
+  unlock(false);
 } else if (getHashParam("unlocked") === "1") {
   // Stage 1 done, no account yet — the return leg of a sign-in that didn't
   // land. Don't ask for the date twice; go straight back to the account step.

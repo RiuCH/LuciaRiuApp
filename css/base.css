@@ -147,17 +147,66 @@ header .sub {
 /* ------- lock screen, stage 2 ------- */
 /* Quieter than the primary button on purpose: skipping is the escape hatch,
    not the intended path. */
-.locklater {
-  display: block;
-  margin: 16px auto 0;
-  padding: 8px 16px;
-  font-size: 12.5px;
-  font-weight: 500;
-  opacity: 0.6;
-  background: none;
-  border-color: transparent;
+/* Both stages have to re-establish the column that .lock provides, because
+   they're now wrappers between it and its old children. Without this the
+   prompt, input and button lose every bit of spacing AND go inline — which is
+   how the date box and Unlock ended up shoulder to shoulder on a wide screen. */
+#lockStep1, #lockStep2 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;                  /* roomier than .lock's 14px — this bit needs air */
 }
-.locklater:hover { opacity: 0.95; background: rgba(255, 255, 255, 0.08); }
+#lockStep1 .prompt { margin-bottom: 2px; }
+#lockStep1 .lockhint { margin-top: -6px; }   /* sass sits closer to its input */
+
+/* Stage 2 slides in so the jump from "type the date" to "sign in" reads as one
+   flow rather than the screen suddenly becoming a different screen. */
+#lockStep2 {
+  animation: lockStepIn 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.05);
+}
+@keyframes lockStepIn {
+  from { transform: translateY(14px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.lock-welcome {
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+.lock-foot {
+  font-size: 12px;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  opacity: 0.75;
+}
+
+/* Google asks that its button stay light with the real mark, and it's also
+   simply the most legible thing on this dark screen — it reads as a sign-in
+   control instead of one more glass pill like everything else in the app. */
+.lock-gbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 26px;
+  border-radius: 999px;
+  border: 0;
+  background: #fff;
+  color: #1f1f1f;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  backdrop-filter: none;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.5);
+}
+.lock-gbtn svg { flex: none; }
+.lock-gbtn:hover {
+  background: #fff;                     /* the shared button:hover would tint it */
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.7);
+}
+.lock-gbtn:active { transform: translateY(0) scale(0.98); }
 
 /* ------- pages ------- */
 .page { display: none; }
