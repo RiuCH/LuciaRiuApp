@@ -88,19 +88,32 @@
     <!-- the ♥ is also the quiet door: long-press it (js/core.js) -->
     <div class="names">Lucia <span class="amp" id="secretHeart">♥</span> Riu</div>
     <div class="sub" id="subtitle">Our Little Universe</div>
-    <!-- Signed out, the app still runs on its hardcoded copy (golden rule 6) —
-         this bar says which of the two you're looking at. -->
-    <div class="authbar" id="authBar">
-      <span class="auth-who" id="authWho">…</span>
-      <button id="authSignIn">🔐 Sign in with Google</button>
-      <button id="authWhoCan" style="display:none">👥 Who can sign in</button>
-      <button id="authSignOut" style="display:none">Sign out</button>
+    <!-- Everything that isn't the app itself lives behind this. Future
+         settings get another .set-group in the panel below — nothing else
+         needs to change. -->
+    <button class="app-gear" id="appGear" title="Settings" aria-label="Settings"
+            aria-expanded="false" aria-controls="settingsPanel">⚙️</button>
+  </header>
+
+  <div class="panel settings" id="settingsPanel" style="display:none">
+    <div class="ptitle">Settings</div>
+
+    <div class="set-group">
+      <div class="set-label">Account</div>
+      <!-- Signed out, the app still runs on its hardcoded copy (golden rule 6) —
+           this line says which of the two you're looking at. -->
+      <div class="auth-who" id="authWho">…</div>
+      <div class="rowbtns">
+        <button id="authSignIn">🔐 Sign in with Google</button>
+        <button id="authWhoCan" style="display:none">👥 Who can sign in</button>
+        <button id="authSignOut" style="display:none">Sign out</button>
+      </div>
     </div>
 
     <!-- Editing `allowed_emails`, which the Before User Created hook checks
          (supabase/allowlist.sql). Signed-in-only, and RLS gates it anyway. -->
-    <div class="panel authpanel" id="authAllowPanel" style="display:none">
-      <div class="ptitle">Who can sign in</div>
+    <div class="authpanel set-group" id="authAllowPanel" style="display:none">
+      <div class="set-label">Who can sign in</div>
       <div class="auth-allow-list" id="authAllowList"></div>
       <div class="cp-linkrow">
         <input type="email" id="authAllowInput" placeholder="someone@gmail.com"
@@ -109,7 +122,7 @@
       </div>
       <div class="hint" id="authAllowHint"></div>
     </div>
-  </header>
+  </div>
 
   <!-- ================= HOME ================= -->
   <section class="page active" id="page-home">
@@ -225,7 +238,10 @@
   <!-- ================= JOURNEYS ================= -->
   <section class="page" id="page-journeys">
     <div class="panel">
-      <div class="ptitle">Every adventure, logged</div>
+      <button class="ptitle foldbtn" data-fold="jrIsland" aria-expanded="false">
+        <span>Every adventure, logged</span><span class="foldchev">▸</span>
+      </button>
+      <div id="jrIsland">
       <div style="font-size:17px; font-weight:600;">✈️ Us, but with luggage</div>
       <div class="jr-status" id="jrStatus"></div>
       <div class="jr-sort" id="jrSort">
@@ -235,6 +251,7 @@
         <span class="chip" data-sort="longest">🏝️ Longest</span>
       </div>
       <div class="rowbtns"><button class="primary" id="jrAddBtn">➕ Add a journey</button></div>
+      </div>
     </div>
 
     <div class="panel jr-form" id="jrForm" style="display:none; text-align:left;">
@@ -270,7 +287,10 @@
     <div id="treatFood">
 
     <div class="panel">
-      <div class="ptitle">Everything we've eaten together</div>
+      <button class="ptitle foldbtn" data-fold="fdIsland" aria-expanded="false">
+        <span>Everything we've eaten together</span><span class="foldchev">▸</span>
+      </button>
+      <div id="fdIsland">
       <div class="fd-status" id="fdStatus">Loading…</div>
       <div class="rowbtns">
         <button class="primary" id="fdUploadBtn">📤 Upload photos</button>
@@ -278,6 +298,7 @@
         <input type="file" id="fdFile" accept="image/*" multiple style="display:none">
       </div>
       <div class="fd-progress" id="fdProgress" style="display:none"></div>
+      </div>
 
       <div class="fd-album" id="fdAlbumBox" style="display:none">
         <div class="cp-linkrow">
@@ -296,8 +317,8 @@
     </div>
 
     <div class="panel">
-      <button class="ptitle fd-fold" id="fdFoldBtn" aria-expanded="true" aria-controls="fdOrganise">
-        <span>Find &amp; organise</span><span class="fd-chev" id="fdChev">▾</span>
+      <button class="ptitle foldbtn" data-fold="fdOrganise" aria-expanded="false">
+        <span>Find &amp; organise</span><span class="foldchev">▸</span>
       </button>
       <div id="fdOrganise">
       <input type="search" id="fdSearch" class="fd-search" placeholder="🔍 search a tag or caption — ramen, Tokyo, Nari…">
@@ -337,10 +358,14 @@
          fill this div and teach treatsShow() nothing new. -->
     <div id="treatGifts" style="display:none">
       <div class="panel">
-        <div class="ptitle">Everything we've given each other</div>
+        <button class="ptitle foldbtn" data-fold="gfIsland" aria-expanded="false">
+          <span>Everything we've given each other</span><span class="foldchev">▸</span>
+        </button>
+        <div id="gfIsland">
         <div class="gf-status" id="gfStatus">Loading…</div>
         <div class="rowbtns"><button class="primary" id="gfAddBtn">➕ Log a gift</button></div>
         <div class="gf-progress" id="gfProgress" style="display:none"></div>
+        </div>
 
         <div class="gf-form" id="gfForm" style="display:none" data-giver="">
           <div class="ptitle gf-formtitle" id="gfFormTitle">New gift</div>

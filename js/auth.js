@@ -318,14 +318,12 @@ function authEmailFromJWT(token) {
 
 // ---------------- UI ----------------
 function authRender() {
-  const bar = document.getElementById("authBar");
-  if (!bar) return;
   const who = document.getElementById("authWho");
+  if (!who) return;                       // markup not present
   const inBtn = document.getElementById("authSignIn");
   const outBtn = document.getElementById("authSignOut");
   const signedIn = authSignedIn();
 
-  bar.classList.toggle("auth-on", signedIn);
   inBtn.style.display = signedIn ? "none" : "inline-block";
   outBtn.style.display = signedIn ? "inline-block" : "none";
   document.getElementById("authWhoCan").style.display = signedIn ? "inline-block" : "none";
@@ -355,6 +353,19 @@ function authInit() {
   }
   authRender();
 }
+
+// ---------------- settings ----------------
+// The gear is the single door to anything that isn't the app itself. It lives
+// here because Account is all that's behind it today; if a second unrelated
+// group ever appears, this belongs in its own file.
+const setPanel = document.getElementById("settingsPanel");
+document.getElementById("appGear").addEventListener("click", (e) => {
+  const open = setPanel.style.display === "none";
+  setPanel.style.display = open ? "block" : "none";
+  e.currentTarget.setAttribute("aria-expanded", String(open));
+  e.currentTarget.classList.toggle("on", open);
+  if (open) window.scrollTo({ top: 0, behavior: "smooth" });
+});
 
 document.getElementById("authSignIn").addEventListener("click", authSignIn);
 document.getElementById("authSignOut").addEventListener("click", authSignOut);
