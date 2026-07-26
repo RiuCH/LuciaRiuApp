@@ -8,10 +8,25 @@ out of each other's way.
 ## Protocol (Claude: follow this every session)
 
 **On session start:**
-1. `git pull` first — always start from the latest `main`.
-2. Read this file. If another ACTIVE session already claims the feature or
+1. **Work in your own git worktree — do NOT share the checkout.** Parallel
+   sessions otherwise run in the *same* folder and clobber each other: on
+   2026-07-26 one session checked out another's branch, committed over it,
+   then `reset` + `commit --amend` twice, silently deleting the other's work
+   from `js/init.js`, `js/supabase.js` and `css/base.css`. Files were also
+   being rewritten mid-edit, so re-applying by hand was a losing race.
+   ```
+   git worktree add ../lr-<task-id> -b feature/<name> main
+   ```
+   Work, test, commit and push entirely inside it, then
+   `git worktree remove`. Signs you skipped this: `git status` showing files
+   you never touched, staged changes you didn't stage, or your own edits
+   vanishing. If it happens: `git diff > /tmp/save.patch` FIRST, then move to
+   a worktree and `git apply --3way`.
+2. `git pull` first — always start from the latest `main`.
+3. Read this file. **Claim a task from the Task board below** by putting your
+   name in its row. If another ACTIVE session already claims the feature or
    the same region of `index.html`, ask the user before proceeding.
-3. Register your session in the Active Sessions table below (commit it or
+4. Register your session in the Active Sessions table below (commit it or
    just keep it updated locally — commit if the work spans days).
 
 **While working:**
@@ -54,6 +69,65 @@ out of each other's way.
 | 2026-07-24-login | Riu | Login page | lock CSS block, lock HTML block, LOCK SCREEN script block | ✅ shipped |
 -->
 
+## Task board (docs/ROADMAP.md, cut into claimable work)
+
+**How this is sliced:** the app is split one-tab-one-file, so feature work
+rarely collides — but **every tab merge touches the same five files**
+(`index.html` nav + sections, `js/core.js` TABS/NAVIDS/SUBTITLES, `js/init.js`,
+`css/base.css` nav sizing, `css/desktop.css` grids keyed on `#page-*`). So the
+nav reshuffle is **one session doing three PRs in sequence**, not three
+sessions racing the same lines. Everything else can genuinely run alongside it.
+
+Claim a row by writing your session id in **Who**. Identifiers are
+pre-assigned so two sessions can't pick the same prefix or table — they're
+already reserved in the Registry below.
+
+### Track A — the nav reshuffle 🚧 ONE session, three PRs, in order
+Blocks Tracks D and E. Read "Agreed tab structure" in docs/ROADMAP.md first,
+including the four traps — three of them have already bitten this repo once.
+
+| Task | What | Owns | Claims | Who |
+|---|---|---|---|---|
+| **A1** | 💝 Treats tab: move 🍜 Food into it behind a chooser, plus an empty 🎁 Gifts chip | index.html, core.js, init.js, base.css, desktop.css, food.js | tab key `treats`, `#navTreats`, global `treatsPick` | _(free)_ |
+| **A2** | 📋 Plan tab: new tab, empty ⭐ Someday + 🗓️ Trip Plan chips, 💸 Money strip placeholder | same five | tab key `plan`, `#navPlan`, global `planPick` | _(free)_ |
+| **A3** | 🎮 Games: fold 🎭 Talk in as a third chip; nav drops to five | same five + tfd.js | (reuses `gamesPick`) | _(free)_ |
+
+### Track B — zero shared files, start any time
+Neither touches `index.html`'s nav or `js/core.js`. Safe to run beside anything.
+
+| Task | Roadmap | Owns | Claims | Who |
+|---|---|---|---|---|
+| **B1** | #7 Private food bucket 🔒 | js/food.js, supabase/*.sql | — | _(free)_ |
+| **B2** | #2 Claude features 🤖 | api/claude.js (new) + one caller | endpoint `claude`, prefix `ai*` | _(free)_ |
+
+### Track C — Home only
+Touches `index.html` inside the Home section and `js/home.js`. Conflicts with
+Track A only trivially (A never edits the Home section).
+
+| Task | Roadmap | Owns | Claims | Who |
+|---|---|---|---|---|
+| **C1** | #1 Answer & compare ✍️ — *the highest-value item on the roadmap* | js/home.js, Home markup | table `answers`, prefix `ac*` | _(free)_ |
+
+### Track D — needs A1 merged
+| Task | Roadmap | Owns | Claims | Who |
+|---|---|---|---|---|
+| **D1** | #4 Gifts 🎁 (the *given* half only — wishing belongs to E1) | js/gifts.js, css/gifts.css | table `gifts`, prefix `gf*` | _(free)_ |
+
+### Track E — needs A2 merged; E2 needs E1
+| Task | Roadmap | Owns | Claims | Who |
+|---|---|---|---|---|
+| **E1** | #5 Someday ⭐ **and** #6 Trip Plan 🗓️ — one session: they share the graduation flow, the Plan markup and `est_cost` | js/someday.js, js/journeys.js | table `wishes`, prefixes `sd*` + `tp*`, columns `journeys.status`, `journeys.est_cost`, `wishes.est_cost`, seed offset **49979687** (only if 🎲 pick-one is seeded) | _(free)_ |
+| **E2** | #3 Money 💸 — pot + simulation. **Not Splitwise**; read the entry before starting | js/money.js, Plan strip | table `expenses`, prefix `mn*` | _(free)_ |
+
+### Suggested first wave (four sessions, no overlap)
+**A1** · **B1** · **B2** · **C1** — then D1 and E1 open up as A lands.
+
+**Every task, regardless of track:** full testing checklist from the
+`couple-app-dev` skill, degrade gracefully with Supabase unreachable (golden
+rule 6), keep it working on a double-click, and update the skills in the same
+PR if you introduce a convention.
+
+
 ## Recently Shipped
 
 | Date | Who | Feature | Notes |
@@ -92,7 +166,8 @@ out of each other's way.
 | 104729 | Question of the Day (After Dark) |
 | 15485863 | Couple photo — Apple-album photo-of-the-day |
 | 32452843 | Question of the Day (Deep Talk) |
-| _next free: 49979687, then any unlisted prime_ | |
+| 49979687 | **Reserved: Task E1** — ⭐ Someday's 🎲 pick-one, IF it's the same pick on both phones that day. Release it in your PR if you make the pick local instead |
+| _next free: 67867967, then any unlisted prime_ | |
 
 **URL hash params** (via `getHashParam`/`setHashParam` only):
 | Param | Feature |
@@ -118,6 +193,9 @@ array in `js/core.js`, which is what `switchTab` actually iterates):
 `nav*` (nav buttons), `fd*` (🍜 Food), `q20*` (20 Questions), `tick*` (home widget functions), `tfd*` (Talk · Flirt ·
 Dare), `qotd*` (home Question of the Day), `jr*` (journeys
 timeline), `wd*` (Word Duel), `cp*` (couple photo), `cy*` (🌙 Moon calendar), `auth*` (Google sign-in).
+**Pre-reserved for the Task board** (don't take these for anything else):
+`ac*` (C1 Answer & compare), `gf*` (D1 Gifts), `sd*` (E1 Someday), `tp*` (E1
+Trip Plan), `mn*` (E2 Money), `ai*` (B2 Claude features).
 New features should pick their own short prefix and list it here.
 One-off id outside any prefix: `#secretHeart` (the header `♥`, which is also
 the long-press door into the Moon tab).
@@ -132,8 +210,12 @@ breaks the composition.
 **Global constants / backends:** `SUPABASE_URL` + `SUPABASE_ANON_KEY`
 (journeys feature owns the Supabase config constants; future Supabase
 features reuse them — see docs/SUPABASE.md). Supabase table names are
-global identifiers too: `journeys`, `settings`, `questions`, `album_cache`
-are claimed.
+global identifiers too: `journeys`, `settings`, `questions`, `album_cache`,
+`food_photos`, `food_tags`, `food_photo_tags` are claimed.
+**Pre-reserved for the Task board:** `answers` (C1), `gifts` (D1), `wishes`
+(E1), `expenses` (E2). New columns claimed for E1: `journeys.status` and
+`journeys.est_cost` (a Trip Plan is a `journeys` row whose dates are ahead of
+us — same table as ✈️ Trips, so a plan graduates into a memory in place).
 Non-hash browser storage claimed (the ONE carve-out to golden rule 2): `sessionStorage['lr_session']` — the Google-login session, js/auth.js.
 Postgres objects claimed: function `public.is_us()` (the email allowlist every RLS policy calls).
 Settings keys claimed: `lock_keys`, `reunion_date`, `home_photo` (couple
@@ -142,8 +224,15 @@ photo: image URL, upload data-URL, or `album:<link>` for photo-of-the-day),
 `love_log` (🌙 Moon calendar — `start:len` and `date:count` lists, both
 plain text so they can be repaired by hand in the table editor).
 
+**Chooser globals in `js/core.js`** (each guards its tab's on-screen work so
+only the visible sub-view fetches or polls): `gamesPick` (🎮 Games) is live;
+`treatsPick` (A1) and `planPick` (A2) are **pre-reserved**. Any new merged tab
+needs one — a merged tab whose `TAB_HOOKS` entry ignores the pick will run
+*every* sub-view's loader on open, which is how the lazy-photo work gets undone.
+
 **Serverless endpoints (`api/`):** `album` (iCloud shared-album proxy,
-journeys feature). Claim new endpoint paths here before using them.
+journeys feature), `geocode`, `food-import`. **Pre-reserved:** `claude` (B2).
+Claim new endpoint paths here before using them.
 
 **Note:** Word Duel letters are still live `Math.random()` — but as of v7
 the *result* is shared through the `duel` table rather than recomputed, so
