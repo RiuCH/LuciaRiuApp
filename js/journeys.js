@@ -221,14 +221,14 @@ function renderJourneys() {
       card.appendChild(grid);
     }
 
-    if (jrUploadOK !== false) {
-      const up = document.createElement("button");
-      up.className = "jr-pickbtn";
-      up.textContent = mine.length ? "📸 Add more photos" : "📸 Add photos";
-      up.title = "Upload photos from this phone";
-      up.addEventListener("click", () => jrPickFiles(j));
-      card.appendChild(up);
-    }
+    // Both photo grids first, then ONE row holding both photo BUTTONS, so
+    // 📸 Add and 🖼️ Pick are neighbours instead of being separated by the
+    // album grid they used to straddle. "Open album ↗" stays on its own line
+    // above them — it's a link, not a button, and at 420px a third item in
+    // the row pushes 📸 Add onto a second line, which is the one thing this
+    // layout exists to prevent.
+    const actions = document.createElement("div");
+    actions.className = "jr-actions";
 
     if (j.album_url) {
       const photos = document.createElement("div");
@@ -246,9 +246,20 @@ function renderJourneys() {
       pickBtn.textContent = "🖼️ Pick photos";
       pickBtn.title = "Choose which album photos the timeline shows";
       pickBtn.addEventListener("click", () => openPicker(j));
-      card.appendChild(pickBtn);
+      actions.appendChild(pickBtn);
       jrHydrateWhenVisible(() => hydrateAlbum(j.album_url, photos, j.photo_guids));
     }
+
+    if (jrUploadOK !== false) {
+      const up = document.createElement("button");
+      up.className = "jr-pickbtn";
+      up.textContent = "📸 Add photos";
+      up.title = "Upload photos from this phone";
+      up.addEventListener("click", () => jrPickFiles(j));
+      actions.appendChild(up);
+    }
+
+    if (actions.children.length) card.appendChild(actions);
 
     item.appendChild(card);
     box.appendChild(item);
