@@ -141,9 +141,13 @@ function mnRender() {
           : mnRows.length + (mnRows.length === 1 ? " entry" : " entries") + " · shared 💞";
   }
 
-  mnEl("mnPanel").style.display = mnOpen ? "" : "none";
-  mnEl("mnToggle").textContent = mnOpen ? "✕ Close" : "💸 Log money";
-  if (mnOpen) mnRenderHistory();
+  // The form and history are the 💸 Money chip's pane now, shown by
+  // planShow() — there's no expander left to drive. Guarded because the old
+  // strip markup may still exist in a cached page mid-deploy.
+  const panel = mnEl("mnPanel"), toggle = mnEl("mnToggle");
+  if (panel) panel.style.display = mnOpen ? "" : "none";
+  if (toggle) toggle.textContent = mnOpen ? "✕ Close" : "💸 Log money";
+  if (mnEl("mnHistory")) mnRenderHistory();
 
   // Home shows the headline; 📋 Plan owns the detail — same relationship the
   // countdown has to 🗓️ Trip Plan.
@@ -202,10 +206,14 @@ function mnRenderHistory() {
 
 
 // ---------------- wiring ----------------
-mnEl("mnToggle").addEventListener("click", () => {
-  mnOpen = !mnOpen;
-  if (mnOpen && mnReady === null) mnLoad(); else mnRender();
-});
+// The 💸 Money chip replaced the expander; keep the listener only for a page
+// still serving the old markup.
+if (mnEl("mnToggle")) {
+  mnEl("mnToggle").addEventListener("click", () => {
+    mnOpen = !mnOpen;
+    if (mnOpen && mnReady === null) mnLoad(); else mnRender();
+  });
+}
 
 mnEl("mnSave").addEventListener("click", () => {
   const amount = Number(mnEl("mnAmount").value);

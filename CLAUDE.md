@@ -76,6 +76,8 @@ and the `<link>`/`<script src>` tags.
 | `js/home.js` | `MISSYOU`, anniversary/clock/countdown ticks, couple photo (`cp*`) |
 | `js/journeys.js` | timeline CRUD + sort, iCloud album, lightbox (`jr*`) |
 | `js/gifts.js` | 🎁 Gifts: the given-half log, giver/occasion filters (`gf*`) |
+| `js/plan.js` | 📋 Plan: the ⭐/🗓️/💸 chooser + the money line (`planShow`) |
+| `js/money.js` | 💸 Money: the pot, the ledger, the committed sums (`mn*`) |
 | `js/food.js` | 🍜 Food: uploads, EXIF, timeline, tags, search (`fd*`) |
 | `js/duel.js` | Word Duel (`wd*`) |
 | `js/twenty.js` | 20 Questions (`q20*`) **and** the Games-tab chooser (`gamesShow`) |
@@ -159,6 +161,13 @@ can reference anything.
   deletes any photo the edit dropped. Card photos are sized intrinsically
   (never `object-fit: cover` at card width — that cropped 76% off a
   portrait on a laptop). Needs `supabase/gifts.sql` + `gifts_photos.sql`
+- 📋 Plan (`#page-plan`): three chips — ⭐ Someday · 🗓️ Trip Plan · 💸 Money
+  (`planShow` in `js/plan.js`, `planPick` in core). **💸 Money is a line
+  AND a chip**: the reading (`pot − committed = left`) is a slim line
+  pinned ABOVE the chooser so it follows you across the other two, while
+  the log form and history live in its own chip. It shipped as a strip
+  alone and became both on 2026-07-26 — don't collapse it back to one
+  without reading the reasoning in docs/ROADMAP.md #3
 - 🎮 Games tab (key `duel`, nav "🎮 Games") holds TWO games behind a chooser:
   Word Duel and 20 Questions. `gamesShow(which)` in `js/twenty.js` swaps
   `#gameDuel`/`#game20q` and sets `gamesPick` (declared in `js/core.js`),
