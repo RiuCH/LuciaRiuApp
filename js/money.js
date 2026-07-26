@@ -114,21 +114,27 @@ function mnRender() {
   const signedIn = typeof authSignedIn === "function" && authSignedIn();
   const nothingYet = !mnRows.length;
 
-  // Deliberately "—" and not "$0" when there's nothing logged: a zero reads as
-  // "we have nothing", which is a different and much worse sentence.
-  potEl.textContent = nothingYet ? "—" : mnMoney(pot);
+  // The line only appears when it has something to say. With nothing logged it
+  // used to sit above every visit to ⭐ Someday reading "— Nothing logged yet",
+  // which is a row of furniture announcing its own emptiness — and the 💸 Money
+  // chip is right there to fix that. The sums half goes the same way:
+  // "Nothing committed yet" is a sentence about the absence of a number.
+  const line = mnEl("planMoneyLine");
+  if (line) line.style.display = nothingYet ? "none" : "";
+
+  potEl.textContent = nothingYet ? "" : mnMoney(pot);
   potEl.classList.toggle("mn-negative", !nothingYet && pot < 0);
 
   if (sumEl) {
     const left = pot - committed;
-    sumEl.textContent = nothingYet
-      ? "Nothing logged yet"
-      : committed
-        ? "Committed " + mnMoney(committed) + " · Left " + mnMoney(left)
-        : "Nothing committed yet";
+    const showSums = !nothingYet && committed > 0;
+    sumEl.style.display = showSums ? "" : "none";
+    sumEl.textContent = showSums
+      ? "Committed " + mnMoney(committed) + " · Left " + mnMoney(left)
+      : "";
     // Over-committed is the whole question this feature answers ("can we
     // afford Japan?"), so say it in red rather than leaving it to be read.
-    sumEl.classList.toggle("mn-over", !nothingYet && committed > 0 && left < 0);
+    sumEl.classList.toggle("mn-over", showSums && left < 0);
   }
 
   if (noteEl) {
