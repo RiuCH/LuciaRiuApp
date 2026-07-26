@@ -44,6 +44,7 @@
 <link rel="stylesheet" href="css/twenty.css">
 <link rel="stylesheet" href="css/food.css">
 <link rel="stylesheet" href="css/gifts.css">
+<link rel="stylesheet" href="css/plan.css">
 <link rel="stylesheet" href="css/cycle.css">
 <link rel="stylesheet" href="css/desktop.css">
 </head>
@@ -556,6 +557,47 @@
     </div><!-- /#gameTfd -->
   </section>
 
+  <!-- ================= PLAN (Someday + Trip Plan + Money) =================
+       Everything ahead of us. The shell only: ⭐ Someday and 🗓️ Trip Plan are
+       task E1, 💸 Money is E2.
+
+       Money is a STRIP, not a chip, on purpose — it's the constraint the other
+       two get read against, so `pot − committed = left` stays on screen while
+       you browse what you want. See "Agreed tab structure" in docs/ROADMAP.md. -->
+  <section class="page" id="page-plan">
+
+    <div class="panel plan-money" id="planMoney">
+      <div class="ptitle">Together</div>
+      <div class="plan-pot" id="planPot">—</div>
+      <div class="plan-sums" id="planSums">Nothing logged yet</div>
+      <div class="hint">💸 The pot lands here (task E2) — what we have, minus what we've promised ourselves</div>
+    </div>
+
+    <div class="games-picker" id="planPicker">
+      <span class="chip sel" data-plan="someday">⭐ Someday</span>
+      <span class="chip" data-plan="trip">🗓️ Trip Plan</span>
+    </div>
+
+    <div id="planSomeday">
+      <div class="panel">
+        <div class="ptitle">Someday</div>
+        <div style="font-size:17px; font-weight:600;">⭐ Places, restaurants, things we want</div>
+        <div class="hint">Not built yet — one list, three kinds, and each one graduates: a place
+          into ✈️ Trips, a restaurant into 🍜 Food, a thing into 🎁 Gifts 💫</div>
+      </div>
+    </div>
+
+    <div id="planTrip" style="display:none">
+      <div class="panel">
+        <div class="ptitle">Trip Plan</div>
+        <div style="font-size:17px; font-weight:600;">🗓️ The one we're actually taking next</div>
+        <div class="hint">Not built yet — it'll share the same rows as ✈️ Trips, just with the
+          dates still ahead of us, so a plan becomes a memory in place ✈️</div>
+      </div>
+    </div>
+
+  </section>
+
   <!-- ================= MOON (the quiet one) =================
        Deliberately absent from <nav>: you get here by long-pressing the ♥
        in the header, or with #moon=1. Obscurity, not security — same as
@@ -617,6 +659,7 @@
   <button id="navHome" class="active">🏠 Home</button>
   <button id="navJourneys">✈️ Trips</button>
   <button id="navTreats">💝 Treats</button>
+  <button id="navPlan">📋 Plan</button>
   <button id="navDuel">🎮 Games</button>
 </nav>
 
@@ -681,6 +724,7 @@
 <script src="js/twenty.js"></script>
 <script src="js/food.js"></script>
 <script src="js/gifts.js"></script>
+<script src="js/plan.js"></script>
 <script src="js/cycle.js"></script>
 <script src="js/lock.js"></script>
 <script src="js/init.js"></script>

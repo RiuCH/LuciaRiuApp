@@ -1,0 +1,24 @@
+/* plan.css — Lucia ♥ Riu
+   📋 Plan: the money strip and the Someday / Trip Plan chooser.
+   Mobile is the source of truth; the desktop widening lives in desktop.css. */
+
+/* ------- the money strip -------
+   Sits above the chooser and stays put while the chips swap beneath it, so
+   what we can afford is on screen while we browse what we want. */
+.plan-money { text-align: center; }
+.plan-pot {
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  line-height: 1.1;
+  color: var(--accent);
+}
+.plan-sums {
+  margin-top: 6px;
+  font-size: 13.5px;
+  color: var(--text-dim);
+  letter-spacing: 0.3px;
+}
+
+/* The chooser reuses .games-picker from css/twenty.css — same component, and
+   it already carries the narrow-width trim so the chips stay on one row. */
