@@ -57,6 +57,10 @@ export default async function handler(req, res) {
   const guid = String(body.guid || "");
   const supaUrl = String(body.supabaseUrl || "").replace(/\/$/, "");
   const supaKey = String(body.supabaseKey || "");
+  // The bearer authorises (a user JWT since the bucket went us-only); the
+  // apikey only identifies the project. They used to be the same anon key.
+  // Falling back keeps an older client working rather than 401ing it.
+  const supaAnon = String(body.supabaseAnonKey || body.supabaseKey || "");
   if (!/^[A-Za-z0-9]{8,40}$/.test(token) || !guid) { res.status(400).json({ error: "bad token or guid" }); return; }
   if (!supaUrl || !supaKey) { res.status(400).json({ error: "missing storage config" }); return; }
 
@@ -82,7 +86,7 @@ export default async function handler(req, res) {
     const put = await fetch(`${supaUrl}/storage/v1/object/food/${path}`, {
       method: "POST",
       headers: {
-        apikey: supaKey,
+        apikey: supaAnon,
         Authorization: "Bearer " + supaKey,
         "Content-Type": type,
         "x-upsert": "true"

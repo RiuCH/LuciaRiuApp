@@ -819,7 +819,16 @@ fdEl("fdAlbumImport").addEventListener("click", async () => {
       const res = await fetch("/api/food-import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, guid, supabaseUrl: SUPABASE_URL, supabaseKey: SUPABASE_ANON_KEY })
+        // supabaseKey authorises the write and must now be the USER's JWT:
+        // auth_policies.sql tightened `food write` to us-only, so the anon key
+        // this used to send is rejected. anonKey still goes along as the project
+        // identifier for the apikey header.
+        body: JSON.stringify({
+          token, guid,
+          supabaseUrl: SUPABASE_URL,
+          supabaseKey: (typeof authToken === "function" && authToken()) || SUPABASE_ANON_KEY,
+          supabaseAnonKey: SUPABASE_ANON_KEY
+        })
       });
       if (!res.ok) throw new Error("import " + res.status);
       const out = await res.json();
