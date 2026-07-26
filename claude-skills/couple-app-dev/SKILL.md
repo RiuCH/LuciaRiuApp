@@ -124,6 +124,36 @@ card twice), and remember growing the pool reshuffles every future day.
 - Voice: playful, flirty, a little dramatic. Emojis welcome. British-serious
   tone is a bug.
 
+## It installs to the home screen (Add to Home Screen, not the App Store)
+
+`manifest.webmanifest` + `icons/` + the iOS meta block in `<head>` make this a
+real installed app: own icon, own app-switcher card, no Safari chrome. **No
+App Store, no signing, no $99/yr, no expiry** — Share → Add to Home Screen.
+
+- **Icons are checked in** (`icons/icon-180|192|512.png`). 180 is the one iOS
+  actually uses (`apple-touch-icon`); 192/512 serve the manifest. There is no
+  build step, so they were generated once from an SVG using macOS's own tools:
+  write the SVG, `qlmanage -t -s 1024 -o out icon.svg`, then `sips -z <n> <n>`
+  per size. Redo that if the icon changes — don't add a dependency.
+- **`viewport-fit=cover` + `env(safe-area-inset-*)` are load-bearing.** With
+  `apple-mobile-web-app-status-bar-style: black-translucent` the gradient runs
+  behind the status bar, so `body` padding and the `.nav`/`.lock` offsets add
+  the insets (`css/base.css`). Insets are 0 in a normal tab, so desktop is
+  unchanged. **Anything new pinned to a screen edge must add them too**, or it
+  lands under the clock or on top of the home indicator.
+- Wrap inset rules in `@supports (padding: env(safe-area-inset-top))`. A bare
+  `calc(16px + env(...))` is dropped wholesale by a browser without `env()`,
+  taking the sane fallback with it.
+- **Don't add a service worker without weighing golden rule 4.** A cached shell
+  is exactly how two phones end up on different versions. If one is ever added
+  it must be network-first for HTML/CSS/JS.
+- On `file://` the manifest just fails to fetch and is ignored — double-click
+  still works, which is the whole point.
+- Launch state: `start_url` is `./`, so an installed launch starts with **no
+  hash** — no `#unlocked=1`, no `#me`. Combined with the session living in
+  `sessionStorage`, a cold launch re-runs the lock. Worth remembering before
+  blaming a bug.
+
 ## Idle cost — the app must do nothing when nobody is looking
 
 This runs on two phones all day. Anything on a timer is a battery and data

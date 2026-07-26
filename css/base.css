@@ -45,6 +45,21 @@ body {
   justify-content: center;
   padding: 24px 20px 110px;
 }
+/* Added to Home Screen there is no Safari chrome to push us clear of the
+   hardware, and our status bar is `black-translucent` — so the clock would sit
+   on top of the header and the notch would clip the corners. These insets read
+   0 in a normal tab and on a squared-off phone, so this only ever adds room
+   where the hardware actually takes it. Needs `viewport-fit=cover` (set in
+   index.html) to report anything but 0. @supports so that a browser without
+   env() keeps the plain padding above rather than dropping it as invalid. */
+@supports (padding: env(safe-area-inset-top)) {
+  body {
+    padding-top: calc(24px + env(safe-area-inset-top));
+    padding-left: calc(20px + env(safe-area-inset-left));
+    padding-right: calc(20px + env(safe-area-inset-right));
+    padding-bottom: calc(110px + env(safe-area-inset-bottom));
+  }
+}
 @keyframes gradientShift {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -334,6 +349,7 @@ button.toggled {
 }
 
 /* ------- bottom nav ------- */
+/* 16px above the home indicator, not 16px on top of it (see the body rule) */
 .nav {
   position: fixed;
   bottom: 16px;
@@ -349,6 +365,14 @@ button.toggled {
   -webkit-backdrop-filter: blur(16px);
   box-shadow: 0 12px 36px rgba(0,0,0,0.45);
   z-index: 20;
+}
+@supports (bottom: env(safe-area-inset-bottom)) {
+  .nav { bottom: calc(16px + env(safe-area-inset-bottom)); }
+  /* the lock overlay is the only other thing that reaches the hardware edges */
+  .lock {
+    padding-top: calc(24px + env(safe-area-inset-top));
+    padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  }
 }
 .nav button {
   border: none;
