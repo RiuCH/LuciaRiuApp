@@ -85,6 +85,9 @@ Projects set up before v6 need one-off migrations, run in the SQL editor.
   `auth_policies.sql` first. No new bucket: gift photos live in the
   existing `food` bucket under a `gifts/` prefix, so they inherit its
   policies and B1's signed URLs.
+- `supabase/trip_places.sql` — the 🗓️ day-by-day itinerary (task F1). No
+  `trip_days` table: days are derived from the trip's own dates, and
+  `day_date = null` is the saved-but-unscheduled bucket.
 - `supabase/answers.sql` — the ✍️ Answer & compare table (task C1). Run
   `auth_policies.sql` first: it reuses `public.is_us()`.
 - `supabase/food.sql` — the 🍜 Food tab: three tables, the `food` storage

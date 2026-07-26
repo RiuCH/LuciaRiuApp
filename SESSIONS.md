@@ -63,7 +63,6 @@ out of each other's way.
 
 | Session | Who | Feature | Regions of index.html claimed | Status |
 |---|---|---|---|---|
-| 2026-07-26-trip | Riu | **Task F1** — 🗓️ day-by-day itinerary skeleton | New `js/trip.js` + `css/trip.css` and their tags; the `#planTrip` pane inside 📋 Plan; one additive button on the trip card in `js/someday.js`. Does NOT touch `<nav>`, the TABS maps, `js/plan.js`'s chooser or any other tab | 🚧 in progress |
 
 | _(none)_ | | | | |
 
@@ -143,7 +142,7 @@ at all** (OSM has none) and nothing for Riu to pay for or configure.
 
 | Task | What | Owns | Claims | Who |
 |---|---|---|---|---|
-| **F1** | Day-by-day skeleton: days from the trip's dates, a saved-not-scheduled bucket, add a place by hand, tap-to-assign, reorder, delete. **No external APIs** | js/trip.js, css/trip.css | table `trip_places`, prefix `tr*` | **2026-07-26-trip** 🚧 |
+| **F1** | Day-by-day skeleton: days from the trip's dates, a saved-not-scheduled bucket, add a place by hand, tap-to-assign, reorder, delete. **No external APIs** | js/trip.js, css/trip.css | table `trip_places`, prefix `tr*` | ✅ shipped |
 | **F2** | Search + autofill via OSM/Wikipedia (`api/places.js` + `place_cache`) | api/places.js, js/trip.js | endpoint `places`, table `place_cache` | _(free, needs F1)_ |
 | **F3** | Leaflet map + OSRM drive/walk times, cached per leg | js/trip.js, api/route.js | endpoint `route`, table `trip_legs` | _(free, needs F1)_ |
 | **F4** | 🏨 Hotels + ✈️ Flights: docs and photos, reusing Food's upload path (PDFs stored as-is — a canvas can't resize one) | js/trip.js | table `trip_docs` | _(free, needs F1)_ |
@@ -162,6 +161,7 @@ PR if you introduce a convention.
 
 | Date | Who | Feature | Notes |
 |---|---|---|---|
+| 2026-07-26 | Riu | **F1** 🗓️ day-by-day itinerary | Opens from a planned trip's `🗓️ Itinerary` button. **Days are derived from the trip's own dates — there is no `trip_days` table** to drift out of sync, and `day_date = null` is the saved-but-unscheduled bucket every itinerary needs. Tap a place → a sheet of days to move it to (drag is F5: tapping works on a phone first time, every time). Reordering PATCHes only the two rows that swap. New `js/trip.js` + `css/trip.css`, prefix `tr*`, table `trip_places` (`supabase/trip_places.sql`). The trip card in `js/someday.js` gained ONE guarded button. **No ratings column and no 'Mentions'** — see Track F |
 | 2026-07-26 | Riu | ⭐ Someday: 🎢 Activity, a fourth kind | Things we want to *do* — "learn to surf", "pottery class". **Needed `supabase/someday_activity.sql` run once**: `someday.sql` pinned the kinds in a CHECK constraint, so without widening it Postgres rejects the row and the optimistic UI shows a wish that never saves. Unlike the other three it graduates nowhere — a place becomes a Trip Plan, a restaurant a Food photo, a thing a Gift, but an activity was the doing, so it just gets ticked. Fixed a stale toast while there: 🎁 things said "when that lands" and Gifts landed in D1, so it now hands over properly. Filter chips retrimmed — five wanted 329px of a 297px row and left 🎁 Things stranded on its own line |
 | 2026-07-26 | Riu | **Fix: the Home clock was frozen on live** | `6e0301a` generalised folding into `.foldbtn[data-fold]` and deleted `fdRenderFold` from `js/food.js` — but left `fdRenderFold();` in `js/init.js`. That line threw `ReferenceError`, and since init.js is one statement list, **everything after it never ran**: `homeTickFast/Slow` (so the together-counter sat at its static `0d 0h 0m 0s` and both clocks at `--:--`), the timezone line, and `loadQuestions()` (so the DB question bank silently never loaded). Removed the stale call, and added `boot(label, fn)` — every boot step is now caught and warned, with the Home widgets painted FIRST so one tab's dead function can't stop another tab's clock. Skill updated: **grep `js/init.js` when you delete a function** |
 | 2026-07-26 | Riu | 💸 Money becomes a chip (and stays a line) | Riu asked for Money beside ⭐ Someday and 🗓️ Trip Plan, which the roadmap explicitly argued against ("a strip, not a chip") — flagged, and the call was to do **both**. The *reading* stays as a one-line `pot · committed/left` pinned above the chooser, so the constraint still follows you while browsing; the *ledger* (log form + history) moved into a third 💸 Money chip, because a form you touch occasionally was eating the top of every view. `PLAN_VIEWS`/`PLAN_SUBTITLES` gained `money`; `mnRender` now guards the old `mnPanel`/`mnToggle` so a cached page mid-deploy still works. **docs/ROADMAP.md #3 and the tab-structure section were corrected** — they said the opposite and would have misled the next session |

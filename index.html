@@ -45,6 +45,7 @@
 <link rel="stylesheet" href="css/food.css">
 <link rel="stylesheet" href="css/gifts.css">
 <link rel="stylesheet" href="css/plan.css">
+<link rel="stylesheet" href="css/trip.css">
 <link rel="stylesheet" href="css/someday.css">
 <link rel="stylesheet" href="css/money.css">
 <link rel="stylesheet" href="css/cycle.css">
@@ -692,6 +693,39 @@
       </div>
 
       <div id="tpList"></div>
+
+      <!-- The day-by-day planner for ONE trip. Hidden until you open a trip;
+           it replaces the list rather than nesting inside a card. -->
+      <div id="trPlanner" style="display:none">
+        <div class="panel">
+          <div class="tr-head">
+            <button id="trBack" title="Back to the trips">‹</button>
+            <span>
+              <div class="tr-tripname" id="trTripName"></div>
+              <div class="tr-tripdates" id="trTripDates"></div>
+            </span>
+          </div>
+          <div class="tr-status" id="trStatus">Loading…</div>
+          <div class="rowbtns"><button class="primary" id="trAddBtn">➕ Add a place</button></div>
+
+          <div class="tr-form" id="trForm" style="display:none">
+            <input type="text" id="trName" placeholder="📍 What is it? — e.g. Fushimi Inari" maxlength="80">
+            <div class="tr-row">
+              <select id="trKind" class="fd-select"></select>
+              <select id="trDay" class="fd-select"></select>
+            </div>
+            <input type="text" id="trAddress" placeholder="Where is it? (optional)" maxlength="120">
+            <input type="text" id="trNote" placeholder="Anything to remember (optional)" maxlength="140">
+            <input type="text" id="trBy" placeholder="Who recommended it? (optional)" maxlength="60">
+            <div class="rowbtns">
+              <button class="primary" id="trSave">💾 Add it</button>
+              <button id="trCancel">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="trDays"></div>
+      </div>
     </div>
 
     <div id="planMoney" style="display:none">
@@ -819,6 +853,13 @@
     </div>
   </div>
 </div>
+<div class="fd-lightbox tr-move" id="trMove">
+  <div class="panel tr-movebox">
+    <div class="ptitle">Move <span id="trMoveName"></span> to…</div>
+    <div class="tr-movelist" id="trMoveList"></div>
+    <div class="rowbtns"><button id="trMoveCancel">Cancel</button></div>
+  </div>
+</div>
 <div class="toast" id="toast">Copied!</div>
 <div class="jr-lightbox" id="jrLightbox"><img id="jrLightboxImg" alt="journey photo, full size"><video id="jrLightboxVid" controls playsinline style="display:none"></video></div>
 <div class="jr-picker" id="jrPicker">
@@ -857,6 +898,7 @@
 <script src="js/gifts.js"></script>
 <script src="js/plan.js"></script>
 <script src="js/someday.js"></script>
+<script src="js/trip.js"></script>
 <script src="js/money.js"></script>
 <script src="js/cycle.js"></script>
 <script src="js/lock.js"></script>
