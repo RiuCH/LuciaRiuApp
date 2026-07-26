@@ -154,6 +154,32 @@ App Store, no signing, no $99/yr, no expiry** — Share → Add to Home Screen.
   `sessionStorage`, a cold launch re-runs the lock. Worth remembering before
   blaming a bug.
 
+## Tabs that host more than one thing (the chooser pattern)
+
+Used twice now — 🎮 Games (`gamesShow`, js/twenty.js) and 💝 Treats
+(`treatsShow`, js/food.js) — and the roadmap's tab plan needs it again. Copy it
+exactly; each rule below exists because skipping it broke something:
+
+- The tab keeps a `*Pick` global **in `js/core.js`** (`gamesPick`,
+  `treatsPick`) so hooks and polls elsewhere can guard on it. Claim the name in
+  SESSIONS.md first.
+- `*Show(which)` sets the pick, toggles each sub-view's `style.display`,
+  toggles `.sel` on the chips, and sets the subtitle. **Use `display = ""`,
+  never `"block"`** — `css/desktop.css` puts the wide layout on the inner
+  container and an inline style would beat it.
+- Scope desktop rules to the **sub-view** id (`#treatFood .fd-grid`), not the
+  page (`#page-*.active`), for anything inside a chooser. Page-level width can
+  stay on the page.
+- **`TAB_HOOKS.<tab> = () => somethingShow(somethingPick)`** — re-run the whole
+  chooser on open, don't just call the loader. `switchTab()` sets the subtitle
+  from `SUBTITLES[tab]` and knows nothing about sub-views, so returning to a
+  tab with the *other* sub-view remembered otherwise leaves the wrong subtitle
+  on screen. Make `*Show` idempotent and this is free.
+- Only the **visible** sub-view may fetch or poll. A hook that loads everything
+  on open silently undoes the lazy-loading work (see "Idle cost" below).
+- The pick is remembered in memory for the session, so coming back lands where
+  you left off rather than resetting.
+
 ## Idle cost — the app must do nothing when nobody is looking
 
 This runs on two phones all day. Anything on a timer is a battery and data

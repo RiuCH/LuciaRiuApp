@@ -748,5 +748,39 @@ fdEl("fdAlbumImport").addEventListener("click", async () => {
   if (done) { popToast(done + " copied in 🍜"); await fdLoad(); }
 });
 
-// Only touch the network when the tab is actually open.
-TAB_HOOKS.food = () => { if (fdReady === null || fdReady === false) fdLoad(); };
+// ---------------- 💝 Treats chooser ----------------
+// The tab hosts Food and (from task D1) Gifts. Same shape as gamesShow() in
+// js/twenty.js, including the one non-obvious bit: `display = ""` rather than
+// `"block"`, because css/desktop.css puts the wide grid on #treatFood and an
+// inline display would win over it.
+//
+// `treatsPick` lives in js/core.js so TAB_HOOKS below can guard on it — the
+// whole point being that opening 💝 Treats must NOT load a sub-view you can't
+// see. It's also remembered for the session, so coming back to the tab lands
+// you where you left off rather than always resetting to Food.
+function treatsShow(which) {
+  treatsPick = which;
+  const food = document.getElementById("treatFood");
+  const gifts = document.getElementById("treatGifts");
+  if (food) food.style.display = which === "food" ? "" : "none";
+  if (gifts) gifts.style.display = which === "gifts" ? "" : "none";
+  document.querySelectorAll("#treatsPicker .chip").forEach(c =>
+    c.classList.toggle("sel", c.dataset.treat === which));
+  if (activeTab === "treats") {
+    document.getElementById("subtitle").textContent =
+      which === "gifts" ? "Everything We've Given" : SUBTITLES.treats;
+  }
+  if (which === "food") fdLoadIfNeeded();
+}
+
+document.querySelectorAll("#treatsPicker .chip").forEach(chip =>
+  chip.addEventListener("click", () => treatsShow(chip.dataset.treat)));
+
+function fdLoadIfNeeded() { if (fdReady === null || fdReady === false) fdLoad(); }
+
+// Re-run the chooser on every open rather than just loading Food. switchTab()
+// sets the subtitle from SUBTITLES[tab] and knows nothing about sub-views, so
+// coming back to the tab with 🎁 Gifts remembered would otherwise leave Food's
+// subtitle on screen. treatsShow() is idempotent and only touches the network
+// when Food is the visible one, so this stays cheap.
+TAB_HOOKS.treats = () => treatsShow(treatsPick);

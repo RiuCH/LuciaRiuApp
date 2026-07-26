@@ -43,15 +43,18 @@ function dayNumber() {
 
 
 // ---------------- TABS ----------------
-const SUBTITLES = { home: "Our Little Universe", tfd: "Talk · Flirt · Dare", journeys: "Everywhere, Together", food: "Everything We've Eaten", duel: "The Games Room", cycle: "Moonlight" };
+const SUBTITLES = { home: "Our Little Universe", tfd: "Talk · Flirt · Dare", journeys: "Everywhere, Together", treats: "Everything We've Eaten", duel: "The Games Room", cycle: "Moonlight" };
 // `cycle` is deliberately missing from NAVIDS: it's the one tab with no nav
 // button, so nothing in the nav ever lights up for it. See "the quiet door".
-const NAVIDS = { home: "navHome", tfd: "navTfd", journeys: "navJourneys", food: "navFood", duel: "navDuel" };
-const TABS = ["home", "tfd", "journeys", "food", "duel", "cycle"];
+const NAVIDS = { home: "navHome", tfd: "navTfd", journeys: "navJourneys", treats: "navTreats", duel: "navDuel" };
+const TABS = ["home", "tfd", "journeys", "treats", "duel", "cycle"];
 let activeTab = "home";
-// The Games tab (key "duel") hosts more than one game; js/twenty.js owns
-// the chooser and sets this. Lives here so each game can guard its own poll.
-let gamesPick = "duel";   // "duel" | "q20"
+// Tabs that host more than one thing keep a "which one is showing" pick here,
+// so each sub-view can guard its own loading and polling — a merged tab whose
+// TAB_HOOKS entry ignores the pick would run EVERY sub-view's loader on open.
+// The chooser function itself lives in the tab's own file.
+let gamesPick = "duel";    // 🎮 Games:  "duel" | "q20"   — js/twenty.js
+let treatsPick = "food";   // 💝 Treats: "food" | "gifts" — js/food.js
 
 // A tab can register work that must only run once it's actually on screen —
 // e.g. building <img> elements, which never load inside a display:none
@@ -74,7 +77,7 @@ function switchTab(name) {
 document.getElementById("navHome").addEventListener("click", () => switchTab("home"));
 document.getElementById("navTfd").addEventListener("click", () => switchTab("tfd"));
 document.getElementById("navJourneys").addEventListener("click", () => switchTab("journeys"));
-document.getElementById("navFood").addEventListener("click", () => switchTab("food"));
+document.getElementById("navTreats").addEventListener("click", () => switchTab("treats"));
 document.getElementById("navDuel").addEventListener("click", () => switchTab("duel"));
 document.getElementById("wdTeaser").addEventListener("click", () => switchTab("duel"));
 
