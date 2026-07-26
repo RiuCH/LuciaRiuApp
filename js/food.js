@@ -161,18 +161,104 @@ function fdResize(file) {
   });
 }
 
+// Storage calls don't go through supa(), so they need the same bearer logic it
+// has: the user's JWT when signed in, the anon key when not. Without this they
+// keep sending the anon key, which stopped being able to write this bucket the
+// moment supabase/auth_policies.sql tightened `food write` to us-only.
+function fdStorageHeaders(extra) {
+  const token = (typeof authToken === "function" && authToken()) || SUPABASE_ANON_KEY;
+  return Object.assign({
+    apikey: SUPABASE_ANON_KEY,
+    Authorization: "Bearer " + token
+  }, extra || {});
+}
+
+// ---------------- signed URLs ----------------
+// The bucket is being flipped to `public = false` (supabase/food_private.sql),
+// which kills the plain /object/public/ URLs stored in food_photos.url. Views
+// are minted on demand from the row's `path` instead — no migration and no
+// backfill, because `path` has been stored since the tab shipped.
+//
+// Rendering falls back to the stored public URL whenever a signature isn't
+// ready. That's what makes the rollout safe in either order: with the bucket
+// still public the fallback carries it, and once it's private the signature
+// does. Same shape as the auth rollout — ship the code, flip the switch after.
+const FD_SIGN_TTL = 60 * 60;                  // seconds
+const FD_SIGN_EARLY_MS = 5 * 60 * 1000;       // re-sign this long before expiry
+const fdSigned = new Map();                   // path -> { url, expiresAt }
+
+function fdSignedFresh(path) {
+  const hit = fdSigned.get(path);
+  return hit && Date.now() < hit.expiresAt - FD_SIGN_EARLY_MS ? hit.url : null;
+}
+
+// `signedURL` comes back relative ("/object/sign/food/x.jpg?token=…"), but
+// don't bet the tab on that — an absolute value is passed through untouched.
+function fdSignedAbsolute(signed) {
+  if (!signed) return null;
+  if (/^https?:\/\//i.test(signed)) return signed;
+  return SUPABASE_URL + "/storage/v1" + (signed.charAt(0) === "/" ? "" : "/") + signed;
+}
+
+// One request for the whole grid rather than one per photo — a month of meals
+// is easily 60 images, and 60 round trips would be a slideshow.
+async function fdSignPaths(paths) {
+  if (!paths.length || !supaOn()) return;
+  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/sign/${FD_BUCKET}`, {
+    method: "POST",
+    headers: fdStorageHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify({ expiresIn: FD_SIGN_TTL, paths: paths })
+  });
+  if (!res.ok) throw new Error("sign " + res.status);
+  const rows = await res.json();
+  const expiresAt = Date.now() + FD_SIGN_TTL * 1000;
+  (rows || []).forEach(r => {
+    // batch signing reports failures per row, so one bad path can't lose the rest
+    const url = r && !r.error && fdSignedAbsolute(r.signedURL);
+    if (url) fdSigned.set(r.path, { url: url, expiresAt: expiresAt });
+  });
+}
+
+// Attach a viewable URL to each photo. Never throws: a signing failure just
+// leaves viewUrl unset and rendering falls back to whatever the row holds.
+// Reports whether anything actually MOVED, not whether it did work — the
+// caller repaints on true, and a photo whose object is missing would otherwise
+// be re-requested and trigger a pointless repaint on every load forever.
+// Failures are still retried next time; they're just not called a change.
+async function fdResolveViews(photos) {
+  const list = photos || fdPhotos;
+  const need = [];
+  let changed = false;
+  const adopt = p => {
+    const fresh = p.path && fdSignedFresh(p.path);
+    if (fresh && p.viewUrl !== fresh) { p.viewUrl = fresh; changed = true; }
+    return !!fresh;
+  };
+  list.forEach(p => {
+    if (!p.path) return;                      // nothing to sign from
+    if (!adopt(p)) need.push(p.path);
+  });
+  if (need.length) {
+    try {
+      await fdSignPaths(need);
+      list.forEach(adopt);
+    } catch (e) { /* stored public URLs still render */ }
+  }
+  return changed;
+}
+
+// What an <img> should actually load.
+function fdViewUrl(p) { return (p && (p.viewUrl || p.url)) || ""; }
+
 async function fdUploadBlob(blob, path, type) {
   const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${FD_BUCKET}/${path}`, {
     method: "POST",
-    headers: {
-      apikey: SUPABASE_ANON_KEY,
-      Authorization: "Bearer " + SUPABASE_ANON_KEY,
-      "Content-Type": type || "image/jpeg",
-      "x-upsert": "true"
-    },
+    headers: fdStorageHeaders({ "Content-Type": type || "image/jpeg", "x-upsert": "true" }),
     body: blob
   });
   if (!res.ok) throw new Error("storage " + res.status + " — has supabase/food.sql been run?");
+  // Still recorded, so a not-yet-private bucket keeps working; nothing READS it
+  // once a signature is available.
   return `${SUPABASE_URL}/storage/v1/object/public/${FD_BUCKET}/${path}`;
 }
 
@@ -251,6 +337,10 @@ async function fdLoad() {
     fdReady = false;
   }
   fdRender();
+  // Sign the whole set in one request, then repaint. Deliberately AFTER the
+  // first render: the grid appears immediately on the stored URLs rather than
+  // waiting on a round trip, and swaps to signed ones a moment later.
+  if (fdReady) fdResolveViews().then(changed => { if (changed) fdRender(); });
 }
 
 async function fdEnsureTag(name, kind) {
@@ -288,8 +378,9 @@ async function fdDeletePhoto(photo) {
   try {
     await fetch(`${SUPABASE_URL}/storage/v1/object/${FD_BUCKET}/${photo.path}`, {
       method: "DELETE",
-      headers: { apikey: SUPABASE_ANON_KEY, Authorization: "Bearer " + SUPABASE_ANON_KEY }
+      headers: fdStorageHeaders()
     });
+    fdSigned.delete(photo.path);   // don't hand out a signature for a gone file
     await supa(`food_photos?id=eq.${photo.id}`, { method: "DELETE" });
   } catch (e) { popToast("Couldn't delete: " + e.message); return; }
   fdCloseLightbox();
@@ -442,7 +533,7 @@ function fdThumb(p) {
   const img = document.createElement("img");
   img.loading = "lazy";
   img.decoding = "async";
-  img.src = p.url;
+  img.src = fdViewUrl(p);
   img.alt = p.caption || "food photo";
   cell.appendChild(img);
   if (fdPicking) {
@@ -550,7 +641,7 @@ function fdCloseLightbox() {
 function fdRenderLightbox() {
   const p = fdPhotos.find(x => x.id === fdOpenId);
   if (!p) { fdCloseLightbox(); return; }
-  fdEl("fdLbImg").src = p.url;
+  fdEl("fdLbImg").src = fdViewUrl(p);
   fdEl("fdLbDate").textContent = fdFullDate(p);
 
   const tagBox = fdEl("fdLbTags");
@@ -728,7 +819,16 @@ fdEl("fdAlbumImport").addEventListener("click", async () => {
       const res = await fetch("/api/food-import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, guid, supabaseUrl: SUPABASE_URL, supabaseKey: SUPABASE_ANON_KEY })
+        // supabaseKey authorises the write and must now be the USER's JWT:
+        // auth_policies.sql tightened `food write` to us-only, so the anon key
+        // this used to send is rejected. anonKey still goes along as the project
+        // identifier for the apikey header.
+        body: JSON.stringify({
+          token, guid,
+          supabaseUrl: SUPABASE_URL,
+          supabaseKey: (typeof authToken === "function" && authToken()) || SUPABASE_ANON_KEY,
+          supabaseAnonKey: SUPABASE_ANON_KEY
+        })
       });
       if (!res.ok) throw new Error("import " + res.status);
       const out = await res.json();

@@ -64,7 +64,6 @@ out of each other's way.
 | Session | Who | Feature | Regions of index.html claimed | Status |
 |---|---|---|---|---|
 | 2026-07-26-treats | Riu | **Track A** — the nav reshuffle (A1 ✅ · A2 ✅ · A3 next) | `<nav>` and the `TABS`/`NAVIDS`/`SUBTITLES` maps in `js/core.js` — held for A2/A3 | 🚧 in progress |
-| 2026-07-26-food-bucket | Riu | **Task B1** — #7 private food bucket: flip the bucket to `public = false` and mint signed URLs | none — no `index.html` changes expected; edits confined to the URL-resolution path in `js/food.js` plus `supabase/*.sql` | 🚧 in progress |
 
 <!-- Row template:
 | 2026-07-24-login | Riu | Login page | lock CSS block, lock HTML block, LOCK SCREEN script block | ✅ shipped |
@@ -108,7 +107,7 @@ Neither touches `index.html`'s nav or `js/core.js`. Safe to run beside anything.
 
 | Task | Roadmap | Owns | Claims | Who |
 |---|---|---|---|---|
-| **B1** | #7 Private food bucket 🔒 | js/food.js, supabase/*.sql | — | `2026-07-26-food-bucket` ⚠️ overlaps A1 on js/food.js |
+| **B1** | #7 Private food bucket 🔒 | js/food.js, supabase/*.sql | — | ✅ shipped (PR #27) — **run `supabase/food_private.sql` to finish it** |
 | **B2** | #2 Claude features 🤖 | api/claude.js (new) + one caller | endpoint `claude`, prefix `ai*` | _(free)_ |
 
 ### Track C — Home only
@@ -143,6 +142,7 @@ PR if you introduce a convention.
 
 | Date | Who | Feature | Notes |
 |---|---|---|---|
+| 2026-07-26 | Riu | **B1** — signed URLs for the food bucket | The bucket shipped `public = true`, and a public bucket is served over an unauthenticated URL where storage policies don't apply — every photo was readable by anyone holding its URL. Views are now minted from `food_photos.path` (stored since the tab shipped, so no migration), batched into one signing request, cached with expiry. Renders fall back to the stored public URL when a signature isn't ready, so the code is safe with the bucket public OR private — **`supabase/food_private.sql` still has to be run to actually close it**. Also fixed three live breakages from the RLS lockdown: uploads, deletes and album import were all still sending the anon key, which `food write` now rejects |
 | 2026-07-26 | Riu | **C1** ✍️ Answer & compare | Both answer the day's question on the Home card; **neither shows until both are in**, so the second answer isn't shaped by the first. Locked once submitted — and the lock is the database's, not the UI's: `answers` has a unique index on `(day, who)`, so a second insert is refused by Postgres. New `js/answers.js` + `css/answers.css`, prefix `ac*`, table `answers` (`supabase/answers.sql`, reuses `public.is_us()`). Side comes from the games' `#me`. The poller only wakes in the one state that can change — on Home, mine in, theirs pending — and backs off when hidden, per the idle-cost rules |
 | 2026-07-26 | Riu | It's an app now — Add to Home Screen, no App Store | `manifest.webmanifest` + checked-in `icons/icon-180\|192\|512.png` + the iOS meta block: own icon, own app-switcher card, no Safari chrome, and **no App Store, signing, fee or expiry**. Icons generated with macOS's own tools (`qlmanage -t` on an SVG → `sips -z`) so the no-build-step rule holds. `black-translucent` status bar puts the gradient behind the clock, so `body`/`.nav`/`.lock` now add `env(safe-area-inset-*)`, wrapped in `@supports` (a bare `calc(… + env())` is dropped whole by browsers without it). Insets are 0 in a normal tab ⇒ desktop unchanged. **Anything new pinned to a screen edge must add the insets too.** Deliberately NO service worker: a cached shell is exactly how two phones end up on different versions (golden rule 4). Known: `start_url` is `./` so an installed launch has no hash and re-runs the lock |
 | 2026-07-26 | Riu | Food: foldable organise panel, City/Country split | The Find & organise island collapses to a 49px title bar (576px → 49px, `fdOrganiseOpen`, in-memory so a refresh reopens it — it holds the search box). The single `place` tag kind became `city` + `country` with their own group-by views; `fdKindMatches` keeps legacy `place` tags visible under City so nothing vanishes pre-migration, and `supabase/food_split_place.sql` (already applied here over REST) moves them |
