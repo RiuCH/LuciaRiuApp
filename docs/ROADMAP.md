@@ -80,10 +80,14 @@
      wish and 🗓️ Trip Plan carries an optional `est_cost`. Plan then shows
      `pot − committed = what's left`, and toggling an item moves the number.
      No forecasting engine — a sum over rows we already need.
-   - **It's a strip, not a chip.** Money is *context* for Someday and Trip
-     Plan, not a third thing you switch away to. It belongs pinned at the top
-     of the 📋 Plan tab, visible while the chips swap beneath it. See "Agreed
-     tab structure" below.
+   - **It's a line AND a chip** (revised 2026-07-26; it shipped as a strip
+     alone). The reading — `pot − committed = left` — is one line pinned above
+     the chooser, still visible while the chips swap beneath it, because Money
+     is the constraint the other two are read against. The *logging and the
+     history* moved into a 💸 Money chip beside ⭐ Someday and 🗓️ Trip Plan,
+     because a form you touch occasionally shouldn't eat the top of every
+     view. Number = context, ledger = view. Don't collapse it to one or the
+     other without re-reading both halves.
    - **Home gets the glanceable number** ("Together: $4,820") next to the
      reunion countdown — the same relationship the countdown has to Trip Plan:
      Home shows the headline, Plan owns the detail.
@@ -234,10 +238,13 @@ A wish becomes a plan becomes a memory. The first two sit together in 📋 Plan;
 the payoff gets its own tab. Same shape for the other kinds: a restaurant wish
 graduates into 🍜 Food, a thing into 🎁 Gifts — both in 💝 Treats.
 
-**💸 Money is a strip, not a chip.** It's context for the other two, not a peer
-view: pinned at the top of 📋 Plan, visible while the chips swap beneath it, so
-`pot − committed = what's left` is on screen while you browse what you want.
-Home shows the headline number beside the reunion countdown. See #3.
+**💸 Money is a line AND a chip** (revised 2026-07-26). The *reading* is one
+line pinned above the chooser — `pot − committed = what's left` on screen while
+you browse what you want, which is why it isn't only a chip. The *ledger* (log
+form + history) is the third chip beside ⭐ Someday and 🗓️ Trip Plan, which is
+why it isn't only a strip: the form was eating the top of every view for
+something you act on occasionally. Home still shows the headline number beside
+the reunion countdown. See #3.
 
 **Why the names.** "Us" was rejected: the app already uses it as a heading
 everywhere (`Us, in one picture`, `Us, so far`, `Us, by the numbers`, and

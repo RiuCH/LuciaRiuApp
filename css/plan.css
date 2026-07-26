@@ -2,23 +2,36 @@
    📋 Plan: the money strip and the Someday / Trip Plan chooser.
    Mobile is the source of truth; the desktop widening lives in desktop.css. */
 
-/* ------- the money strip -------
-   Sits above the chooser and stays put while the chips swap beneath it, so
-   what we can afford is on screen while we browse what we want. */
-.plan-money { text-align: center; }
+/* ------- the money line -------
+   One line above the chooser that stays put while the chips swap beneath it,
+   so what we can afford is on screen while we browse what we want. The
+   logging and the history live in the 💸 Money chip; this is just the
+   reading. It used to be a full panel with the form inside — that ate the
+   top of every view for something you only occasionally act on. */
+.plan-moneyline {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+  padding: 2px 4px;
+}
 .plan-pot {
-  font-size: 34px;
+  font-size: 20px;
   font-weight: 700;
-  letter-spacing: 0.5px;
-  line-height: 1.1;
+  letter-spacing: 0.4px;
+  line-height: 1.2;
   color: var(--accent);
 }
 .plan-sums {
-  margin-top: 6px;
-  font-size: 13.5px;
+  font-size: 12.5px;
   color: var(--text-dim);
   letter-spacing: 0.3px;
 }
+
+/* The pot gets its full size inside its own chip, where there's room. */
+#planMoney .mn-note { margin-bottom: 10px; }
 
 /* The chooser reuses .games-picker from css/twenty.css — same component, and
    it already carries the narrow-width trim so the chips stay on one row. */
