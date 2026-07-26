@@ -36,7 +36,12 @@ function planShow(which) {
   if (which === "someday" && typeof sdLoad === "function") {
     if (sdReady === null) sdLoad(); else sdRender();
   }
-  if (which === "trip" && typeof tpRender === "function") tpRender();
+  if (which === "trip" && typeof tpRender === "function") {
+    // Trip Plan's dropdown is fed by 📍 Someday wishes. Load that one shared
+    // list even when Trip Plan is the first Plan sub-view opened this session.
+    if (typeof sdLoad === "function" && sdReady === null) sdLoad().then(tpRender);
+    else tpRender();
+  }
   if (which === "money" && typeof mnLoad === "function") {
     if (typeof mnReady !== "undefined" && mnReady === null) mnLoad(); else planRenderMoney();
   }

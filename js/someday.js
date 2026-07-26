@@ -98,24 +98,30 @@ async function sdDelete(wish) {
 // The bit that stops this being a list nobody reopens. Ticking a wish off
 // doesn't just grey it out — it hands you to the place that keeps the record.
 function sdGraduate(wish) {
-  sdPatch(wish, { status: "done", done_at: new Date().toISOString() });
-  burst(innerWidth / 2, innerHeight / 3, ["⭐", "💫", "✨", "💞"]);
   const kind = SD_KINDS[wish.kind] || SD_KINDS.thing;
   if (wish.kind === "place") {
-    popToast("Done ⭐ — now give it dates in 🗓️ Trip Plan");
+    // A place is not "done" merely because the form opened. Keep it in
+    // Someday until the plan is actually saved, then graduate it below.
+    popToast("Lovely choice ⭐ — now give it dates");
     planShow("trip");
-    tpPrefill(wish.title, wish.est_cost);
+    tpPrefill(wish);
   } else if (wish.kind === "restaurant") {
+    sdPatch(wish, { status: "done", done_at: new Date().toISOString() });
+    burst(innerWidth / 2, innerHeight / 3, ["⭐", "💫", "✨", "💞"]);
     popToast("Done ⭐ — put a photo of it in 🍜 Food");
     switchTab("treats");
     if (typeof treatsShow === "function") treatsShow("food");
   } else if (wish.kind === "thing") {
+    sdPatch(wish, { status: "done", done_at: new Date().toISOString() });
+    burst(innerWidth / 2, innerHeight / 3, ["⭐", "💫", "✨", "💞"]);
     // 🎁 Gifts shipped in D1, so this hands over for real now rather than
     // promising a tab that didn't exist yet.
     popToast("Done ⭐ — file it in 🎁 Gifts");
     switchTab("treats");
     if (typeof treatsShow === "function") treatsShow("gifts");
   } else {
+    sdPatch(wish, { status: "done", done_at: new Date().toISOString() });
+    burst(innerWidth / 2, innerHeight / 3, ["⭐", "💫", "✨", "💞"]);
     // 🎢 activity: nothing to file it into, and that's the point — it was the
     // doing. Stay put and just say well done.
     popToast("Done ⭐ — we actually did it 🎢");
@@ -233,7 +239,8 @@ function sdCard(w) {
     return b;
   };
   if (w.status !== "done") {
-    iconBtn("We did it", "✅", "primary", () => sdGraduate(w));
+    iconBtn(w.kind === "place" ? "Turn this into a trip plan" : "We did it",
+            w.kind === "place" ? "🗓️" : "✅", "primary", () => sdGraduate(w));
   } else {
     iconBtn("Not yet — put it back", "↩️", "", () => sdPatch(w, { status: "wanted", done_at: null }));
   }
@@ -349,9 +356,78 @@ function tpUpcoming() {
     .sort((a, b) => String(a.start_date).localeCompare(String(b.start_date)));
 }
 
-function tpPrefill(place, cost) {
-  sdEl("tpPlace").value = place || "";
-  if (cost != null && cost !== "") sdEl("tpCost").value = cost;
+function tpPlaceWishes() {
+  return sdWishes.filter(w => w.kind === "place" && w.status !== "done");
+}
+
+function tpWishById(id) {
+  return tpPlaceWishes().find(w => String(w.id) === String(id)) || null;
+}
+
+function tpRenderWishOptions(preferredId) {
+  const select = sdEl("tpWish");
+  if (!select) return;
+  const previous = preferredId != null ? String(preferredId) : select.value;
+  const wishes = tpPlaceWishes();
+  select.replaceChildren();
+
+  const empty = document.createElement("option");
+  empty.value = "";
+  empty.textContent = wishes.length
+    ? "Choose a place wish — or type one below"
+    : "No place wishes yet — type one below";
+  select.appendChild(empty);
+
+  wishes.forEach(w => {
+    const option = document.createElement("option");
+    option.value = String(w.id);
+    option.textContent = "📍 " + w.title;
+    select.appendChild(option);
+  });
+  if (wishes.some(w => String(w.id) === previous)) select.value = previous;
+}
+
+function tpWishHint(wish) {
+  const hint = sdEl("tpWishHint");
+  if (!hint) return;
+  if (!wish) {
+    hint.textContent = "We’ll copy its destination, note and rough cost. Nothing moves until you save.";
+    return;
+  }
+  const bits = [];
+  if (wish.note) bits.push(wish.note);
+  if (wish.est_cost != null && wish.est_cost !== "") {
+    bits.push("roughly $" + Number(wish.est_cost).toLocaleString());
+  }
+  if (wish.added_by) bits.push("added by " + (wish.added_by === "riu" ? "Riu" : "Lucia"));
+  hint.textContent = bits.length ? bits.join(" · ") : "Ready to give this wish some dates ✨";
+}
+
+function tpFillFromWish(wish) {
+  if (!wish) {
+    tpWishHint(null);
+    return;
+  }
+  sdEl("tpPlace").value = wish.title || "";
+  sdEl("tpNote").value = wish.note || "";
+  sdEl("tpCost").value = wish.est_cost != null ? wish.est_cost : "";
+  tpWishHint(wish);
+}
+
+function tpResetForm() {
+  ["tpPlace", "tpStart", "tpEnd", "tpNote", "tpCost"].forEach(id => { sdEl(id).value = ""; });
+  tpRenderWishOptions("");
+  sdEl("tpWish").value = "";
+  tpWishHint(null);
+}
+
+function tpPrefill(wish) {
+  tpResetForm();
+  tpRenderWishOptions(wish && wish.id);
+  if (wish) {
+    sdEl("tpWish").value = String(wish.id);
+    tpFillFromWish(wish);
+  }
   sdEl("tpForm").style.display = "block";
   sdEl("tpForm").scrollIntoView({ behavior: "smooth", block: "center" });
 }
@@ -360,6 +436,7 @@ function tpRender() {
   const box = sdEl("tpList");
   if (!box) return;
   if (typeof mnRender === "function") mnRender();   // planned trips are committed
+  tpRenderWishOptions();
   const list = tpUpcoming();
   box.innerHTML = "";
   if (!list.length) {
@@ -451,11 +528,29 @@ async function tpGraduate(j) {
 }
 
 sdEl("tpAddBtn").addEventListener("click", () => {
-  sdEl("tpForm").style.display = sdEl("tpForm").style.display === "block" ? "none" : "block";
+  const opening = sdEl("tpForm").style.display !== "block";
+  if (opening) {
+    tpResetForm();
+    sdEl("tpForm").style.display = "block";
+  } else {
+    sdEl("tpForm").style.display = "none";
+  }
 });
-sdEl("tpCancel").addEventListener("click", () => { sdEl("tpForm").style.display = "none"; });
+sdEl("tpCancel").addEventListener("click", () => {
+  tpResetForm();
+  sdEl("tpForm").style.display = "none";
+});
+sdEl("tpWish").addEventListener("change", () => {
+  const wish = tpWishById(sdEl("tpWish").value);
+  if (wish) tpFillFromWish(wish);
+  else {
+    ["tpPlace", "tpNote", "tpCost"].forEach(id => { sdEl(id).value = ""; });
+    tpWishHint(null);
+  }
+});
 
 sdEl("tpSave").addEventListener("click", async () => {
+  const sourceWish = tpWishById(sdEl("tpWish").value);
   const place = sdEl("tpPlace").value.trim();
   const start = sdEl("tpStart").value;
   if (!place || !start) { popToast("Needs a place and a start date ✈️"); return; }
@@ -490,6 +585,13 @@ sdEl("tpSave").addEventListener("click", async () => {
         : "Saved on this phone only — run supabase/someday.sql 📋");
     }
   }
-  ["tpPlace", "tpStart", "tpEnd", "tpNote", "tpCost"].forEach(id => { sdEl(id).value = ""; });
+  // The wish has now genuinely become a plan. Mark it done only after the
+  // journey row exists locally, so opening or cancelling the form never makes
+  // a Someday item disappear.
+  if (sourceWish) {
+    await sdPatch(sourceWish, { status: "done", done_at: new Date().toISOString() });
+    burst(innerWidth / 2, innerHeight / 3, ["⭐", "🗓️", "✈️", "💞"]);
+  }
+  tpResetForm();
   sdEl("tpForm").style.display = "none";
 });

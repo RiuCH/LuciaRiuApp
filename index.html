@@ -679,6 +679,15 @@
 
       <div class="panel sd-form" id="tpForm" style="display:none; text-align:left;">
         <div class="ptitle">Plan a trip</div>
+        <div class="tp-wish-block">
+          <label for="tpWish">⭐ Start from a Someday wish</label>
+          <select id="tpWish">
+            <option value="">Choose a place wish — or type one below</option>
+          </select>
+          <div class="tp-wish-hint" id="tpWishHint">
+            We’ll copy its destination, note and rough cost. Nothing moves until you save.
+          </div>
+        </div>
         <input type="text" id="tpPlace" placeholder="📍 Where are we going?" maxlength="80">
         <div class="jr-dates">
           <label>From <input type="date" id="tpStart"></label>

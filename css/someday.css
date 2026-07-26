@@ -147,6 +147,27 @@
 .sd-ib-del:hover { opacity: 1; }
 
 /* ------- the add forms (Someday and Trip Plan share this) ------- */
+.tp-wish-block {
+  margin-bottom: 12px;
+  padding: 12px;
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  background: rgba(255,255,255,0.035);
+}
+.tp-wish-block > label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+}
+.tp-wish-block select { margin-bottom: 7px; }
+.tp-wish-hint {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-dim);
+}
+
 .sd-form input,
 .sd-form select {
   width: 100%;

@@ -18,13 +18,31 @@ with plain `<link>`/`<script src>` tags.
 ## Hi Lucia 👋 — start here
 
 You're a collaborator on this repo, which means you can build whatever you
-want into our app. You don't need to know the codebase — Claude does.
+want into our app. You don't need to know the codebase — Codex or Claude can
+guide you through it.
 
 **➡️ Never installed a developer tool before? Perfect. Follow
 [`START-HERE-LUCIA.md`](START-HERE-LUCIA.md)** — it goes from absolute
 zero (opening the Terminal for the first time) through installing
 everything, connecting to GitHub, and your first build with Claude,
 plus a plain-English explanation of how commits, PRs, and deploys work.
+
+### Using Codex
+
+1. Open the repo folder in the Codex desktop app.
+2. Say **"Let's build"** and describe what you want.
+
+That's it. Codex automatically reads:
+
+- **`AGENTS.md`** — the durable Codex project rules and development workflow
+- **`.agents/skills/`** — adapters for the same three living project skills
+- **`CLAUDE.md`** — the canonical detailed app map (the filename is historical;
+  its technical knowledge applies to Codex too)
+
+No setup command is required for Codex. Repository skills under
+`.agents/skills/` are discovered automatically.
+
+### Using Claude
 
 **Already set up? The short version:**
 
@@ -72,7 +90,7 @@ it's in the skills.)
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — what we've shipped, what's next,
   and the plan for logins/photos/AI features
 
-## House rules (Claude enforces these, but for humans too)
+## House rules (Codex and Claude enforce these, but for humans too)
 
 1. No build step — `index.html` still opens by double-click. One tab =
    one `js/` file + one `css/` file. Classic scripts only, never ES
@@ -82,9 +100,9 @@ it's in the skills.)
 3. Don't break the daily-question determinism (both phones must agree)
 4. Don't push a broken `main` — the live app updates from it automatically
 5. Keep it cute 💖
-6. Building in parallel (both of us, or several Claude sessions at once)?
+6. Building in parallel (both of us, or several coding-agent sessions at once)?
    Check [`SESSIONS.md`](SESSIONS.md) — it's the who's-working-on-what
-   board. Claude reads it automatically before starting a feature.
+   board. Both coding agents read it before starting a feature.
 
 ---
 Made with 💖 (and Claude) by Riu — co-developed by Lucia.
