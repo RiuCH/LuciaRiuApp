@@ -287,8 +287,12 @@ setInterval(() => {
   if (document.hidden && wdTicks % 15 !== 0) return;   // 15 × 2s ≈ 30s
   wdPull();
 }, 2000);
-// the tab hook runs for whichever game is showing
-TAB_HOOKS.duel = () => { if (gamesPick === "duel") wdPull(); else if (typeof q20Pull === "function") q20Pull(); };
+// Re-run the whole chooser on open rather than just pulling. switchTab() sets
+// the subtitle from SUBTITLES[tab] and knows nothing about sub-views, so
+// coming back with 20 Questions or Talk remembered used to leave "The Games
+// Room" on screen. gamesShow() is idempotent and only pulls for the sub-view
+// actually showing, so this is also the poll guard.
+TAB_HOOKS.duel = () => gamesShow(gamesPick);
 
 // Phones throttle (or freeze) timers in a backgrounded tab, so after a lock
 // screen or an app switch the poll can be minutes stale. Catch up the moment

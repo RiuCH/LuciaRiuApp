@@ -16,6 +16,17 @@
   transition: opacity 0.25s ease, box-shadow 0.25s ease;
 }
 .games-picker .chip.sel { opacity: 1; box-shadow: 0 0 14px var(--accent-soft); }
+/* Three chips since Talk moved in (A2). At 375px they'd wrap to a second row
+   and push the deck down half a thumb, so trim the padding and letter-spacing
+   the same way the nav does — full names, one row. `flex-wrap` above stays as
+   the safety net for anything narrower still. */
+@media (max-width: 560px) {
+  .games-picker { gap: 6px; }
+  .games-picker .chip { padding: 7px 10px; letter-spacing: 1px; }
+}
+@media (max-width: 400px) {
+  .games-picker .chip { padding: 7px 8px; font-size: 11px; letter-spacing: 0.5px; }
+}
 
 /* ------- 20 questions ------- */
 .q20-role { font-size: 15px; font-weight: 500; line-height: 1.45; margin-bottom: 12px; }

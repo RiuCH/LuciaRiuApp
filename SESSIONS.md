@@ -63,7 +63,7 @@ out of each other's way.
 
 | Session | Who | Feature | Regions of index.html claimed | Status |
 |---|---|---|---|---|
-| 2026-07-26-treats | Riu | **Track A** — the nav reshuffle (A1 ✅ · A2 next · A3) | `<nav>` and the `TABS`/`NAVIDS`/`SUBTITLES` maps in `js/core.js` — held for A2/A3 | 🚧 in progress |
+| 2026-07-26-treats | Riu | **Track A** — the nav reshuffle (A1 ✅ · A2 ✅ · A3 next) | `<nav>` and the `TABS`/`NAVIDS`/`SUBTITLES` maps in `js/core.js` — held for A2/A3 | 🚧 in progress |
 
 <!-- Row template:
 | 2026-07-24-login | Riu | Login page | lock CSS block, lock HTML block, LOCK SCREEN script block | ✅ shipped |
@@ -89,8 +89,8 @@ including the four traps — three of them have already bitten this repo once.
 | Task | What | Owns | Claims | Who |
 |---|---|---|---|---|
 | **A1** | 💝 Treats tab: 🍜 Food behind a chooser + 🎁 Gifts placeholder | index.html, core.js, base.css, desktop.css, food.js | tab key `treats`, `#navTreats`, global `treatsPick` | 2026-07-26-treats ✅ **done** |
-| **A2** | 🎮 Games: fold 🎭 Talk in as a third chip — nav **5 → 4** | same + tfd.js | (reuses `gamesPick`) | 2026-07-26-treats 🚧 next |
-| **A3** | 📋 Plan tab: new tab, empty ⭐ Someday + 🗓️ Trip Plan chips, 💸 Money strip placeholder — nav **4 → 5** | same five | tab key `plan`, `#navPlan`, global `planPick` | 2026-07-26-treats |
+| **A2** | 🎮 Games: fold 🎭 Talk in as a third chip — nav **5 → 4** | same + tfd.js | (reuses `gamesPick`) | 2026-07-26-treats ✅ **done** |
+| **A3** | 📋 Plan tab: new tab, empty ⭐ Someday + 🗓️ Trip Plan chips, 💸 Money strip placeholder — nav **4 → 5** | same five | tab key `plan`, `#navPlan`, global `planPick` | 2026-07-26-treats 🚧 next |
 
 **Order swapped after A1 (was Treats → Plan → Games).** Measured at 375px the
 five-button nav is **316px wide — 59px of headroom**, and `💝 Treats` alone is
@@ -98,11 +98,9 @@ five-button nav is **316px wide — 59px of headroom**, and `💝 Treats` alone 
 overflows a small phone — even for one deploy, and every push goes straight to
 both phones. Fold Talk in first, then add Plan.
 
-**Known bug for A2:** `gamesShow()` has the one A1 just fixed in
-`treatsShow()` — switching to 🎮 Games while 20 Questions is the remembered
-pick shows "The Games Room" instead of "20 Questions", because `switchTab()`
-sets the subtitle and the chooser only corrects it when the tab is *already*
-active. Same fix: `TAB_HOOKS.duel = () => gamesShow(gamesPick)`.
+**Fixed in A2:** the subtitle bug (`TAB_HOOKS.duel = () => gamesShow(gamesPick)`).
+**Headroom for A3:** the four-button nav measures **263px at 375px — 112px
+spare**, so adding 📋 Plan is comfortable.
 
 ### Track B — zero shared files, start any time
 Neither touches `index.html`'s nav or `js/core.js`. Safe to run beside anything.

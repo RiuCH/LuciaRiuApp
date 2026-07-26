@@ -105,7 +105,9 @@ function tfdSetMode(together, e) {
     el.classList.toggle("hot", hotMode));
   const meta = document.getElementById("themeColor");
   if (meta) meta.content = hotMode ? "#0d0208" : "#1a0b2e";
-  if (activeTab === "tfd") {
+  // Talk is a sub-view of 🎮 Games now, so it owns the subtitle only while it
+  // is the one on screen. gamesSubtitle() (js/twenty.js) has the same rule.
+  if (activeTab === "duel" && gamesPick === "tfd") {
     document.getElementById("subtitle").textContent =
       hotMode ? "Together Edition" : SUBTITLES.tfd;
   }

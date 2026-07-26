@@ -46,8 +46,11 @@ function dayNumber() {
 const SUBTITLES = { home: "Our Little Universe", tfd: "Talk · Flirt · Dare", journeys: "Everywhere, Together", treats: "Everything We've Eaten", duel: "The Games Room", cycle: "Moonlight" };
 // `cycle` is deliberately missing from NAVIDS: it's the one tab with no nav
 // button, so nothing in the nav ever lights up for it. See "the quiet door".
-const NAVIDS = { home: "navHome", tfd: "navTfd", journeys: "navJourneys", treats: "navTreats", duel: "navDuel" };
-const TABS = ["home", "tfd", "journeys", "treats", "duel", "cycle"];
+// `tfd` is deliberately absent from NAVIDS and TABS: Talk · Flirt · Dare is no
+// longer a tab, it's a sub-view of 🎮 Games (a `gamesPick` value). Its
+// SUBTITLES entry stays — gamesShow() still uses it as the label.
+const NAVIDS = { home: "navHome", journeys: "navJourneys", treats: "navTreats", duel: "navDuel" };
+const TABS = ["home", "journeys", "treats", "duel", "cycle"];
 let activeTab = "home";
 // Tabs that host more than one thing keep a "which one is showing" pick here,
 // so each sub-view can guard its own loading and polling — a merged tab whose
@@ -69,13 +72,14 @@ function switchTab(name) {
     const nav = NAVIDS[t] ? document.getElementById(NAVIDS[t]) : null;
     if (nav) nav.classList.toggle("active", t === name);
   });
-  document.getElementById("subtitle").textContent =
-    (name === "tfd" && hotMode) ? "Together Edition" : SUBTITLES[name];
+  // Plain label here. Tabs with a chooser correct it themselves from their
+  // TAB_HOOKS entry (which runs below), because only they know which sub-view
+  // is showing — and Talk's "Together Edition" depends on hotMode too.
+  document.getElementById("subtitle").textContent = SUBTITLES[name];
   window.scrollTo({ top: 0 });
   if (TAB_HOOKS[name]) TAB_HOOKS[name]();
 }
 document.getElementById("navHome").addEventListener("click", () => switchTab("home"));
-document.getElementById("navTfd").addEventListener("click", () => switchTab("tfd"));
 document.getElementById("navJourneys").addEventListener("click", () => switchTab("journeys"));
 document.getElementById("navTreats").addEventListener("click", () => switchTab("treats"));
 document.getElementById("navDuel").addEventListener("click", () => switchTab("duel"));

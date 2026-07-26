@@ -208,38 +208,6 @@
 
   </section>
 
-  <!-- ================= TALK · FLIRT · DARE ================= -->
-  <section class="page" id="page-tfd">
-
-    <div class="panel tfd-modes">
-      <div class="ptitle">Where are we tonight?</div>
-      <div class="tfd-seg" id="tfdDistance">
-        <button data-distance="apart" class="chip sel">✈️ Apart</button>
-        <button data-distance="together" class="chip">💞 Together</button>
-      </div>
-      <div class="hint" id="tfdHint">Apart mode: every one of these works from 1,800 miles away ✈️</div>
-    </div>
-
-    <div class="tfd-picker" id="tfdPicker">
-      <button data-deck="talk" id="tfdTalk">💬<span>Talk</span></button>
-      <button data-deck="flirt" id="tfdFlirt">😏<span>Flirt</span></button>
-      <button data-deck="dare" id="tfdDare">🔥<span>Dare</span></button>
-    </div>
-
-    <div class="card tfd-card" id="tfdCard">
-      <div class="chip" id="tfdChip">🎭 Pick a deck</div>
-      <div class="tfd-text" id="tfdText">Talk, Flirt or Dare — tap one and we're playing.</div>
-      <div class="tfd-blurb" id="tfdBlurb">Three decks. One phone. No takebacks.</div>
-    </div>
-
-    <div class="btnrow">
-      <button class="primary" id="tfdAgain" style="display:none">🎲 Another</button>
-      <button id="tfdCopy">📋 Copy</button>
-      <button id="tfdRestart">🔄 Start over</button>
-    </div>
-
-  </section>
-
   <!-- ================= JOURNEYS ================= -->
   <section class="page" id="page-journeys">
     <div class="panel">
@@ -369,6 +337,7 @@
     <div class="games-picker" id="gamesPicker">
       <span class="chip sel" data-game="duel">🔤 Word Duel</span>
       <span class="chip" data-game="q20">🎯 20 Questions</span>
+      <span class="chip" data-game="tfd">🎭 Talk</span>
     </div>
 
     <div id="gameDuel">
@@ -522,6 +491,41 @@
 
       </div>
     </div>
+
+    <!-- 🎭 Talk · Flirt · Dare — was its own tab until the nav ran out of room.
+         The nav button is gone, which also stops the adult decks being
+         advertised at the top level; the tab key `tfd` lives on as a
+         `gamesPick` value and every id/prefix is unchanged. -->
+    <div id="gameTfd" style="display:none">
+
+    <div class="panel tfd-modes">
+      <div class="ptitle">Where are we tonight?</div>
+      <div class="tfd-seg" id="tfdDistance">
+        <button data-distance="apart" class="chip sel">✈️ Apart</button>
+        <button data-distance="together" class="chip">💞 Together</button>
+      </div>
+      <div class="hint" id="tfdHint">Apart mode: every one of these works from 1,800 miles away ✈️</div>
+    </div>
+
+    <div class="tfd-picker" id="tfdPicker">
+      <button data-deck="talk" id="tfdTalk">💬<span>Talk</span></button>
+      <button data-deck="flirt" id="tfdFlirt">😏<span>Flirt</span></button>
+      <button data-deck="dare" id="tfdDare">🔥<span>Dare</span></button>
+    </div>
+
+    <div class="card tfd-card" id="tfdCard">
+      <div class="chip" id="tfdChip">🎭 Pick a deck</div>
+      <div class="tfd-text" id="tfdText">Talk, Flirt or Dare — tap one and we're playing.</div>
+      <div class="tfd-blurb" id="tfdBlurb">Three decks. One phone. No takebacks.</div>
+    </div>
+
+    <div class="btnrow">
+      <button class="primary" id="tfdAgain" style="display:none">🎲 Another</button>
+      <button id="tfdCopy">📋 Copy</button>
+      <button id="tfdRestart">🔄 Start over</button>
+    </div>
+
+    </div><!-- /#gameTfd -->
   </section>
 
   <!-- ================= MOON (the quiet one) =================
@@ -583,7 +587,6 @@
 <!-- ================= NAV ================= -->
 <nav class="nav">
   <button id="navHome" class="active">🏠 Home</button>
-  <button id="navTfd">🎭 Talk</button>
   <button id="navJourneys">✈️ Trips</button>
   <button id="navTreats">💝 Treats</button>
   <button id="navDuel">🎮 Games</button>
