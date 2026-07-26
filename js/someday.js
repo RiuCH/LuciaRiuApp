@@ -23,6 +23,7 @@ const SD_KINDS = {
 let sdWishes = [];
 let sdReady = null;       // null unknown · true table exists · false needs someday.sql
 let sdFilter = "all";     // "all" | a key of SD_KINDS
+let sdEditing = null;     // the wish the form is currently editing, if any
 let sdShowDone = false;
 
 // Which of us is on this phone. Shares `#me` with the duel and 20 Questions —
@@ -202,37 +203,39 @@ function sdCard(w) {
     card.appendChild(a);
   }
 
+  // Icon buttons, not labelled ones: two per row leaves ~160px of card on a
+  // 375px phone, and "✅ We did it" alone would wrap to three lines. Every
+  // button keeps a title/aria-label so it's still readable to a screen reader
+  // and on a long-press.
   const row = document.createElement("div");
-  row.className = "rowbtns";
+  row.className = "sd-actions";
+  const iconBtn = (label, text, cls, fn) => {
+    const b = document.createElement("button");
+    b.className = "sd-ib" + (cls ? " " + cls : "");
+    b.textContent = text;
+    b.title = label;
+    b.setAttribute("aria-label", label);
+    b.addEventListener("click", fn);
+    row.appendChild(b);
+    return b;
+  };
   if (w.status !== "done") {
-    const done = document.createElement("button");
-    done.className = "primary";
-    done.textContent = "✅ We did it";
-    done.addEventListener("click", () => sdGraduate(w));
-    row.appendChild(done);
+    iconBtn("We did it", "✅", "primary", () => sdGraduate(w));
   } else {
-    const undo = document.createElement("button");
-    undo.textContent = "↩️ Not yet";
-    undo.addEventListener("click", () => sdPatch(w, { status: "wanted", done_at: null }));
-    row.appendChild(undo);
+    iconBtn("Not yet — put it back", "↩️", "", () => sdPatch(w, { status: "wanted", done_at: null }));
   }
+  iconBtn("Edit this wish", "✏️", "", () => sdStartEdit(w));
   // The simulation toggle (task E2). Only worth offering when there's a price
   // to count — this is what moves `pot − committed = left` in the strip above.
   if (w.status !== "done" && w.est_cost != null && w.est_cost !== "") {
-    const inOut = document.createElement("button");
-    inOut.className = "sd-commit" + (w.committed ? " sd-committed" : "");
-    inOut.textContent = w.committed ? "💸 Counted in" : "💸 Count it in";
-    inOut.addEventListener("click", () => {
+    iconBtn(w.committed ? "Counted in the pot — tap to take it out"
+                        : "Count it in against the pot",
+            "💸", w.committed ? "sd-committed" : "", () => {
       sdPatch(w, { committed: !w.committed });
       if (typeof mnRender === "function") mnRender();
     });
-    row.appendChild(inOut);
   }
-  const del = document.createElement("button");
-  del.textContent = "🗑️";
-  del.title = "Remove";
-  del.addEventListener("click", () => sdDelete(w));
-  row.appendChild(del);
+  iconBtn("Remove", "🗑️", "sd-ib-del", () => sdDelete(w));
   card.appendChild(row);
   return card;
 }
@@ -261,17 +264,40 @@ function sdPickOne() {
 }
 
 
-// ---------------- add form ----------------
+// ---------------- add / edit form ----------------
+// One form for both, like jrEditing does for journeys — a second form would
+// be the same five fields and one more thing to keep in step.
 function sdToggleForm(show) {
   const form = sdEl("sdForm");
   form.style.display = show ? "block" : "none";
   if (show) sdEl("sdTitle").focus();
+  if (!show) sdResetForm();
+}
+
+function sdResetForm() {
+  sdEditing = null;
+  sdEl("sdFormTitle").textContent = "Add a wish";
+  sdEl("sdSave").textContent = "💫 Add it";
+  ["sdTitle", "sdNote", "sdLink", "sdCost"].forEach(id => { sdEl(id).value = ""; });
+}
+
+function sdStartEdit(w) {
+  sdEditing = w;
+  sdEl("sdFormTitle").textContent = "Edit this wish";
+  sdEl("sdSave").textContent = "💾 Save changes";
+  sdEl("sdKind").value = w.kind || "thing";
+  sdEl("sdTitle").value = w.title || "";
+  sdEl("sdNote").value = w.note || "";
+  sdEl("sdLink").value = w.link || "";
+  sdEl("sdCost").value = w.est_cost != null ? w.est_cost : "";
+  sdEl("sdForm").style.display = "block";
+  sdEl("sdForm").scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 document.querySelectorAll("#sdFilters .chip").forEach(chip =>
   chip.addEventListener("click", () => { sdFilter = chip.dataset.kind; sdRender(); }));
 
-sdEl("sdAddBtn").addEventListener("click", () => sdToggleForm(true));
+sdEl("sdAddBtn").addEventListener("click", () => { sdResetForm(); sdToggleForm(true); });
 sdEl("sdCancel").addEventListener("click", () => sdToggleForm(false));
 sdEl("sdPick").addEventListener("click", sdPickOne);
 sdEl("sdDoneToggle").addEventListener("click", () => { sdShowDone = !sdShowDone; sdRender(); });
@@ -280,15 +306,22 @@ sdEl("sdSave").addEventListener("click", () => {
   const title = sdEl("sdTitle").value.trim();
   if (!title) { popToast("Give it a name first 😌"); return; }
   const cost = sdEl("sdCost").value.trim();
-  sdAdd({
+  const fields = {
     kind: sdEl("sdKind").value,
     title: title,
     note: sdEl("sdNote").value.trim() || null,
     link: sdEl("sdLink").value.trim() || null,
-    added_by: sdMe(),
     est_cost: cost ? Number(cost) : null
-  });
-  ["sdTitle", "sdNote", "sdLink", "sdCost"].forEach(id => { sdEl(id).value = ""; });
+  };
+  if (sdEditing) {
+    // added_by is deliberately NOT rewritten on edit: "who wants this" is the
+    // point of the gift kind, and fixing a typo shouldn't silently reassign it.
+    sdPatch(sdEditing, fields);
+    if (typeof mnRender === "function") mnRender();   // est_cost may have moved
+    popToast("Updated 💫");
+  } else {
+    sdAdd({ ...fields, added_by: sdMe() });
+  }
   sdToggleForm(false);
 });
 

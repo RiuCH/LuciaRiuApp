@@ -642,8 +642,10 @@
         <div class="sd-picked" id="sdPicked" style="display:none"></div>
       </div>
 
+      <!-- Doubles as the edit form: sdStartEdit() fills it and retitles it,
+           the same way jrEditing reuses the journey form. -->
       <div class="panel sd-form" id="sdForm" style="display:none; text-align:left;">
-        <div class="ptitle">Add a wish</div>
+        <div class="ptitle" id="sdFormTitle">Add a wish</div>
         <select id="sdKind">
           <option value="place">📍 A place we want to go</option>
           <option value="restaurant">🍜 Somewhere we want to eat</option>
