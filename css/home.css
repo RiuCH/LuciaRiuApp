@@ -142,3 +142,20 @@ input[type="date"] {
 }
 .qotd .qotd-foot button { padding: 8px 16px; font-size: 13px; }
 @media (max-width: 420px) { .qotd .qotd-q { font-size: 17px; } }
+
+/* ------- Trips card on Home (jrh*) -------
+   Journeys data, Home placement. Styled here rather than in journeys.css
+   because it's a Home widget — journeys.css is the timeline's own look. */
+.jrh-stats { display: flex; justify-content: center; gap: 26px; margin: 2px 0 10px; }
+.jrh-stat b { display: block; font-size: 26px; font-weight: 700; line-height: 1.1; }
+.jrh-stat span {
+  display: block;
+  margin-top: 2px;
+  font-size: 10.5px;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.jrh-latest { font-size: 13.5px; line-height: 1.5; }
+.jrh-place { font-weight: 600; }
+.jrh-when { color: var(--text-dim); font-size: 12.5px; }

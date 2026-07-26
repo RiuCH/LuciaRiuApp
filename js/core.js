@@ -86,6 +86,7 @@ document.getElementById("navTreats").addEventListener("click", () => switchTab("
 document.getElementById("navPlan").addEventListener("click", () => switchTab("plan"));
 document.getElementById("navDuel").addEventListener("click", () => switchTab("duel"));
 document.getElementById("wdTeaser").addEventListener("click", () => switchTab("duel"));
+document.getElementById("jrHomeCard").addEventListener("click", () => switchTab("journeys"));
 
 
 // ---------------- THE QUIET DOOR ----------------

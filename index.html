@@ -203,6 +203,18 @@
       </div>
     </div>
 
+    <!-- Journeys data, rendered on Home. loadJourneys() already runs at boot
+         for the timeline, so this costs no extra request. -->
+    <div class="panel teaser" id="jrHomeCard">
+      <div class="ptitle">Everywhere, together</div>
+      <div class="jrh-stats">
+        <div class="jrh-stat"><b id="jrhTrips">—</b><span>trips</span></div>
+        <div class="jrh-stat"><b id="jrhDays">—</b><span>days away</span></div>
+      </div>
+      <div class="jrh-latest" id="jrhLatest"></div>
+      <div class="go" id="jrhGo">Plan the next one →</div>
+    </div>
+
     <div class="panel teaser" id="wdTeaser">
       <div class="ptitle">Feeling competitive?</div>
       <div style="font-size: 17px; font-weight: 600;">🔤 Word Duel</div>

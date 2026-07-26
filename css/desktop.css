@@ -19,7 +19,8 @@
       "photo anniv"
       "photo clocks"
       "photo cd"
-      "qotd teased";
+      "qotd teased"
+      "qotd trips";
     grid-auto-rows: min-content;
     gap: 18px;
     align-items: start;
@@ -31,6 +32,15 @@
   #page-home #homeCd     { grid-area: cd; }
   #page-home #qotdCard   { grid-area: qotd; }
   #page-home #wdTeaser   { grid-area: teased; }
+  #page-home #jrHomeCard { grid-area: trips; }
+
+  /* Bottom row ends flush. The Question card grew a lot when Answer & compare
+     landed, which left the right column stopping well short of it. Both bottom
+     cells stretch, so whichever column is shorter grows to meet the other —
+     true as either card changes height later, rather than tuned to today's. */
+  #page-home #qotdCard,
+  #page-home #jrHomeCard { align-self: stretch; }
+  #page-home #jrHomeCard { justify-content: center; }
 
   /* the photo is the centrepiece — let it fill its column */
   #page-home .cp-panel { display: flex; flex-direction: column; align-self: stretch; }
