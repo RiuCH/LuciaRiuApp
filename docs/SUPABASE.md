@@ -26,7 +26,7 @@ falls back to the hardcoded copies and in-memory state ("local mode").
 
 | Table | Contents | App fallback when unreachable |
 |---|---|---|
-| `journeys` | timeline entries (place, dates, description, album link) | seed entry + in-memory adds |
+| `journeys` | timeline entries (place, dates, description, album link, `photos` = our own uploads) | seed entry + in-memory adds |
 | `settings` | `lock_keys` (password), `reunion_date` (shared countdown), `home_photo` (home photo: URL, upload data-URL, or `album:<link>`), `duel_state` + `duel_first` (Word Duel — see below), `q20_state` (20 Questions, JSON) | hardcoded `LOCK_KEYS`, `#reunion=` / `#photo=` hash params |
 | `questions` | the full question bank (`category`, `text`) | hardcoded `BANK` |
 | `questions` | the full prompt bank (`category`, `text`) — 345 rows in 11 categories: the Question-of-the-Day pool, the Talk/Flirt decks, and both Dare decks | hardcoded `BANK` |
@@ -97,6 +97,11 @@ Projects set up before v6 need one-off migrations, run in the SQL editor.
 - `supabase/album_cache.sql` — adds the `album_cache` table (v6.3). Until
   you run it, the app still works — album metadata is simply fetched from
   iCloud every time, which is the ~50s wait it exists to remove.
+- `supabase/journey_photos.sql` — adds `journeys.photos` (jsonb), the trip's
+  own uploaded photos as `[{url, path}]`. Until it's run, ✈️ Trips still shows
+  and syncs everything else; the "📸 Add photos" button simply doesn't appear.
+  The files go in the **existing `food` bucket** under a `trips/` prefix, so
+  there is no second bucket to create or make private.
 - `supabase/migrate_journey_photos.sql` — adds `journeys.photo_guids`
   (the "pick which album photos show" feature). Fresh installs from
   `schema.sql` already have it.

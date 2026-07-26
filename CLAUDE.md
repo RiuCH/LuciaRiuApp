@@ -97,7 +97,7 @@ because skipping them broke something.
 | `js/questions.js` | `BANK` (11 prompt categories), `CHIPS`, `QUESTION_SOURCE`, the seeded daily deck (`dailyQuestion()`) |
 | `js/tfd.js` | Talk · Flirt · Dare tab: the three decks, Together/Apart mode (`tfd*`) |
 | `js/home.js` | `MISSYOU`, anniversary/clock/countdown ticks, couple photo (`cp*`) |
-| `js/journeys.js` | timeline CRUD + sort, iCloud album, lightbox (`jr*`) |
+| `js/journeys.js` | timeline CRUD + sort, our photo uploads, iCloud album, lightbox (`jr*`) |
 | `js/gifts.js` | 🎁 Gifts: the given-half log, giver/occasion filters (`gf*`) |
 | `js/trip.js` | 🗓️ Itinerary: days, saved bucket, tap-to-assign (`tr*`) |
 | `js/plan.js` | 📋 Plan: the ⭐/🗓️/💸 chooser + the money line (`planShow`) |
@@ -259,7 +259,14 @@ can reference anything.
   render + add/delete, Apple Shared Album embed (`fetchICloudAlbum()`),
   lightbox, sort chips (`jrSort`: oldest/latest/shortest/longest),
   edit form (`jrEditing`), photo picker (`jrPicker*`,
-  `journeys.photo_guids`). Element prefix: `jr*`. Tables: `journeys`,
+  `journeys.photo_guids`). **Two kinds of photo, on purpose:**
+  `journeys.photos` (`[{url, path}]`) are ones we uploaded — ours, permanent,
+  in the `food` bucket under `trips/` so they inherit Food's signed URLs;
+  `album_url` is an Apple album we *borrow*, read-only and signed with URLs
+  that expire. A trip can have both. Upload path is Food's, reused whole
+  (`fdResize`/`fdUploadBlob`/`fdResolveViews`) and feature-detected, and it
+  needs `supabase/journey_photos.sql` — `jrUploadOK` hides the button rather
+  than failing when the column isn't there. Element prefix: `jr*`. Tables: `journeys`,
   `settings`, `questions` (schema in `supabase/`, guide in
   docs/SUPABASE.md). Serverless: `api/album.js` (iCloud CORS proxy)
 - Lock screen: `#lock` overlay, password = anniversary date (DB
