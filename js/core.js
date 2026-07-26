@@ -43,21 +43,22 @@ function dayNumber() {
 
 
 // ---------------- TABS ----------------
-const SUBTITLES = { home: "Our Little Universe", tfd: "Talk · Flirt · Dare", journeys: "Everywhere, Together", treats: "Everything We've Eaten", duel: "The Games Room", cycle: "Moonlight" };
+const SUBTITLES = { home: "Our Little Universe", tfd: "Talk · Flirt · Dare", journeys: "Everywhere, Together", treats: "Everything We've Eaten", plan: "Everything Ahead", duel: "The Games Room", cycle: "Moonlight" };
 // `cycle` is deliberately missing from NAVIDS: it's the one tab with no nav
 // button, so nothing in the nav ever lights up for it. See "the quiet door".
 // `tfd` is deliberately absent from NAVIDS and TABS: Talk · Flirt · Dare is no
 // longer a tab, it's a sub-view of 🎮 Games (a `gamesPick` value). Its
 // SUBTITLES entry stays — gamesShow() still uses it as the label.
-const NAVIDS = { home: "navHome", journeys: "navJourneys", treats: "navTreats", duel: "navDuel" };
-const TABS = ["home", "journeys", "treats", "duel", "cycle"];
+const NAVIDS = { home: "navHome", journeys: "navJourneys", treats: "navTreats", plan: "navPlan", duel: "navDuel" };
+const TABS = ["home", "journeys", "treats", "plan", "duel", "cycle"];
 let activeTab = "home";
 // Tabs that host more than one thing keep a "which one is showing" pick here,
 // so each sub-view can guard its own loading and polling — a merged tab whose
 // TAB_HOOKS entry ignores the pick would run EVERY sub-view's loader on open.
 // The chooser function itself lives in the tab's own file.
-let gamesPick = "duel";    // 🎮 Games:  "duel" | "q20"   — js/twenty.js
-let treatsPick = "food";   // 💝 Treats: "food" | "gifts" — js/food.js
+let gamesPick = "duel";       // 🎮 Games:  "duel" | "q20"       — js/twenty.js
+let treatsPick = "food";      // 💝 Treats: "food" | "gifts"     — js/food.js
+let planPick = "someday";     // 📋 Plan:   "someday" | "trip"   — js/plan.js
 
 // A tab can register work that must only run once it's actually on screen —
 // e.g. building <img> elements, which never load inside a display:none
@@ -82,6 +83,7 @@ function switchTab(name) {
 document.getElementById("navHome").addEventListener("click", () => switchTab("home"));
 document.getElementById("navJourneys").addEventListener("click", () => switchTab("journeys"));
 document.getElementById("navTreats").addEventListener("click", () => switchTab("treats"));
+document.getElementById("navPlan").addEventListener("click", () => switchTab("plan"));
 document.getElementById("navDuel").addEventListener("click", () => switchTab("duel"));
 document.getElementById("wdTeaser").addEventListener("click", () => switchTab("duel"));
 

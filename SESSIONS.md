@@ -64,7 +64,8 @@ out of each other's way.
 | Session | Who | Feature | Regions of index.html claimed | Status |
 |---|---|---|---|---|
 | 2026-07-26-gifts | Riu | **Task D1** — 🎁 Gifts (the *given* half) | The `gifts` half of `#page-treats` ONLY — A1 already left the chip and the empty pane. New `js/gifts.js` + `css/gifts.css` and their two tags. Does NOT touch `<nav>`, the TABS maps, `js/food.js` or the chooser itself | 🚧 in progress |
-| 2026-07-26-treats | Riu | **Track A** — the nav reshuffle (A1 ✅ · A2 ✅ · A3 next) | `<nav>` and the `TABS`/`NAVIDS`/`SUBTITLES` maps in `js/core.js` — held for A2/A3 | 🚧 in progress |
+
+| _(none)_ | | | | |
 
 <!-- Row template:
 | 2026-07-24-login | Riu | Login page | lock CSS block, lock HTML block, LOCK SCREEN script block | ✅ shipped |
@@ -83,15 +84,15 @@ Claim a row by writing your session id in **Who**. Identifiers are
 pre-assigned so two sessions can't pick the same prefix or table — they're
 already reserved in the Registry below.
 
-### Track A — the nav reshuffle 🚧 ONE session, three PRs, in order
-Blocks Tracks D and E. Read "Agreed tab structure" in docs/ROADMAP.md first,
+### Track A — the nav reshuffle ✅ **COMPLETE** (A1 · A2 · A3 shipped)
+Tracks D and E are now unblocked. Read "Agreed tab structure" in docs/ROADMAP.md first,
 including the four traps — three of them have already bitten this repo once.
 
 | Task | What | Owns | Claims | Who |
 |---|---|---|---|---|
 | **A1** | 💝 Treats tab: 🍜 Food behind a chooser + 🎁 Gifts placeholder | index.html, core.js, base.css, desktop.css, food.js | tab key `treats`, `#navTreats`, global `treatsPick` | 2026-07-26-treats ✅ **done** |
 | **A2** | 🎮 Games: fold 🎭 Talk in as a third chip — nav **5 → 4** | same + tfd.js | (reuses `gamesPick`) | 2026-07-26-treats ✅ **done** |
-| **A3** | 📋 Plan tab: new tab, empty ⭐ Someday + 🗓️ Trip Plan chips, 💸 Money strip placeholder — nav **4 → 5** | same five | tab key `plan`, `#navPlan`, global `planPick` | 2026-07-26-treats 🚧 next |
+| **A3** | 📋 Plan tab: new tab, empty ⭐ Someday + 🗓️ Trip Plan chips, 💸 Money strip placeholder — nav **4 → 5** | same five | tab key `plan`, `#navPlan`, global `planPick` | 2026-07-26-treats ✅ **done** |
 
 **Order swapped after A1 (was Treats → Plan → Games).** Measured at 375px the
 five-button nav is **316px wide — 59px of headroom**, and `💝 Treats` alone is
@@ -147,6 +148,7 @@ PR if you introduce a convention.
 
 | Date | Who | Feature | Notes |
 |---|---|---|---|
+| 2026-07-26 | Riu | **Track A** — the nav reshuffle (PRs #26, #29, #30) | `🏠 Home · ✈️ Trips · 💝 Treats · 📋 Plan · 🎮 Games`. Food moved inside 💝 Treats (`treatsPick`), Talk · Flirt · Dare inside 🎮 Games (`gamesPick`), and 📋 Plan is new with a pinned 💸 Money strip above a ⭐ Someday / 🗓️ Trip Plan chooser (`planPick`, `js/plan.js` + `css/plan.css`). Three choosers now share one shape — see "Tabs that host more than one thing" in the `couple-app-dev` skill. Two fixes fell out: `switchTab()` no longer special-cases Talk's hotMode subtitle (it moved to `gamesSubtitle()`), and every chooser's `TAB_HOOKS` re-runs the chooser rather than a loader, which was leaving stale subtitles. Nav measured 318px at 375px — the order A1 → A2 → A3 was chosen so it never exceeded five buttons on a deploy |
 | 2026-07-26 | Riu | **B1** — signed URLs for the food bucket | The bucket shipped `public = true`, and a public bucket is served over an unauthenticated URL where storage policies don't apply — every photo was readable by anyone holding its URL. Views are now minted from `food_photos.path` (stored since the tab shipped, so no migration), batched into one signing request, cached with expiry. Renders fall back to the stored public URL when a signature isn't ready, so the code is safe with the bucket public OR private — **`supabase/food_private.sql` still has to be run to actually close it**. Also fixed three live breakages from the RLS lockdown: uploads, deletes and album import were all still sending the anon key, which `food write` now rejects |
 | 2026-07-26 | Riu | **C1** ✍️ Answer & compare | Both answer the day's question on the Home card; **neither shows until both are in**, so the second answer isn't shaped by the first. Locked once submitted — and the lock is the database's, not the UI's: `answers` has a unique index on `(day, who)`, so a second insert is refused by Postgres. New `js/answers.js` + `css/answers.css`, prefix `ac*`, table `answers` (`supabase/answers.sql`, reuses `public.is_us()`). Side comes from the games' `#me`. The poller only wakes in the one state that can change — on Home, mine in, theirs pending — and backs off when hidden, per the idle-cost rules |
 | 2026-07-26 | Riu | It's an app now — Add to Home Screen, no App Store | `manifest.webmanifest` + checked-in `icons/icon-180\|192\|512.png` + the iOS meta block: own icon, own app-switcher card, no Safari chrome, and **no App Store, signing, fee or expiry**. Icons generated with macOS's own tools (`qlmanage -t` on an SVG → `sips -z`) so the no-build-step rule holds. `black-translucent` status bar puts the gradient behind the clock, so `body`/`.nav`/`.lock` now add `env(safe-area-inset-*)`, wrapped in `@supports` (a bare `calc(… + env())` is dropped whole by browsers without it). Insets are 0 in a normal tab ⇒ desktop unchanged. **Anything new pinned to a screen edge must add the insets too.** Deliberately NO service worker: a cached shell is exactly how two phones end up on different versions (golden rule 4). Known: `start_url` is `./` so an installed launch has no hash and re-runs the lock |
@@ -213,6 +215,8 @@ timeline), `wd*` (Word Duel), `cp*` (couple photo), `cy*` (🌙 Moon calendar), 
 **Pre-reserved for the Task board** (don't take these for anything else):
 `ac*` (C1 Answer & compare), `gf*` (D1 Gifts), `sd*` (E1 Someday), `tp*` (E1
 Trip Plan), `mn*` (E2 Money), `ai*` (B2 Claude features).
+`plan*` is TAKEN (the 📋 Plan tab shell — `planShow`, `planRenderMoney`,
+`#planPicker`/`#planSomeday`/`#planTrip`/`#planMoney`/`#planPot`/`#planSums`).
 New features should pick their own short prefix and list it here.
 One-off id outside any prefix: `#secretHeart` (the header `♥`, which is also
 the long-press door into the Moon tab).
@@ -243,7 +247,7 @@ plain text so they can be repaired by hand in the table editor).
 
 **Chooser globals in `js/core.js`** (each guards its tab's on-screen work so
 only the visible sub-view fetches or polls): `gamesPick` (🎮 Games) is live;
-`treatsPick` (A1) and `planPick` (A2) are **pre-reserved**. Any new merged tab
+`treatsPick` (💝 Treats, js/food.js) and `planPick` (📋 Plan, js/plan.js) are live. Any new merged tab
 needs one — a merged tab whose `TAB_HOOKS` entry ignores the pick will run
 *every* sub-view's loader on open, which is how the lazy-photo work gets undone.
 
