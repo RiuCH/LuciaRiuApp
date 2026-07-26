@@ -63,6 +63,7 @@ out of each other's way.
 
 | Session | Who | Feature | Regions of index.html claimed | Status |
 |---|---|---|---|---|
+| 2026-07-26-answer-compare | Riu | **Task C1** — Answer & compare ✍️ | The Question-of-the-Day card inside `#page-home` ONLY (plus `js/home.js`); new `js/answers.js` + `css/answers.css` and their two tags. Does NOT touch `<nav>`, `TABS`/`NAVIDS`/`SUBTITLES`, or any other tab — no overlap with A1 | 🚧 in progress |
 | 2026-07-26-treats | Riu | **Task A1** — 💝 Treats tab (Food behind a chooser + Gifts placeholder) | `<nav>`, the `#page-food` section (becomes `#page-treats`), and the `TABS`/`NAVIDS`/`SUBTITLES` maps in `js/core.js` | 🚧 in progress |
 
 <!-- Row template:
@@ -106,7 +107,7 @@ Track A only trivially (A never edits the Home section).
 
 | Task | Roadmap | Owns | Claims | Who |
 |---|---|---|---|---|
-| **C1** | #1 Answer & compare ✍️ — *the highest-value item on the roadmap* | js/home.js, Home markup | table `answers`, prefix `ac*` | _(free)_ |
+| **C1** | #1 Answer & compare ✍️ — *the highest-value item on the roadmap* | js/home.js, Home markup | table `answers`, prefix `ac*` | **2026-07-26-answer-compare** 🚧 |
 
 ### Track D — needs A1 merged
 | Task | Roadmap | Owns | Claims | Who |
