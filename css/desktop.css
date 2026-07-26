@@ -51,11 +51,14 @@
   .tfd-text { font-size: 27px; }
   #page-home .qotd-q { font-size: 20px; }
 
-  /* ---- FOOD: wider grid, roomier month rail ---- */
-  #page-food.active { max-width: 940px; margin: 0 auto; }
-  #page-food .fd-grid { grid-template-columns: repeat(5, 1fr); }
-  #page-food .fd-rail { width: 84px; font-size: 12px; }
-  #page-food .fd-albumgrid { grid-template-columns: repeat(6, 1fr); }
+  /* ---- TREATS: wider Food grid, roomier month rail ----
+     Keyed on the TAB for width and on the SUB-VIEW for the grids: treatsShow()
+     sets an inline display on #treatFood, and an inline style beats a rule
+     here — which is exactly why it sets "" and never "block". */
+  #page-treats.active { max-width: 940px; margin: 0 auto; }
+  #treatFood .fd-grid { grid-template-columns: repeat(5, 1fr); }
+  #treatFood .fd-rail { width: 84px; font-size: 12px; }
+  #treatFood .fd-albumgrid { grid-template-columns: repeat(6, 1fr); }
 
   /* ---- JOURNEYS: wider timeline, 4-up photo grid ---- */
   #page-journeys.active { max-width: 880px; }

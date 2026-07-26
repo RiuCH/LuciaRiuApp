@@ -258,8 +258,19 @@
     <div class="jr-timeline" id="jrTimeline"></div>
   </section>
 
-  <!-- ================= FOOD ================= -->
-  <section class="page" id="page-food">
+  <!-- ================= TREATS (Food + Gifts) =================
+       The small things: what we've eaten, and what we've given each other.
+       Same chooser pattern as 🎮 Games — `treatsShow()` in js/food.js swaps
+       the panels and sets `treatsPick`, which TAB_HOOKS.treats guards on so
+       only the visible one loads. -->
+  <section class="page" id="page-treats">
+
+    <div class="games-picker" id="treatsPicker">
+      <span class="chip sel" data-treat="food">🍜 Food</span>
+      <span class="chip" data-treat="gifts">🎁 Gifts</span>
+    </div>
+
+    <div id="treatFood">
 
     <div class="panel">
       <div class="ptitle">Everything we've eaten together</div>
@@ -321,6 +332,19 @@
     </div>
 
     <div id="fdBody"></div>
+
+    </div><!-- /#treatFood -->
+
+    <!-- 🎁 Gifts lands here (task D1 / roadmap #4). Deliberately a real chip
+         rather than a hidden one: the panel is additive, so D1 only has to
+         fill this div and teach treatsShow() nothing new. -->
+    <div id="treatGifts" style="display:none">
+      <div class="panel">
+        <div class="ptitle">Gifts</div>
+        <div style="font-size:17px; font-weight:600;">🎁 Everything we've given each other</div>
+        <div class="hint">Not built yet — this is where it's going to live 💝</div>
+      </div>
+    </div>
 
   </section>
 
@@ -546,7 +570,7 @@
   <button id="navHome" class="active">🏠 Home</button>
   <button id="navTfd">🎭 Talk</button>
   <button id="navJourneys">✈️ Trips</button>
-  <button id="navFood">🍜 Food</button>
+  <button id="navTreats">💝 Treats</button>
   <button id="navDuel">🎮 Games</button>
 </nav>
 
