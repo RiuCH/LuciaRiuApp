@@ -124,7 +124,11 @@ Track A only trivially (A never edits the Home section).
 |---|---|---|---|---|
 | **D1** | #4 Gifts 🎁 (the *given* half only — wishing belongs to E1) | js/gifts.js, css/gifts.css | table `gifts`, prefix `gf*` | **2026-07-26-gifts** 🚧 |
 
-### Track E — needs A2 merged; E2 needs E1
+### Track E — needs **A3** merged (the 📋 Plan tab); E2 needs E1
+<!-- Was "needs A2" when A2 WAS the Plan tab. A2 and A3 swapped meaning
+     (A2 became the Games fold), so the gate moved with the tab, not the
+     label. E1 and E2 both live inside 📋 Plan and cannot start until A3
+     lands, even though A2 is ticked. -->
 | Task | Roadmap | Owns | Claims | Who |
 |---|---|---|---|---|
 | **E1** | #5 Someday ⭐ **and** #6 Trip Plan 🗓️ — one session: they share the graduation flow, the Plan markup and `est_cost` | js/someday.js, js/journeys.js | table `wishes`, prefixes `sd*` + `tp*`, columns `journeys.status`, `journeys.est_cost`, `wishes.est_cost`, seed offset **49979687** (only if 🎲 pick-one is seeded) | _(free)_ |
