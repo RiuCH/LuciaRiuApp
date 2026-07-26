@@ -105,7 +105,10 @@
    - **Build order:** ⭐ Someday and 🗓️ Trip Plan first — they're what the
      simulation sums over. A pot with nothing to spend it on is a calculator.
 
-4. **Gifts** 🎁 — **one tap that shows everything we've ever given each other.**
+4. **Gifts** 🎁 ✅ **shipped 2026-07-26 (task D1)** — the given half is live as
+   the second chip in 💝 Treats. Photos, giver/occasion filters, no prices.
+   Wishing still belongs to #5.
+   *Original entry:* **one tap that shows everything we've ever given each other.**
    A running log: what it was, who gave it, when, and the occasion (birthday,
    anniversary, Christmas, "it was a Tuesday").
 

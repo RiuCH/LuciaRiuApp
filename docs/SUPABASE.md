@@ -31,6 +31,7 @@ falls back to the hardcoded copies and in-memory state ("local mode").
 | `questions` | the full question bank (`category`, `text`) | hardcoded `BANK` |
 | `questions` | the full prompt bank (`category`, `text`) — 345 rows in 11 categories: the Question-of-the-Day pool, the Talk/Flirt decks, and both Dare decks | hardcoded `BANK` |
 | `food_photos` / `food_tags` / `food_photo_tags` | the 🍜 Food library: one row per photo (url, path, `taken_at`, GPS), the tag catalogue with a `kind`, and the links between them | none — the tab says to run `supabase/food.sql` |
+| `gifts` | 🎁 the given-half log: what, who gave it, when, occasion, note, and the photo's storage `path` (in the `food` bucket under `gifts/`) | none — the pane says to run `supabase/gifts.sql` |
 | `answers` | Answer & compare: one row per `(day, who)` with the text. The unique index IS the "locked once submitted" rule | none — the Home card says to run `supabase/answers.sql` |
 | `album_cache` | slimmed iCloud shared-album metadata, keyed by album token — written and read by `api/album.js`, never by the browser | fetch straight from iCloud (correct, just slow) |
 
@@ -49,6 +50,10 @@ Projects set up before v6 need one-off migrations, run in the SQL editor:
   kind into `city` and `country` (2026-07-26). Optional: the app shows any
   leftover `place` tag under 🏙️ City regardless, and this repo's project was
   already migrated over the REST API.
+- `supabase/gifts.sql` — the 🎁 Gifts table (task D1). Needs
+  `auth_policies.sql` first. No new bucket: gift photos live in the
+  existing `food` bucket under a `gifts/` prefix, so they inherit its
+  policies and B1's signed URLs.
 - `supabase/answers.sql` — the ✍️ Answer & compare table (task C1). Run
   `auth_policies.sql` first: it reuses `public.is_us()`.
 - `supabase/food.sql` — the 🍜 Food tab: three tables, the `food` storage

@@ -63,9 +63,8 @@ out of each other's way.
 
 | Session | Who | Feature | Regions of index.html claimed | Status |
 |---|---|---|---|---|
+| 2026-07-26-treats | Riu | **Track A** — the nav reshuffle (A1 ✅ · A2 ✅ · A3 next) | `<nav>` and the `TABS`/`NAVIDS`/`SUBTITLES` maps in `js/core.js` — held for A2/A3 | 🚧 in progress |
 | 2026-07-26-gifts | Riu | **Task D1** — 🎁 Gifts (the *given* half) | The `gifts` half of `#page-treats` ONLY — A1 already left the chip and the empty pane. New `js/gifts.js` + `css/gifts.css` and their two tags. Does NOT touch `<nav>`, the TABS maps, `js/food.js` or the chooser itself | 🚧 in progress |
-
-
 | _(none)_ | | | | |
 
 <!-- Row template:
@@ -124,7 +123,7 @@ Track A only trivially (A never edits the Home section).
 ### Track D — needs A1 merged
 | Task | Roadmap | Owns | Claims | Who |
 |---|---|---|---|---|
-| **D1** | #4 Gifts 🎁 (the *given* half only — wishing belongs to E1) | js/gifts.js, css/gifts.css | table `gifts`, prefix `gf*` | **2026-07-26-gifts** 🚧 |
+| **D1** | #4 Gifts 🎁 (the *given* half only — wishing belongs to E1) | js/gifts.js, css/gifts.css | table `gifts`, prefix `gf*` | ✅ shipped |
 
 ### Track E — needs **A3** merged (the 📋 Plan tab); E2 needs E1
 <!-- Was "needs A2" when A2 WAS the Plan tab. A2 and A3 swapped meaning
@@ -149,6 +148,7 @@ PR if you introduce a convention.
 
 | Date | Who | Feature | Notes |
 |---|---|---|---|
+| 2026-07-26 | Riu | **D1** 🎁 Gifts — the given half | Second chip in 💝 Treats, filling the pane A1 left. What it was · who gave it · when · occasion · photo · note, filtered by giver or occasion in one tap. **No prices** and no wanted-state, both deliberate (roadmap #4: a price makes it an expense; wishing is E1). Photos reuse Food's upload path under a `gifts/` prefix of the SAME bucket, inheriting B1's signed URLs — `js/gifts.js` calls `fdResize`/`fdUploadBlob`/`fdResolveViews`/`fdExif` and feature-detects every one, but never edits `js/food.js` (another session owns it); the Treats hooks are EXTENDED, not replaced. `given_on` is a wall clock rendered in UTC so a gift doesn't change date between phones. Table `gifts` — run `supabase/gifts.sql` |
 | 2026-07-26 | Riu | **E1** ⭐ Someday + 🗓️ Trip Plan | One list of what we want (📍 place · 🍜 restaurant · 🎁 thing) in the `wishes` table, and planned trips as `journeys` rows with `status='planned'` — **not a second table**, so a plan graduates into a memory in place, keeping its photos. Ticking a wish off doesn't just grey it: a place jumps to 🗓️ Trip Plan with the name and cost prefilled, a restaurant sends you to 🍜 Food. `⏳ Count down to this` points Home's countdown at a planned trip (it was already a trip plan reduced to one date). ✈️ Trips now renders `jrPast()` so planned rows stay out of it. 🎲 pick-one is live `Math.random()`, not seeded — offset 49979687 released. **Needs `supabase/someday.sql` run once**; until then it says so and keeps everything in memory |
 | 2026-07-26 | Riu | **Track A** — the nav reshuffle (PRs #26, #29, #30) | `🏠 Home · ✈️ Trips · 💝 Treats · 📋 Plan · 🎮 Games`. Food moved inside 💝 Treats (`treatsPick`), Talk · Flirt · Dare inside 🎮 Games (`gamesPick`), and 📋 Plan is new with a pinned 💸 Money strip above a ⭐ Someday / 🗓️ Trip Plan chooser (`planPick`, `js/plan.js` + `css/plan.css`). Three choosers now share one shape — see "Tabs that host more than one thing" in the `couple-app-dev` skill. Two fixes fell out: `switchTab()` no longer special-cases Talk's hotMode subtitle (it moved to `gamesSubtitle()`), and every chooser's `TAB_HOOKS` re-runs the chooser rather than a loader, which was leaving stale subtitles. Nav measured 318px at 375px — the order A1 → A2 → A3 was chosen so it never exceeded five buttons on a deploy |
 | 2026-07-26 | Riu | **B1** — signed URLs for the food bucket | The bucket shipped `public = true`, and a public bucket is served over an unauthenticated URL where storage policies don't apply — every photo was readable by anyone holding its URL. Views are now minted from `food_photos.path` (stored since the tab shipped, so no migration), batched into one signing request, cached with expiry. Renders fall back to the stored public URL when a signature isn't ready, so the code is safe with the bucket public OR private — **`supabase/food_private.sql` still has to be run to actually close it**. Also fixed three live breakages from the RLS lockdown: uploads, deletes and album import were all still sending the anon key, which `food write` now rejects |
