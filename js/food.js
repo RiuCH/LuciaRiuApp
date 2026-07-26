@@ -723,25 +723,6 @@ fdEl("fdPickCancel").addEventListener("click", () => {
   fdRender();
 });
 
-// ---------------- the foldable organise panel ----------------
-// Everything above the photos is one tap away from folding out of sight.
-// State is in memory only (no localStorage in this app), so it reopens on
-// refresh — which is the right default for a search box.
-let fdOrganiseOpen = true;
-
-function fdRenderFold() {
-  fdEl("fdOrganise").style.display = fdOrganiseOpen ? "block" : "none";
-  fdEl("fdChev").textContent = fdOrganiseOpen ? "▾" : "▸";
-  fdEl("fdFoldBtn").setAttribute("aria-expanded", String(fdOrganiseOpen));
-  // folded, the island should be a slim bar rather than a tall empty panel
-  const panel = fdEl("fdFoldBtn").closest(".panel");
-  if (panel) panel.classList.toggle("fd-folded", !fdOrganiseOpen);
-}
-
-fdEl("fdFoldBtn").addEventListener("click", () => {
-  fdOrganiseOpen = !fdOrganiseOpen;
-  fdRenderFold();
-});
 
 // ---------------- toolbar ----------------
 fdEl("fdUploadBtn").addEventListener("click", () => fdEl("fdFile").click());

@@ -117,28 +117,6 @@ header .sub {
   transition: opacity 0.3s ease;
 }
 
-/* ------- auth bar (header) ------- */
-.authbar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: -8px 0 18px;
-  font-size: 11.5px;
-}
-.authbar .auth-who {
-  color: var(--text-dim);
-  letter-spacing: 0.4px;
-}
-.authbar button {
-  padding: 6px 14px;
-  font-size: 12px;
-  font-weight: 600;
-}
-/* signed in is the quiet state — it shouldn't compete with the app */
-.authbar.auth-on .auth-who { opacity: 0.7; }
-
 /* ------- who can sign in ------- */
 .authpanel { text-align: left; margin-bottom: 18px; }
 .authpanel .ptitle, .authpanel .hint { text-align: center; }
@@ -482,3 +460,54 @@ button.toggled {
 }
 .lock .lockhint { min-height: 20px; font-size: 12.5px; color: var(--text-dim); max-width: 300px; }
 body.locked { overflow: hidden; }
+
+/* ------- foldable islands (js/core.js) ------- */
+.foldbtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 2px 0 10px;
+  border: none;
+  background: transparent;
+  backdrop-filter: none;
+  cursor: pointer;
+}
+.foldbtn:hover { transform: none; background: transparent; opacity: 0.85; }
+.foldchev { font-size: 10px; opacity: 0.8; }
+/* collapsed, an island should be a slim bar rather than a tall empty panel */
+.panel.folded { padding: 12px 18px; }
+.panel.folded .foldbtn { padding: 0; }
+
+/* ------- settings (gear + panel) ------- */
+/* The header is centred text, so the gear is pinned to the corner rather than
+   joining the flow — it must not shift the names. */
+header { position: relative; }
+.app-gear {
+  position: absolute;
+  top: -2px;
+  right: 0;
+  padding: 7px 11px;
+  font-size: 16px;
+  line-height: 1;
+  border-radius: 50%;
+  opacity: 0.65;
+}
+.app-gear:hover { opacity: 1; transform: rotate(25deg); }
+.app-gear.on { opacity: 1; border-color: var(--accent); }
+@media (max-width: 420px) { .app-gear { top: -4px; padding: 6px 9px; font-size: 15px; } }
+
+.panel.settings { text-align: left; }
+.panel.settings .ptitle { text-align: center; }
+.set-group { padding-top: 4px; }
+.set-group + .set-group { margin-top: 18px; border-top: 1px solid var(--card-border); padding-top: 16px; }
+.set-label {
+  font-size: 10px;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+.panel.settings .auth-who { font-size: 13px; color: var(--text-dim); margin-bottom: 4px; }
+.panel.settings .rowbtns { justify-content: flex-start; }

@@ -122,6 +122,47 @@ const CY_HOLD_MS = 1200;
 })();
 
 
+// ---------------- FOLDABLE ISLANDS ----------------
+// Any panel can collapse to just its title bar. Markup does the wiring:
+//
+//   <div class="panel">
+//     <button class="ptitle foldbtn" data-fold="theBody">
+//       <span>Title</span><span class="foldchev">▸</span>
+//     </button>
+//     <div id="theBody"> …everything that folds… </div>
+//   </div>
+//
+// FOLDED BY DEFAULT, deliberately: these islands are controls sitting on top
+// of the content you actually came for (the photo grid, the timeline), so
+// hiding them puts the content first and one tap brings them back.
+//
+// State is in memory only — golden rule 2 — so everything returns to folded on
+// refresh. That's the right default for a set of controls, and it's why this
+// doesn't need storage.
+//
+// Generic on purpose: 🍜 Food had its own fd-fold implementation and three
+// more islands wanted the same thing. One mechanism, wired by attribute, so a
+// new island is two lines of markup and no JS at all.
+function foldSet(btn, open) {
+  const body = document.getElementById(btn.dataset.fold);
+  if (!body) return;
+  body.style.display = open ? "" : "none";   // "" not "block" — let CSS decide
+  btn.setAttribute("aria-expanded", String(open));
+  const chev = btn.querySelector(".foldchev");
+  if (chev) chev.textContent = open ? "▾" : "▸";
+  const panel = btn.closest(".panel");
+  if (panel) panel.classList.toggle("folded", !open);
+}
+
+document.querySelectorAll(".foldbtn[data-fold]").forEach(btn => {
+  // data-fold-open="1" opts an island into starting open
+  foldSet(btn, btn.dataset.foldOpen === "1");
+  btn.addEventListener("click", () => {
+    foldSet(btn, btn.getAttribute("aria-expanded") !== "true");
+  });
+});
+
+
 const toast = document.getElementById("toast");
 
 function popToast(msg) {
