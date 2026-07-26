@@ -54,6 +54,9 @@
   .tfd-text { font-size: 27px; }
   #page-home .qotd-q { font-size: 20px; }
 
+  /* ---- PLAN: same comfortable column as Trips ---- */
+  #page-plan.active { max-width: 780px; margin: 0 auto; }
+
   /* ---- TREATS: wider Food grid, roomier month rail ----
      Keyed on the TAB for width and on the SUB-VIEW for the grids: treatsShow()
      sets an inline display on #treatFood, and an inline style beats a rule
