@@ -15,9 +15,14 @@
 // same photos, no copy step to drift. See supabase/someday.sql.
 
 // ---------------- state ----------------
+// Three of these graduate into a log that already exists; 🎢 activity is the
+// one that doesn't, and that's fine — "learn to surf" has no archive to file
+// itself into, it just gets done. Adding a kind means editing the CHECK
+// constraint too (supabase/someday_activity.sql) or Postgres refuses the row.
 const SD_KINDS = {
   place:      { emoji: "📍", label: "Place",      goes: "a trip" },
   restaurant: { emoji: "🍜", label: "Restaurant", goes: "the Food tab" },
+  activity:   { emoji: "🎢", label: "Activity",   goes: null },
   thing:      { emoji: "🎁", label: "Thing",      goes: "Gifts" }
 };
 let sdWishes = [];
@@ -104,8 +109,16 @@ function sdGraduate(wish) {
     popToast("Done ⭐ — put a photo of it in 🍜 Food");
     switchTab("treats");
     if (typeof treatsShow === "function") treatsShow("food");
+  } else if (wish.kind === "thing") {
+    // 🎁 Gifts shipped in D1, so this hands over for real now rather than
+    // promising a tab that didn't exist yet.
+    popToast("Done ⭐ — file it in 🎁 Gifts");
+    switchTab("treats");
+    if (typeof treatsShow === "function") treatsShow("gifts");
   } else {
-    popToast("Done ⭐ — file it in 🎁 Gifts when that lands");
+    // 🎢 activity: nothing to file it into, and that's the point — it was the
+    // doing. Stay put and just say well done.
+    popToast("Done ⭐ — we actually did it 🎢");
   }
   return kind;
 }
