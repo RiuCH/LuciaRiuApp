@@ -63,6 +63,7 @@ and the `<link>`/`<script src>` tags.
 | `css/home.css` | anniversary, clocks, countdown, teasers, couple photo |
 | `css/tfd.css` | Talk · Flirt · Dare: mode switches, deck buttons, prompt card |
 | `css/journeys.css` | timeline, journey cards, photo grid, lightbox, picker |
+| `css/gifts.css` | 🎁 Gifts: log form, filter chips, gift cards |
 | `css/food.css` | 🍜 Food: month rail, photo grid, tag lightbox, album picker |
 | `css/duel.css` | letter pair, hearts, penalty modes |
 | `css/twenty.css` | Games-tab chooser, 20 Questions board + interrogation log |
@@ -74,6 +75,7 @@ and the `<link>`/`<script src>` tags.
 | `js/tfd.js` | Talk · Flirt · Dare tab: the three decks, Together/Apart mode (`tfd*`) |
 | `js/home.js` | `MISSYOU`, anniversary/clock/countdown ticks, couple photo (`cp*`) |
 | `js/journeys.js` | timeline CRUD + sort, iCloud album, lightbox (`jr*`) |
+| `js/gifts.js` | 🎁 Gifts: the given-half log, giver/occasion filters (`gf*`) |
 | `js/food.js` | 🍜 Food: uploads, EXIF, timeline, tags, search (`fd*`) |
 | `js/duel.js` | Word Duel (`wd*`) |
 | `js/twenty.js` | 20 Questions (`q20*`) **and** the Games-tab chooser (`gamesShow`) |
@@ -142,6 +144,15 @@ can reference anything.
   replaced a single `place` kind — `js/food.js` still shows any leftover
   `place` tag under City, and `supabase/food_split_place.sql` migrates it).
   The Find & organise panel folds (`fdOrganiseOpen`, memory only)
+- 🎁 Gifts (`gf*` in `js/gifts.js`, D1): the second chip in 💝 Treats — the
+  record of what we've **given** each other (wishing is Someday/E1, and
+  there are deliberately **no prices**: a number makes it an expense, which
+  is 💸 Money's job). Filter by giver or occasion. Photos reuse Food's
+  upload path under a `gifts/` prefix of the SAME `food` bucket, so they
+  inherit B1's signed URLs — `js/gifts.js` calls `fdResize`/`fdUploadBlob`/
+  `fdResolveViews` but never edits `js/food.js`, and feature-detects them
+  all. `given_on` is a wall clock rendered in UTC, like `taken_at`. Needs
+  `supabase/gifts.sql`
 - 🎮 Games tab (key `duel`, nav "🎮 Games") holds TWO games behind a chooser:
   Word Duel and 20 Questions. `gamesShow(which)` in `js/twenty.js` swaps
   `#gameDuel`/`#game20q` and sets `gamesPick` (declared in `js/core.js`),

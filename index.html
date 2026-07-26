@@ -43,6 +43,7 @@
 <link rel="stylesheet" href="css/duel.css">
 <link rel="stylesheet" href="css/twenty.css">
 <link rel="stylesheet" href="css/food.css">
+<link rel="stylesheet" href="css/gifts.css">
 <link rel="stylesheet" href="css/plan.css">
 <link rel="stylesheet" href="css/cycle.css">
 <link rel="stylesheet" href="css/desktop.css">
@@ -324,10 +325,37 @@
          fill this div and teach treatsShow() nothing new. -->
     <div id="treatGifts" style="display:none">
       <div class="panel">
-        <div class="ptitle">Gifts</div>
-        <div style="font-size:17px; font-weight:600;">🎁 Everything we've given each other</div>
-        <div class="hint">Not built yet — this is where it's going to live 💝</div>
+        <div class="ptitle">Everything we've given each other</div>
+        <div class="gf-status" id="gfStatus">Loading…</div>
+        <div class="rowbtns"><button class="primary" id="gfAddBtn">➕ Log a gift</button></div>
+        <div class="gf-progress" id="gfProgress" style="display:none"></div>
+
+        <div class="gf-form" id="gfForm" style="display:none" data-giver="">
+          <input type="text" id="gfTitle" placeholder="what was it? — e.g. the ridiculous blue scarf" maxlength="80">
+          <div class="wd-whoami gf-giver" id="gfGiver">
+            <span class="wd-whoami-lbl">from</span>
+            <span class="chip" data-giver="lucia">Lucia</span>
+            <span class="chip" data-giver="riu">Riu</span>
+          </div>
+          <div class="gf-row">
+            <input type="date" id="gfDate">
+            <select id="gfOccasion" class="fd-select"><option value="">occasion…</option></select>
+          </div>
+          <textarea id="gfNote" rows="2" placeholder="anything worth remembering about it…" maxlength="300"></textarea>
+          <div class="rowbtns">
+            <button id="gfPhotoBtn">📸 Add a photo</button>
+            <input type="file" id="gfPhoto" accept="image/*" style="display:none">
+          </div>
+          <div class="gf-photoname" id="gfPhotoName"></div>
+          <div class="rowbtns">
+            <button class="primary" id="gfSave">💾 Log it</button>
+            <button id="gfCancel">Cancel</button>
+          </div>
+        </div>
       </div>
+
+      <div class="gf-filters" id="gfFilters"></div>
+      <div class="gf-list" id="gfList"></div>
     </div>
 
   </section>
@@ -659,6 +687,7 @@
     </div>
   </div>
 </div>
+<div class="fd-lightbox gf-lightbox" id="gfLightbox"><img id="gfLbImg" alt="gift"></div>
 <div class="toast" id="toast">Copied!</div>
 <div class="jr-lightbox" id="jrLightbox"><img id="jrLightboxImg" alt="journey photo, full size"><video id="jrLightboxVid" controls playsinline style="display:none"></video></div>
 <div class="jr-picker" id="jrPicker">
@@ -694,6 +723,7 @@
 <script src="js/duel.js"></script>
 <script src="js/twenty.js"></script>
 <script src="js/food.js"></script>
+<script src="js/gifts.js"></script>
 <script src="js/plan.js"></script>
 <script src="js/cycle.js"></script>
 <script src="js/lock.js"></script>
