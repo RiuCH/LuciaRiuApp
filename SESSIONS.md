@@ -63,7 +63,6 @@ out of each other's way.
 
 | Session | Who | Feature | Regions of index.html claimed | Status |
 |---|---|---|---|---|
-| 2026-07-26-treats | Riu | **Track A** — the nav reshuffle (A1 ✅ · A2 ✅ · A3 next) | `<nav>` and the `TABS`/`NAVIDS`/`SUBTITLES` maps in `js/core.js` — held for A2/A3 | 🚧 in progress |
 
 | _(none)_ | | | | |
 

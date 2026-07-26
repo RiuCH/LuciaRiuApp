@@ -53,9 +53,23 @@ June 2, 2026). Fun is a feature — keep the tone playful.
 
 ## Map of the files
 
-`index.html` is now just markup: the lock overlay, the five `<section
-class="page">` tabs (four in the nav + the hidden 🌙 Moon one), the nav,
+`index.html` is now just markup: the lock overlay, the six `<section
+class="page">` tabs (five in the nav + the hidden 🌙 Moon one), the nav,
 and the `<link>`/`<script src>` tags.
+
+**A tab is no longer one feature.** Three of them host several behind a
+chooser, so `#page-*` and "the thing you see" stopped being the same:
+
+| Tab | Sub-views | Pick lives in |
+|---|---|---|
+| 💝 Treats (`#page-treats`) | `#treatFood` · `#treatGifts` | `treatsPick` |
+| 📋 Plan (`#page-plan`) | `#planSomeday` · `#planTrip` · `#planMoney` | `planPick` |
+| 🎮 Games (`#page-duel`) | `#gameDuel` · `#game20q` · `#gameTfd` | `gamesPick` |
+
+The `*Pick` globals live in `js/core.js`; each chooser function lives in its
+own tab's file. See "Tabs that host more than one thing" in the
+`couple-app-dev` skill before touching one — the rules there each exist
+because skipping them broke something.
 
 | File | What lives there |
 |---|---|
@@ -64,6 +78,10 @@ and the `<link>`/`<script src>` tags.
 | `css/tfd.css` | Talk · Flirt · Dare: mode switches, deck buttons, prompt card |
 | `css/journeys.css` | timeline, journey cards, photo grid, lightbox, picker |
 | `css/gifts.css` | 🎁 Gifts: log form, filter chips, gift cards |
+| `css/plan.css` | 📋 Plan: the money line above the chooser |
+| `css/someday.css` | ⭐ Someday + 🗓️ Trip Plan: wish cards, kind filters, the add forms |
+| `css/money.css` | 💸 Money: the ledger rows, the log form, the Home headline |
+| `css/answers.css` | ✍️ Answer & compare: the compose box and the reveal |
 | `css/food.css` | 🍜 Food: month rail, photo grid, tag lightbox, album picker |
 | `css/duel.css` | letter pair, hearts, penalty modes |
 | `css/twenty.css` | Games-tab chooser, 20 Questions board + interrogation log |
@@ -78,6 +96,7 @@ and the `<link>`/`<script src>` tags.
 | `js/gifts.js` | 🎁 Gifts: the given-half log, giver/occasion filters (`gf*`) |
 | `js/plan.js` | 📋 Plan: the ⭐/🗓️/💸 chooser + the money line (`planShow`) |
 | `js/money.js` | 💸 Money: the pot, the ledger, the committed sums (`mn*`) |
+| `js/someday.js` | ⭐ Someday **and** 🗓️ Trip Plan — one file, because a wish graduates into a plan (`sd*`, `tp*`) |
 | `js/food.js` | 🍜 Food: uploads, EXIF, timeline, tags, search (`fd*`) |
 | `js/duel.js` | Word Duel (`wd*`) |
 | `js/twenty.js` | 20 Questions (`q20*`) **and** the Games-tab chooser (`gamesShow`) |
@@ -100,17 +119,21 @@ can reference anything.
 - `BANK` — 345 prompts in 11 categories: funny, romantic, spicy, nasty, ldr,
   deep, filthy, dareapart, dareapartx, daretogether, daretogetherx. Home's
   Question of the Day only ever draws from the sweet three (`QOTD_CATS` =
-  funny + romantic + ldr); everything adult lives behind the Talk · Flirt ·
-  Dare tab, whose nav button reads a deliberately innocuous **"🎭 Talk"**
-  (the tab key is still `tfd`)
+  funny + romantic + ldr); everything adult lives behind Talk · Flirt · Dare,
+  which since A2 has **no nav button at all** — it's the 🎭 Talk chip inside
+  🎮 Games (`#gameTfd`, `gamesPick === "tfd"`, tab key still `tfd`). The old
+  innocuous-label trick is now moot: the decks aren't advertised at the top
+  level in any form
 - `MISSYOU` — miss-you text generator strings
 - `CHIPS` — category labels/colors
 - Constants: `EPOCH` (day counter start), `ANNIVERSARY` (June 2, 2026),
   `TZ_RIU`/`TZ_LUCIA` (clock timezones)
-- Tabs: sections `#page-home`, `#page-tfd`, `#page-journeys`, `#page-duel`,
-  `#page-cycle` + `switchTab()`, which iterates the `TABS` array in
-  `js/core.js`. A tab with no `NAVIDS` entry simply has no nav button —
-  that's how 🌙 Moon stays hidden
+- Tabs: sections `#page-home`, `#page-journeys`, `#page-treats`,
+  `#page-plan`, `#page-duel`, `#page-cycle` + `switchTab()`, which iterates
+  the `TABS` array in `js/core.js`. A tab with no `NAVIDS` entry simply has
+  no nav button — that's how 🌙 Moon stays hidden. **`tfd` is in `SUBTITLES`
+  but NOT in `TABS`/`NAVIDS`**: Talk is a sub-view of 🎮 Games now, and the
+  key survives only as a `gamesPick` value
 - Answer & compare (`ac*` in `js/answers.js`, C1): both of you type an answer
   to the day's question on the Home card and **neither shows until both are
   in** — the second answer must not be shaped by the first. Locked once
@@ -120,7 +143,7 @@ can reference anything.
   from the games' `#me`. Polls only while yours is in and theirs isn't
 - Question of the Day: a card on **Home** (`qotd*` in `js/home.js`), not a
   tab. One per day, same on both phones, unchanged by refresh
-- Talk · Flirt · Dare (`#page-tfd`): three decks, live `Math.random()` draws
+- Talk · Flirt · Dare (`#gameTfd`, a chip in 🎮 Games): three decks, live `Math.random()` draws
   (one phone during a call — no seed needed). One switch: 💞 Together vs
   ✈️ Apart, which picks the deck contents AND runs the app hot (`hotMode`
   + `.hot` class on `<html>`+`<body>`). Filthy prompts are in the decks, not
@@ -129,7 +152,7 @@ can reference anything.
   exhausted — `shuffledOrder`/`deckForCycle`);
   pool comes from `QUESTION_SOURCE` (= `BANK`, swapped to the DB copy once
   `loadQuestions()` succeeds — content identical, so the pick doesn't change)
-- 🍜 Food (`#page-food`, `fd*` in `js/food.js`): every meal we've eaten
+- 🍜 Food (`#treatFood`, a chip in 💝 Treats; `fd*` in `js/food.js`): every meal we've eaten
   together. Photos live in **Supabase Storage** (bucket `food`) with rows in
   `food_photos` / `food_tags` / `food_photo_tags` — the app's first real
   file storage, and it needs `supabase/food.sql` run once (the tab says so
@@ -194,6 +217,17 @@ can reference anything.
   deployed page ships the anon key and RLS is wide open, so the app URL is
   all anyone needs to read it; same honesty as the lock screen. (The repo
   itself IS private — don't cite repo visibility as the reason.)
+- **Two gates, and only one has a UI — the trap that cost us an evening.**
+  `allowed_emails` (+ the Before-User-Created hook) decides who can **sign
+  up**; `public.is_us()` in `supabase/auth_policies.sql` decides what a
+  signed-in account can **see**, because every RLS policy and the `food`
+  storage read policy call it. The app's "👥 Who can sign in" panel writes
+  ONLY the first. So adding someone there lets them through the door and
+  grants them **no sight**: they sign in successfully and get the offline
+  copy everywhere — blank photo grids being the loudest symptom, since a
+  private bucket needs `select` on the object just to sign a URL. `is_us()`
+  is hardcoded SQL with no UI; if the two lists disagree, this is the shape
+  of the bug. Ship both addresses in the same change.
 - Auth (`js/auth.js`): **Google sign-in via Supabase Auth, no SDK.** PKCE is
   impossible here (its `code_verifier` needs storage rule 2 bans), so it uses
   the implicit flow — tokens come back in the URL fragment and `authCapture()`

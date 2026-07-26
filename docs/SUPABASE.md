@@ -51,6 +51,16 @@ Projects set up before v6 need one-off migrations, run in the SQL editor.
 > exists, so add a bullet here in the same PR as any new `.sql` file — two were
 > missed and only caught later.
 
+- `supabase/auth_policies.sql` — the lockdown (v10): every table becomes
+  us-only via `public.is_us()`. **It ships with a placeholder second address
+  (`lucia@example.com`) and a 👉 comment telling you to edit it.** Run it
+  unedited and the second person can still sign in — the allowlist is a
+  separate gate — but sees an empty app everywhere, because `is_us()` gates
+  reads on every table *and* on `storage.objects`, and a private bucket needs
+  `select` on the object even to mint a signed URL. Blank photos are the
+  symptom; the cause is one string. Fix by re-running just the
+  `create or replace function public.is_us()` block with both real addresses,
+  and keep `allowed_emails` agreeing with it. No re-deploy needed.
 - `supabase/money.sql` — 💸 Money (task E2): the `expenses` table (`topup` /
   `spend` rows — a pot, not Splitwise) plus `wishes.committed`, the flag that
   drives the `pot − committed = left` simulation. Needs `someday.sql` first,
