@@ -42,21 +42,20 @@ function planShow(which) {
 document.querySelectorAll("#planPicker .chip").forEach(chip =>
   chip.addEventListener("click", () => planShow(chip.dataset.plan)));
 
-TAB_HOOKS.plan = () => planShow(planPick);
+TAB_HOOKS.plan = () => {
+  planShow(planPick);
+  // The pot is on screen for both sub-views, so it loads with the tab rather
+  // than with either chip. Once only — mnReady stops it re-fetching.
+  if (typeof mnLoad === "function" && typeof mnReady !== "undefined" && mnReady === null) mnLoad();
+  else planRenderMoney();
+};
 
 
 // ---------------- the money strip ----------------
 // Deliberately a strip and not a chip: 💸 Money is the constraint the other
-// two are read against, so `pot − committed = left` should stay on screen
-// while you browse what you want. Task E2 fills these in; until then it says
-// so rather than showing a fake zero, which would read as "we have nothing".
-function planRenderMoney(pot, committed) {
-  const potEl = document.getElementById("planPot");
-  const sumEl = document.getElementById("planSums");
-  if (!potEl || !sumEl) return;
-  if (typeof pot !== "number") { potEl.textContent = "—"; return; }
-  const left = pot - (committed || 0);
-  potEl.textContent = "$" + pot.toLocaleString();
-  sumEl.textContent = "Committed $" + (committed || 0).toLocaleString() +
-                      " · Left $" + left.toLocaleString();
+// two are read against, so `pot − committed = left` stays on screen while you
+// browse what you want. js/money.js (task E2) owns what goes in it — this file
+// just makes sure it's up to date whenever the tab opens.
+function planRenderMoney() {
+  if (typeof mnRender === "function") mnRender();
 }

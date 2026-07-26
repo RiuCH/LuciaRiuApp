@@ -46,6 +46,7 @@
 <link rel="stylesheet" href="css/gifts.css">
 <link rel="stylesheet" href="css/plan.css">
 <link rel="stylesheet" href="css/someday.css">
+<link rel="stylesheet" href="css/money.css">
 <link rel="stylesheet" href="css/cycle.css">
 <link rel="stylesheet" href="css/desktop.css">
 </head>
@@ -176,6 +177,9 @@
         <button id="setDateBtn">📅 Set the date</button>
         <button id="missYouBtn">💌 Miss-you text</button>
       </div>
+      <!-- Home shows the headline, 📋 Plan owns the detail — same relationship
+           the countdown has to 🗓️ Trip Plan. Hidden until there's a pot. -->
+      <div class="mn-home" id="mnHome" style="display:none"></div>
       <div class="missyou" id="missyou"></div>
     </div>
 
@@ -583,7 +587,24 @@
       <div class="ptitle">Together</div>
       <div class="plan-pot" id="planPot">—</div>
       <div class="plan-sums" id="planSums">Nothing logged yet</div>
-      <div class="hint">💸 The pot lands here (task E2) — what we have, minus what we've promised ourselves</div>
+      <div class="mn-note" id="mnNote"></div>
+      <div class="rowbtns"><button id="mnToggle">💸 Log money</button></div>
+
+      <!-- Expands in place rather than becoming a third chip: the pot is
+           context for Someday and Trip Plan, not a thing you switch away to. -->
+      <div class="mn-panel" id="mnPanel" style="display:none">
+        <div class="mn-form">
+          <select id="mnKind">
+            <option value="topup">💞 Into the pot</option>
+            <option value="spend">💸 Spent</option>
+          </select>
+          <input type="number" id="mnAmount" placeholder="How much?" min="0" step="1" inputmode="decimal">
+          <input type="text" id="mnWhat" placeholder="What for? (optional)" maxlength="80">
+          <input type="date" id="mnDate">
+          <div class="rowbtns"><button class="primary" id="mnSave">💾 Log it</button></div>
+        </div>
+        <div class="mn-history" id="mnHistory"></div>
+      </div>
     </div>
 
     <div class="games-picker" id="planPicker">
@@ -788,6 +809,7 @@
 <script src="js/gifts.js"></script>
 <script src="js/plan.js"></script>
 <script src="js/someday.js"></script>
+<script src="js/money.js"></script>
 <script src="js/cycle.js"></script>
 <script src="js/lock.js"></script>
 <script src="js/init.js"></script>
