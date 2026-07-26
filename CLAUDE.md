@@ -107,6 +107,13 @@ can reference anything.
   `#page-cycle` + `switchTab()`, which iterates the `TABS` array in
   `js/core.js`. A tab with no `NAVIDS` entry simply has no nav button —
   that's how 🌙 Moon stays hidden
+- Answer & compare (`ac*` in `js/answers.js`, C1): both of you type an answer
+  to the day's question on the Home card and **neither shows until both are
+  in** — the second answer must not be shaped by the first. Locked once
+  submitted, and the lock is real: `answers` has a unique index on
+  `(day, who)`, so a second insert is refused by Postgres, not just hidden.
+  Needs `supabase/answers.sql`; the card says so until it's run. Side comes
+  from the games' `#me`. Polls only while yours is in and theirs isn't
 - Question of the Day: a card on **Home** (`qotd*` in `js/home.js`), not a
   tab. One per day, same on both phones, unchanged by refresh
 - Talk · Flirt · Dare (`#page-tfd`): three decks, live `Math.random()` draws
