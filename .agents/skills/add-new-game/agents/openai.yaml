@@ -1,0 +1,4 @@
+interface:
+  display_name: "Add a Couple Game"
+  short_description: "Add games without breaking the app shell"
+  default_prompt: "Use $add-new-game to design and add a new game safely."

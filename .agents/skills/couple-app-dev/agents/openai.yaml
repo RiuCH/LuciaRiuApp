@@ -1,0 +1,4 @@
+interface:
+  display_name: "Develop Lucia ♥ Riu"
+  short_description: "Build and test the couple app safely"
+  default_prompt: "Use $couple-app-dev to make this app change safely and verify it."

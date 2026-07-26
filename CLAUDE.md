@@ -1,5 +1,10 @@
 # Lucia ♥ Riu App — Claude Context
 
+> **Codex compatibility:** `AGENTS.md` is the Codex entry point, and
+> `.agents/skills/` contains Codex adapters for the living workflows below.
+> This file remains the canonical detailed project map for both agents despite
+> its historical filename.
+
 Hi Claude! You're working on a private couple app built by Riu and Lucia
 (long-distance: Riu in San Francisco, Lucia in Phoenix, together since
 June 2, 2026). Fun is a feature — keep the tone playful.
@@ -191,7 +196,11 @@ can reference anything.
   pinned ABOVE the chooser so it follows you across the other two, while
   the log form and history live in its own chip. It shipped as a strip
   alone and became both on 2026-07-26 — don't collapse it back to one
-  without reading the reasoning in docs/ROADMAP.md #3
+  without reading the reasoning in docs/ROADMAP.md #3. Trip Plan's `#tpWish`
+  dropdown is the simple pipeline from an unfinished 📍 Someday wish: choosing
+  one copies its title, note and estimated cost, and the wish becomes `done`
+  only after the journey is saved locally. Opening or cancelling the form must
+  never make a wish disappear
 - 🎮 Games tab (key `duel`, nav "🎮 Games") holds TWO games behind a chooser:
   Word Duel and 20 Questions. `gamesShow(which)` in `js/twenty.js` swaps
   `#gameDuel`/`#game20q` and sets `gamesPick` (declared in `js/core.js`),

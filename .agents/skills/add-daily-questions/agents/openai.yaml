@@ -1,0 +1,4 @@
+interface:
+  display_name: "Add Daily Questions"
+  short_description: "Safely extend questions and miss-you text"
+  default_prompt: "Use $add-daily-questions to add prompts while preserving shared daily behavior."

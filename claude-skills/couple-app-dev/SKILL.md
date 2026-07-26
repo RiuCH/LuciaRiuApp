@@ -371,6 +371,13 @@ The skills in `claude-skills/` are living docs — when a change makes them
 stale or incomplete, updating them is part of shipping the feature, not an
 optional extra. In the same commit as the feature:
 
+`claude-skills/` remains the detailed source of truth for both agents.
+Claude receives copied files through `setup-claude.sh`; Codex automatically
+discovers the thin adapters in `.agents/skills/`, and those adapters load these
+canonical files. Update a Codex adapter only when Codex-specific routing,
+permissions, tools, or terminology changes. Put durable repository-wide Codex
+rules in `AGENTS.md`.
+
 - **New game/tab shipped?** Update `add-new-game`: record the seed OFFSET it
   used (so the "next free offset" hint stays correct), and note any new
   reusable pieces (helpers, CSS classes, patterns) future games should use.
