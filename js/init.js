@@ -7,13 +7,26 @@
 // know whether you're signed in before init.js ever runs. So everything below
 // already carries your JWT if you have one.
 
-qotdRender();
-acRender();             // C1: paint the answer box from empty…
-acLoad();               // …then adopt today's answers if we're signed in
-wdRollLetters(false);   // local letters so the duel works offline…
-wdRenderAll();
-q20Render();            // 20 Questions paints from memory…
-cyRender();             // the Moon calendar draws from empty state…
+// Every boot step goes through here, because this file is a single statement
+// list: an exception in ANY line kills every line after it. That is not a
+// theoretical worry — on 2026-07-26 a refactor deleted `fdRenderFold` from
+// js/food.js and left the call here, so the Home clock and the together-counter
+// froze at their static markup ("0d 0h 0m 0s", "--:--") and the DB question
+// bank never loaded. One tab's dead function should never stop another tab's
+// clock, so a failed step now warns and the rest of the app still boots.
+function boot(label, fn) {
+  try { fn(); } catch (e) { console.warn("boot step failed: " + label, e); }
+}
+
+// The Home widgets go FIRST and on their own, so that whatever else breaks,
+// the clock on the front page is still right.
+boot("home widgets", () => { homeTickFast(); homeTickSlow(); });
+
+boot("question of the day", qotdRender);
+boot("answers", () => { acRender(); acLoad(); });   // C1: paint empty, then adopt today's
+boot("word duel", () => { wdRollLetters(false); wdRenderAll(); });  // works offline first
+boot("20 questions", q20Render);
+boot("moon", cyRender);
 // …and then all three adopt the shared state. They used to fire three separate
 // GETs at the `settings` table on boot, each a millisecond after loadSettings()
 // had already fetched that whole table — four requests for one table's worth of
@@ -26,13 +39,13 @@ loadSettings().then(rows => {
 });
 // The backup door into the hidden Moon tab, for when a long-press is awkward.
 // The long-press in js/core.js is the everyday way in.
-if (getHashParam("moon") === "1") switchTab("cycle");
+boot("moon door", () => { if (getHashParam("moon") === "1") switchTab("cycle"); });
 // couple photo: hash-param fallback first; loadSettings() overrides with the DB copy
 (function cpInit() {
   const ph = getHashParam("photo");
   if (ph) { try { cpApply(decodeURIComponent(ph)); } catch (e) {} }
 })();
-if (reunionDate) document.getElementById("setDateBtn").textContent = "📅 Change the date";
+boot("reunion label", () => { if (reunionDate) document.getElementById("setDateBtn").textContent = "📅 Change the date"; });
 // Journey photo BYTES are only fetched once the Trips tab is opened, but we
 // warm the (small) album JSON once the page is idle so that tap feels instant.
 loadJourneys().then(() => {
@@ -40,8 +53,7 @@ loadJourneys().then(() => {
   if (window.requestIdleCallback) requestIdleCallback(warm, { timeout: 3000 });
   else setTimeout(warm, 1200);
 });
-fdRenderFold();
-loadQuestions();
+boot("question bank", loadQuestions);
 
 
 // ---------------- HOME WIDGET TIMERS ----------------
@@ -51,9 +63,7 @@ loadQuestions();
 function homeTickFast() { tickAnniversary(); tickClocks(); tickCountdown(); }
 function homeTickSlow() { tickAnnivDate(); tickTzDiff(); }
 
-// Paint immediately so Home is never blank for a second.
-homeTickFast();
-homeTickSlow();
+// (The first paint happens at the very top of this file — see boot().)
 
 // The Home widgets live inside a `display:none` section on every other tab, so
 // don't format dates into an invisible subtree 86,400 times a day. TAB_HOOKS.home
