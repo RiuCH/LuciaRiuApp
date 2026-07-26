@@ -65,7 +65,7 @@ out of each other's way.
 |---|---|---|---|---|
 | 2026-07-26-gifts | Riu | **Task D1** — 🎁 Gifts (the *given* half) | The `gifts` half of `#page-treats` ONLY — A1 already left the chip and the empty pane. New `js/gifts.js` + `css/gifts.css` and their two tags. Does NOT touch `<nav>`, the TABS maps, `js/food.js` or the chooser itself | 🚧 in progress |
 
-| _(none)_ | | | | |
+| 2026-07-26-someday | Riu | **Task E1** — ⭐ Someday + 🗓️ Trip Plan | The `#planSomeday` and `#planTrip` divs inside `#page-plan` ONLY, plus new `js/someday.js`/`css/someday.css` and their two tags. Extends `js/journeys.js` (Trip Plan shares the `journeys` table). Does NOT touch `<nav>`, `TABS`/`NAVIDS`/`SUBTITLES`, or any other tab | 🚧 in progress |
 
 <!-- Row template:
 | 2026-07-24-login | Riu | Login page | lock CSS block, lock HTML block, LOCK SCREEN script block | ✅ shipped |
@@ -132,7 +132,7 @@ Track A only trivially (A never edits the Home section).
      lands, even though A2 is ticked. -->
 | Task | Roadmap | Owns | Claims | Who |
 |---|---|---|---|---|
-| **E1** | #5 Someday ⭐ **and** #6 Trip Plan 🗓️ — one session: they share the graduation flow, the Plan markup and `est_cost` | js/someday.js, js/journeys.js | table `wishes`, prefixes `sd*` + `tp*`, columns `journeys.status`, `journeys.est_cost`, `wishes.est_cost`, seed offset **49979687** (only if 🎲 pick-one is seeded) | _(free)_ |
+| **E1** | #5 Someday ⭐ **and** #6 Trip Plan 🗓️ — one session: they share the graduation flow, the Plan markup and `est_cost` | js/someday.js, js/journeys.js | table `wishes`, prefixes `sd*` + `tp*`, columns `journeys.status`, `journeys.est_cost`, `wishes.est_cost`, seed offset **49979687** (only if 🎲 pick-one is seeded) | **2026-07-26-someday 🚧 in progress** |
 | **E2** | #3 Money 💸 — pot + simulation. **Not Splitwise**; read the entry before starting | js/money.js, Plan strip | table `expenses`, prefix `mn*` | _(free)_ |
 
 ### Suggested first wave (four sessions, no overlap)
