@@ -63,6 +63,7 @@ out of each other's way.
 
 | Session | Who | Feature | Regions of index.html claimed | Status |
 |---|---|---|---|---|
+| 2026-07-26-trip | Riu | **Task F1** — 🗓️ day-by-day itinerary skeleton | New `js/trip.js` + `css/trip.css` and their tags; the `#planTrip` pane inside 📋 Plan; one additive button on the trip card in `js/someday.js`. Does NOT touch `<nav>`, the TABS maps, `js/plan.js`'s chooser or any other tab | 🚧 in progress |
 
 | _(none)_ | | | | |
 
@@ -133,6 +134,20 @@ Track A only trivially (A never edits the Home section).
 |---|---|---|---|---|
 | **E1** | #5 Someday ⭐ **and** #6 Trip Plan 🗓️ — one session: they share the graduation flow, the Plan markup and `est_cost` | js/someday.js, js/journeys.js | table `wishes`, prefixes `sd*` + `tp*`, columns `journeys.status`, `journeys.est_cost`, `wishes.est_cost`, seed offset **49979687** (only if 🎲 pick-one is seeded) | 2026-07-26-someday ✅ **done** |
 | **E2** | #3 Money 💸 — pot + simulation. **Not Splitwise**; read the entry before starting | js/money.js, Plan strip | table `expenses`, prefix `mn*` | 2026-07-26-money ✅ **done** |
+
+### Track F — the 🗓️ Trip Plan upgrade (Wanderlog-style), inside 📋 Plan
+Agreed 2026-07-26 after Riu reviewed a written plan. **Deliberately keyless:**
+OpenStreetMap + Wikipedia, not Google Places — so there is **no ratings field
+at all** (OSM has none) and nothing for Riu to pay for or configure.
+"Mentions" was dropped outright: it's a licensed corpus, not an API.
+
+| Task | What | Owns | Claims | Who |
+|---|---|---|---|---|
+| **F1** | Day-by-day skeleton: days from the trip's dates, a saved-not-scheduled bucket, add a place by hand, tap-to-assign, reorder, delete. **No external APIs** | js/trip.js, css/trip.css | table `trip_places`, prefix `tr*` | **2026-07-26-trip** 🚧 |
+| **F2** | Search + autofill via OSM/Wikipedia (`api/places.js` + `place_cache`) | api/places.js, js/trip.js | endpoint `places`, table `place_cache` | _(free, needs F1)_ |
+| **F3** | Leaflet map + OSRM drive/walk times, cached per leg | js/trip.js, api/route.js | endpoint `route`, table `trip_legs` | _(free, needs F1)_ |
+| **F4** | 🏨 Hotels + ✈️ Flights: docs and photos, reusing Food's upload path (PDFs stored as-is — a canvas can't resize one) | js/trip.js | table `trip_docs` | _(free, needs F1)_ |
+| **F5** | Drag-and-drop, replacing tap-to-assign — only if F1–F4 feel good | js/trip.js | — | _(free, needs F1)_ |
 
 ### Suggested first wave (four sessions, no overlap)
 **A1** · **B1** · **B2** · **C1** — then D1 and E1 open up as A lands.
