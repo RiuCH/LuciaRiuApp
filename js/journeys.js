@@ -77,7 +77,47 @@ document.querySelectorAll("#jrSort .chip").forEach(ch => {
 // plan graduates into a memory in place rather than being copied across.
 function jrPast() { return journeys.filter(j => j.status !== "planned"); }
 
+// ---------------- the Home card ----------------
+// Lives in the Home section but is journeys data, so it renders from here
+// where `journeys`, jrDays() and fmtJourneyDates() already are.
+function jrRenderHomeCard() {
+  const card = document.getElementById("jrHomeCard");
+  if (!card) return;
+  const list = (journeys || []).filter(j => j.start_date);
+  document.getElementById("jrhTrips").textContent = list.length;
+  document.getElementById("jrhDays").textContent =
+    list.reduce((n, j) => n + jrDays(j), 0);
+
+  // Compare dates rather than taking the last element: the query orders ASC,
+  // but a local edit or the offline seed can leave `journeys` in another
+  // order, and "latest" quietly becoming "whatever sorted last" is the kind
+  // of bug nobody notices for months.
+  const latest = list.reduce((best, j) =>
+    !best || j.start_date > best.start_date ? j : best, null);
+
+  const box = document.getElementById("jrhLatest");
+  box.innerHTML = "";
+  if (!latest) {
+    box.textContent = "No trips logged yet — add the first one ✈️";
+    document.getElementById("jrhGo").textContent = "Start the timeline →";
+    return;
+  }
+  const place = document.createElement("div");
+  place.className = "jrh-place";
+  place.textContent = latest.place;        // user text — textContent, never innerHTML
+  const when = document.createElement("div");
+  when.className = "jrh-when";
+  when.textContent = fmtJourneyDates(latest.start_date, latest.end_date);
+  box.appendChild(place);
+  box.appendChild(when);
+  document.getElementById("jrhGo").textContent = "Plan the next one →";
+}
+
 function renderJourneys() {
+  // FIRST, not last: this function early-returns when the list is empty, and
+  // that's precisely when the Home card needs to say "no trips yet". Anything
+  // at the bottom silently skips the empty case.
+  jrRenderHomeCard();
   const box = document.getElementById("jrTimeline");
   box.innerHTML = "";
   // this render replaces every container the queued hydrations pointed at,
