@@ -69,7 +69,34 @@
      currency eventually. Leave room for the column; don't write the
      converter yet.
 
-7. **Private food bucket** 🔒 — the `food` Storage bucket is `public = true`,
+7. **Gifts** 🎁 — **one tap that shows everything we've ever given each other.**
+   A running log: what it was, who gave it, when, and the occasion (birthday,
+   anniversary, Christmas, "it was a Tuesday").
+
+   - **A photo per gift is the whole point.** In a year the list of names means
+     much less than the pictures do. Reuse the 🍜 Food upload path — it already
+     resizes to 1600px in-browser, reads the EXIF capture date, and puts the
+     file in Supabase Storage. Same trick, new bucket (or a `kind` column).
+   - **Sort/filter by giver and by occasion**, so "everything Lucia has given
+     me" and "every anniversary" are each one tap.
+   - **The quietly useful part: it's also a wishlist.** Let an entry be marked
+     *wanted* instead of *given* — then the other person has somewhere to look
+     before a birthday, and a gift graduates from wanted → given with a date.
+     That's the same table with one `status` field, and it's the bit that
+     stops this being a scrapbook nobody opens between anniversaries.
+   - **Deliberately no prices.** The 💸 Money feature is for what we owe each
+     other; putting a number on a gift makes it an expense. If we ever want
+     "what did that cost", it belongs there, not here.
+   - **Needs a real table** (`gifts`) — like Money, it's outgrown `settings`
+     key/value rows. Ships with a migration in `supabase/`, and per golden
+     rule 6 it must still render from memory when the DB is unreachable.
+   - **Do Google login (#2) first**, same reasoning as Money — and the photos
+     inherit whatever we decide in #8 about private buckets.
+   - **Where it lives:** the nav is full (five buttons at 375px), so this is a
+     card on Home that opens a full page, or a section inside a tab — not a
+     sixth nav button. See the 🎮 Games hub and 🌙 Moon quiet-door patterns.
+
+8. **Private food bucket** 🔒 — the `food` Storage bucket is `public = true`,
    so every photo is served over an unauthenticated URL and storage policies
    don't apply to that path. `supabase/auth_policies.sql` closes the
    enumeration route (the rows holding those URLs become us-only) and revokes
@@ -86,5 +113,8 @@
 ## Parking lot
 - Real streak tracking (needs DB)
 - Custom question packs the couple writes for each other
-- Push notification "your person answered today" (needs backend + PWA work)
-- PWA manifest + icon so Add-to-Home-Screen looks native
+- Push notification "your person answered today" (needs backend; the PWA half
+  is done, and iOS has supported Web Push for home-screen apps since 16.4)
+- ~~PWA manifest + icon so Add-to-Home-Screen looks native~~ **shipped
+  2026-07-26** (PR #25): manifest, 💞 icons, standalone launch, safe-area
+  insets. Share → Add to Home Screen and it's an app — no App Store
