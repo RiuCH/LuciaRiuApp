@@ -9,6 +9,9 @@
 -- that bucket, so gifts inherit the private-bucket work (roadmap #7) with no
 -- second set of storage policies to configure and nothing extra to run.
 --
+-- A project created before 2026-07-26 predates `photos` — run
+-- supabase/gifts_photos.sql to add it. The app works either way.
+--
 -- Deliberately NO price column. Roadmap #4: putting a number on a gift turns
 -- it into an expense, and expenses belong to 💸 Money. Also no `wanted`
 -- status — a gift you *want* is a Someday wish (#5 / task E1), not a row here.
@@ -21,8 +24,9 @@ create table if not exists gifts (
   given_on timestamptz,                                  -- wall clock, like food.taken_at
   occasion text,                                         -- 'birthday', 'anniversary', 'just because'…
   note text,
-  url text,                                              -- stored fallback URL
-  path text                                              -- object path: what gets signed and deleted
+  url text,                                              -- first photo: stored fallback URL
+  path text,                                             -- first photo: object path (signed + deleted)
+  photos jsonb                                           -- up to 3 as [{url, path}]; url/path mirror the first
 );
 
 create index if not exists gifts_given_on_idx on gifts (given_on desc);

@@ -68,6 +68,9 @@ Projects set up before v6 need one-off migrations, run in the SQL editor.
   kind into `city` and `country` (2026-07-26). Optional: the app shows any
   leftover `place` tag under 🏙️ City regardless, and this repo's project was
   already migrated over the REST API.
+- `supabase/gifts_photos.sql` — adds `gifts.photos` (up to 3 photos per
+  gift). Safe to run before or after deploying: the app detects the column
+  and falls back to the single `url`/`path` pair without it.
 - `supabase/gifts.sql` — the 🎁 Gifts table (task D1). Needs
   `auth_policies.sql` first. No new bucket: gift photos live in the
   existing `food` bucket under a `gifts/` prefix, so they inherit its
