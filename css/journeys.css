@@ -124,6 +124,18 @@
 }
 .jr-edit:hover { opacity: 1; }
 .jr-pickbtn { margin-left: 10px; padding: 6px 12px; font-size: 12.5px; }
+/* One row for every photo control on a card, so 📸 Add and 🖼️ Pick are
+   neighbours. `gap` does the spacing here, so the buttons' and link's own
+   margins would double it up. Wraps at 420px rather than overflowing. */
+.jr-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.jr-actions .jr-pickbtn { margin-left: 0; }
+.jr-actions .jr-albumlink { margin-top: 0; }
 .jr-picker {
   position: fixed;
   inset: 0;
