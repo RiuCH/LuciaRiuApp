@@ -42,10 +42,24 @@ const gfGiverName = g => (g === "riu" ? "Riu" : "Lucia");
 // One shape for both schemas: `photos` when the migration has been run,
 // otherwise the original single url/path pair. Callers never branch.
 function gfPhotoList(gift) {
-  if (gift && Array.isArray(gift.photos) && gift.photos.length) {
+  if (!gift) return [];
+  if (Array.isArray(gift.photos) && gift.photos.length) {
     return gift.photos.filter(p => p && (p.url || p.path));
   }
-  if (gift && (gift.url || gift.path)) return [{ url: gift.url, path: gift.path }];
+  if (gift.url || gift.path) {
+    // Build this ONCE and keep it on the gift. Returning a fresh object each
+    // call threw away the viewUrl that fdResolveViews had just attached: the
+    // resolve pass in gfLoad() signed a throwaway, then gfRender() asked
+    // again, got a clean object, and fell back to gift.url — a plain
+    // /object/public/ link, which stopped resolving the moment B1 made the
+    // bucket private. Net effect: single-photo gifts showed nothing at all.
+    // The `photos` path never had this bug because it hands back the real
+    // array elements, which is why only pre-gifts_photos.sql rows broke.
+    if (!gift._solo || gift._solo[0].url !== gift.url || gift._solo[0].path !== gift.path) {
+      gift._solo = [{ url: gift.url, path: gift.path }];
+    }
+    return gift._solo;
+  }
   return [];
 }
 
