@@ -137,7 +137,7 @@ function acRender() {
     : both ? "Both in 💞"
     : mine ? "Locked in 🔒 waiting for " + acName(acThem()) + "…"
     : theirs ? acName(acThem()) + " has answered — your turn, no peeking 🙈"
-    : acReady === true ? "Answer first, compare after." : "";
+    : "";
 
   box.classList.toggle("ac-both", both);
 }
