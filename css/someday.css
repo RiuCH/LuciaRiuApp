@@ -1,0 +1,107 @@
+/* someday.css — Lucia ♥ Riu
+   ⭐ Someday and 🗓️ Trip Plan, the two future-tense halves of 📋 Plan.
+   Mobile is the source of truth; desktop widening lives in css/desktop.css. */
+
+.sd-status {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+  letter-spacing: 0.3px;
+}
+
+/* kind filter — same component as the Food tag chips and the tab choosers */
+.sd-filters {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.sd-filters .chip {
+  cursor: pointer;
+  opacity: 0.45;
+  padding: 7px 12px;
+  transition: opacity 0.25s ease, box-shadow 0.25s ease;
+}
+.sd-filters .chip.sel { opacity: 1; box-shadow: 0 0 14px var(--accent-soft); }
+/* Four chips wrap to a second row on a 375px phone and make the panel a
+   thumb taller. Same trim the nav and the Games picker already use. */
+@media (max-width: 560px) {
+  .sd-filters { gap: 5px; }
+  .sd-filters .chip { padding: 7px 9px; letter-spacing: 0.8px; font-size: 11.5px; }
+}
+@media (max-width: 400px) {
+  .sd-filters .chip { padding: 6px 7px; letter-spacing: 0.3px; font-size: 11px; }
+}
+
+/* the 🎲 result */
+.sd-picked {
+  margin-top: 14px;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1.35;
+}
+
+/* ------- a wish ------- */
+.sd-card { text-align: left; padding: 16px 18px; }
+.sd-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.sd-title { font-size: 16.5px; font-weight: 600; line-height: 1.35; }
+.sd-cost {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+}
+.sd-note {
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.45;
+}
+.sd-meta {
+  margin-top: 8px;
+  font-size: 11.5px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.sd-link {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--accent);
+  text-decoration: none;
+}
+.sd-link:hover { text-decoration: underline; }
+/* Done stays visible but steps back — the list is a record, not just a queue */
+.sd-done { opacity: 0.55; }
+.sd-done .sd-title { text-decoration: line-through; }
+.sd-card .rowbtns { margin-top: 12px; justify-content: flex-start; }
+
+/* ------- the add forms (Someday and Trip Plan share this) ------- */
+.sd-form input,
+.sd-form select {
+  width: 100%;
+  margin-bottom: 10px;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--text);
+  background: rgba(0,0,0,0.25);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 12px 14px;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+.sd-form input:focus,
+.sd-form select:focus { border-color: var(--accent); }
+/* the wheel on a number field is a menace next to a scrolling list */
+.sd-form input[type="number"] { -moz-appearance: textfield; }
+.sd-form input[type="number"]::-webkit-outer-spin-button,
+.sd-form input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }

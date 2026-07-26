@@ -44,6 +44,7 @@
 <link rel="stylesheet" href="css/twenty.css">
 <link rel="stylesheet" href="css/food.css">
 <link rel="stylesheet" href="css/plan.css">
+<link rel="stylesheet" href="css/someday.css">
 <link rel="stylesheet" href="css/cycle.css">
 <link rel="stylesheet" href="css/desktop.css">
 </head>
@@ -551,21 +552,70 @@
     </div>
 
     <div id="planSomeday">
+
       <div class="panel">
-        <div class="ptitle">Someday</div>
-        <div style="font-size:17px; font-weight:600;">⭐ Places, restaurants, things we want</div>
-        <div class="hint">Not built yet — one list, three kinds, and each one graduates: a place
-          into ✈️ Trips, a restaurant into 🍜 Food, a thing into 🎁 Gifts 💫</div>
+        <div class="ptitle">Everything we want</div>
+        <div class="sd-status" id="sdStatus">Loading…</div>
+        <div class="sd-filters" id="sdFilters">
+          <span class="chip sel" data-kind="all">✨ All</span>
+          <span class="chip" data-kind="place">📍 Places</span>
+          <span class="chip" data-kind="restaurant">🍜 Eat</span>
+          <span class="chip" data-kind="thing">🎁 Things</span>
+        </div>
+        <div class="rowbtns">
+          <button class="primary" id="sdAddBtn">➕ Add a wish</button>
+          <button id="sdPick" style="display:none">🎲 Pick one</button>
+          <button id="sdDoneToggle">👀 Show done</button>
+        </div>
+        <div class="sd-picked" id="sdPicked" style="display:none"></div>
       </div>
+
+      <div class="panel sd-form" id="sdForm" style="display:none; text-align:left;">
+        <div class="ptitle">Add a wish</div>
+        <select id="sdKind">
+          <option value="place">📍 A place we want to go</option>
+          <option value="restaurant">🍜 Somewhere we want to eat</option>
+          <option value="thing" selected>🎁 Something we want</option>
+        </select>
+        <input type="text" id="sdTitle" placeholder="What is it?" maxlength="90">
+        <input type="text" id="sdNote" placeholder="Why? (optional)" maxlength="140">
+        <input type="url" id="sdLink" placeholder="🔗 Link (optional)">
+        <input type="number" id="sdCost" placeholder="Roughly how much? (optional)" min="0" step="1">
+        <div class="rowbtns">
+          <button class="primary" id="sdSave">💫 Add it</button>
+          <button id="sdCancel">Cancel</button>
+        </div>
+      </div>
+
+      <div id="sdList"></div>
     </div>
 
     <div id="planTrip" style="display:none">
+
       <div class="panel">
-        <div class="ptitle">Trip Plan</div>
-        <div style="font-size:17px; font-weight:600;">🗓️ The one we're actually taking next</div>
-        <div class="hint">Not built yet — it'll share the same rows as ✈️ Trips, just with the
-          dates still ahead of us, so a plan becomes a memory in place ✈️</div>
+        <div class="ptitle">The next one</div>
+        <div style="font-size:17px; font-weight:600;">🗓️ When are we in the same place?</div>
+        <div class="rowbtns"><button class="primary" id="tpAddBtn">➕ Plan a trip</button></div>
+        <div class="hint">A planned trip is the same row as a real one — when it's over, tap
+          “We went” and it moves into ✈️ Trips, keeping its photos ✈️</div>
       </div>
+
+      <div class="panel sd-form" id="tpForm" style="display:none; text-align:left;">
+        <div class="ptitle">Plan a trip</div>
+        <input type="text" id="tpPlace" placeholder="📍 Where are we going?" maxlength="80">
+        <div class="jr-dates">
+          <label>From <input type="date" id="tpStart"></label>
+          <label>To <input type="date" id="tpEnd"></label>
+        </div>
+        <input type="text" id="tpNote" placeholder="The plan (optional)" maxlength="140">
+        <input type="number" id="tpCost" placeholder="Roughly how much? (optional)" min="0" step="1">
+        <div class="rowbtns">
+          <button class="primary" id="tpSave">✈️ Save the plan</button>
+          <button id="tpCancel">Cancel</button>
+        </div>
+      </div>
+
+      <div id="tpList"></div>
     </div>
 
   </section>
@@ -695,6 +745,7 @@
 <script src="js/twenty.js"></script>
 <script src="js/food.js"></script>
 <script src="js/plan.js"></script>
+<script src="js/someday.js"></script>
 <script src="js/cycle.js"></script>
 <script src="js/lock.js"></script>
 <script src="js/init.js"></script>

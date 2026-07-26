@@ -65,7 +65,8 @@ out of each other's way.
 |---|---|---|---|---|
 | 2026-07-26-gifts | Riu | **Task D1** — 🎁 Gifts (the *given* half) | The `gifts` half of `#page-treats` ONLY — A1 already left the chip and the empty pane. New `js/gifts.js` + `css/gifts.css` and their two tags. Does NOT touch `<nav>`, the TABS maps, `js/food.js` or the chooser itself | 🚧 in progress |
 
-| 2026-07-26-someday | Riu | **Task E1** — ⭐ Someday + 🗓️ Trip Plan | The `#planSomeday` and `#planTrip` divs inside `#page-plan` ONLY, plus new `js/someday.js`/`css/someday.css` and their two tags. Extends `js/journeys.js` (Trip Plan shares the `journeys` table). Does NOT touch `<nav>`, `TABS`/`NAVIDS`/`SUBTITLES`, or any other tab | 🚧 in progress |
+
+| _(none)_ | | | | |
 
 <!-- Row template:
 | 2026-07-24-login | Riu | Login page | lock CSS block, lock HTML block, LOCK SCREEN script block | ✅ shipped |
@@ -132,7 +133,7 @@ Track A only trivially (A never edits the Home section).
      lands, even though A2 is ticked. -->
 | Task | Roadmap | Owns | Claims | Who |
 |---|---|---|---|---|
-| **E1** | #5 Someday ⭐ **and** #6 Trip Plan 🗓️ — one session: they share the graduation flow, the Plan markup and `est_cost` | js/someday.js, js/journeys.js | table `wishes`, prefixes `sd*` + `tp*`, columns `journeys.status`, `journeys.est_cost`, `wishes.est_cost`, seed offset **49979687** (only if 🎲 pick-one is seeded) | **2026-07-26-someday 🚧 in progress** |
+| **E1** | #5 Someday ⭐ **and** #6 Trip Plan 🗓️ — one session: they share the graduation flow, the Plan markup and `est_cost` | js/someday.js, js/journeys.js | table `wishes`, prefixes `sd*` + `tp*`, columns `journeys.status`, `journeys.est_cost`, `wishes.est_cost`, seed offset **49979687** (only if 🎲 pick-one is seeded) | 2026-07-26-someday ✅ **done** |
 | **E2** | #3 Money 💸 — pot + simulation. **Not Splitwise**; read the entry before starting | js/money.js, Plan strip | table `expenses`, prefix `mn*` | _(free)_ |
 
 ### Suggested first wave (four sessions, no overlap)
@@ -148,6 +149,7 @@ PR if you introduce a convention.
 
 | Date | Who | Feature | Notes |
 |---|---|---|---|
+| 2026-07-26 | Riu | **E1** ⭐ Someday + 🗓️ Trip Plan | One list of what we want (📍 place · 🍜 restaurant · 🎁 thing) in the `wishes` table, and planned trips as `journeys` rows with `status='planned'` — **not a second table**, so a plan graduates into a memory in place, keeping its photos. Ticking a wish off doesn't just grey it: a place jumps to 🗓️ Trip Plan with the name and cost prefilled, a restaurant sends you to 🍜 Food. `⏳ Count down to this` points Home's countdown at a planned trip (it was already a trip plan reduced to one date). ✈️ Trips now renders `jrPast()` so planned rows stay out of it. 🎲 pick-one is live `Math.random()`, not seeded — offset 49979687 released. **Needs `supabase/someday.sql` run once**; until then it says so and keeps everything in memory |
 | 2026-07-26 | Riu | **Track A** — the nav reshuffle (PRs #26, #29, #30) | `🏠 Home · ✈️ Trips · 💝 Treats · 📋 Plan · 🎮 Games`. Food moved inside 💝 Treats (`treatsPick`), Talk · Flirt · Dare inside 🎮 Games (`gamesPick`), and 📋 Plan is new with a pinned 💸 Money strip above a ⭐ Someday / 🗓️ Trip Plan chooser (`planPick`, `js/plan.js` + `css/plan.css`). Three choosers now share one shape — see "Tabs that host more than one thing" in the `couple-app-dev` skill. Two fixes fell out: `switchTab()` no longer special-cases Talk's hotMode subtitle (it moved to `gamesSubtitle()`), and every chooser's `TAB_HOOKS` re-runs the chooser rather than a loader, which was leaving stale subtitles. Nav measured 318px at 375px — the order A1 → A2 → A3 was chosen so it never exceeded five buttons on a deploy |
 | 2026-07-26 | Riu | **B1** — signed URLs for the food bucket | The bucket shipped `public = true`, and a public bucket is served over an unauthenticated URL where storage policies don't apply — every photo was readable by anyone holding its URL. Views are now minted from `food_photos.path` (stored since the tab shipped, so no migration), batched into one signing request, cached with expiry. Renders fall back to the stored public URL when a signature isn't ready, so the code is safe with the bucket public OR private — **`supabase/food_private.sql` still has to be run to actually close it**. Also fixed three live breakages from the RLS lockdown: uploads, deletes and album import were all still sending the anon key, which `food write` now rejects |
 | 2026-07-26 | Riu | **C1** ✍️ Answer & compare | Both answer the day's question on the Home card; **neither shows until both are in**, so the second answer isn't shaped by the first. Locked once submitted — and the lock is the database's, not the UI's: `answers` has a unique index on `(day, who)`, so a second insert is refused by Postgres. New `js/answers.js` + `css/answers.css`, prefix `ac*`, table `answers` (`supabase/answers.sql`, reuses `public.is_us()`). Side comes from the games' `#me`. The poller only wakes in the one state that can change — on Home, mine in, theirs pending — and backs off when hidden, per the idle-cost rules |
@@ -185,7 +187,7 @@ PR if you introduce a convention.
 | 104729 | Question of the Day (After Dark) |
 | 15485863 | Couple photo — Apple-album photo-of-the-day |
 | 32452843 | Question of the Day (Deep Talk) |
-| 49979687 | **Reserved: Task E1** — ⭐ Someday's 🎲 pick-one, IF it's the same pick on both phones that day. Release it in your PR if you make the pick local instead |
+| _49979687 — RELEASED_ | Was reserved for ⭐ Someday's 🎲 pick-one. Not used: the pick is live `Math.random()`, because choosing a restaurant is a moment you immediately want to re-roll — same call Talk · Flirt · Dare makes. Free for the next feature |
 | _next free: 67867967, then any unlisted prime_ | |
 
 **URL hash params** (via `getHashParam`/`setHashParam` only):
@@ -233,8 +235,9 @@ breaks the composition.
 features reuse them — see docs/SUPABASE.md). Supabase table names are
 global identifiers too: `journeys`, `settings`, `questions`, `album_cache`,
 `food_photos`, `food_tags`, `food_photo_tags` are claimed.
-**Pre-reserved for the Task board:** `answers` (C1), `gifts` (D1), `wishes`
-(E1), `expenses` (E2). New columns claimed for E1: `journeys.status` and
+**Pre-reserved for the Task board:** `gifts` (D1), `expenses` (E2). LIVE:
+`answers` (C1), `wishes` (E1, plus `journeys.status` + `journeys.est_cost` —
+a 🗓️ Trip Plan is a `journeys` row with `status='planned'`). New columns claimed for E1: `journeys.status` and
 `journeys.est_cost` (a Trip Plan is a `journeys` row whose dates are ahead of
 us — same table as ✈️ Trips, so a plan graduates into a memory in place).
 Non-hash browser storage claimed (the ONE carve-out to golden rule 2): `sessionStorage['lr_session']` — the Google-login session, js/auth.js.
