@@ -90,9 +90,9 @@
      old policies let it read *and write* every table. `auth_policies.sql`
      closed that, so a ledger of what we owe each other is now a reasonable
      thing to store. **Unblocked.**
-   - **Where it lives:** the nav is full at **five** buttons, so it goes
-     inside ✈️ Trips or behind its own entry point (see the 🎮 Games hub and
-     the 🌙 Moon quiet-door patterns in the `add-new-game` skill).
+   - **Where it lives:** its own 💸 nav button — the slot freed by the merges
+     in "Agreed tab structure" below. If we'd rather stay at three tabs plus
+     Home, it becomes a Home card that opens a full page instead.
    - Currency: we're both in USD day to day, so don't build FX up front —
      but if it's hooked to Trips, an abroad trip will want a per-expense
      currency eventually. Leave room for the column; don't write the
@@ -122,9 +122,8 @@
    - ~~Do Google login first~~ **— done in v10**, same reasoning as Money.
      **Unblocked.** The photos still inherit whatever we decide in #6 about
      private buckets.
-   - **Where it lives:** the nav is full (five buttons at 375px), so this is a
-     card on Home that opens a full page, or a section inside a tab — not a
-     sixth nav button. See the 🎮 Games hub and 🌙 Moon quiet-door patterns.
+   - **Where it lives:** a chip inside the 📖 Us tab, alongside ✈️ Trips and
+     🍜 Food — see "Agreed tab structure" below. Not a nav button.
 
 5. **Someday** ⭐ — **one list of everything we want: places to go, restaurants
    to try, and things we want.** The app is currently all past tense — trips
@@ -151,9 +150,9 @@
      choose nothing; the app already has `mulberry32`, `burst()` and `popToast`
      to make one choice feel like an event. If it should be the *same* pick on
      both phones that day, seed it — claim an offset in SESSIONS.md first.
-   - **Where it lives:** the nav is full at five buttons (375px), so this is a
-     Home card that opens a full page, or a section inside 🍜 Food / ✈️ Trips.
-     See the 🎮 Games hub and 🌙 Moon quiet-door patterns.
+   - **Where it lives:** a chip inside the 📖 Us tab — it's a status filter
+     over the same rows, not a place of its own. See "Agreed tab structure"
+     below; building 📖 Us is what unblocks this and 🎁 Gifts together.
    - **Needs a real table** (`wishes`) — one table, not three, with `kind`
      doing the separating. Ships with a migration in `supabase/`; per golden
      rule 6 it must still render from memory when the DB is unreachable.
@@ -170,6 +169,56 @@
    URLs instead of using the plain public ones. ~~Do it after Google login~~
    — login shipped in v10, so this is **unblocked** and now the only known
    hole left in the lockdown.
+
+## Agreed tab structure (decided 2026-07-26 — build it when you build #4/#5)
+
+**The constraint:** five nav buttons already need their own media query to fit
+a 375px phone (`@media (max-width: 560px)` in `css/base.css`, "five tabs have
+to fit"). A sixth won't fit — and #3 Money, #4 Gifts and #5 Someday each want a
+home. So the nav gets *reorganised*, not extended.
+
+```
+Now (5, already cramped)
+🏠 Home · 🎭 Talk · ✈️ Trips · 🍜 Food · 🎮 Games          + 🌙 Moon (hidden)
+
+Agreed (4, with room to grow)
+🏠 Home · 🎮 Play · 📖 Us · 💸 Money                        + 🌙 Moon (hidden)
+             │        │
+             │        └─ ✈️ Trips · 🍜 Food · 🎁 Gifts · ⭐ Someday
+             └─ 🎭 Talk · 🔤 Word Duel · 🎯 20 Questions
+```
+
+**Two honest families.** 🎮 Play is ephemeral and prompt-driven — draw a card,
+play a round, keep no history. 📖 Us is everything with a date and a photo:
+Trips, Food and Gifts are *already the same shape* (dated rows + Supabase
+Storage + tags), which is why grouping them is a data argument and not just a
+space-saving one. Answer & compare (#1) stays a card on Home and costs no nav.
+
+**⭐ Someday is a chip, not a tab.** It's a status filter over the same rows —
+a wish "graduates" into a Trip / Food entry / Gift (see #5). Building 📖 Us
+therefore absorbs *two* roadmap items for zero nav cost, which is why it comes
+first.
+
+**Order: 📖 Us first, then 🎮 Play. Two PRs, never one.** Merging four tabs and
+two choosers in a single change is how `main` ends up broken, and every push is
+a deploy to both phones.
+
+**Four traps, three of them already bitten once:**
+1. The desktop grid is keyed on `#page-*.active` (`css/desktop.css`) — e.g.
+   `#page-tfd.active { max-width: 780px }`. Merged, those move to the inner
+   container, and the chooser must set `display = ""` **not** `"block"`, or the
+   inline style kills the grid. `gamesShow()` carries that comment already.
+2. `TAB_HOOKS.food` calls `fdLoad()` and `TAB_HOOKS.journeys` hydrates photos,
+   both on tab open. Merged naively, opening 📖 Us fires **both** — undoing
+   "journey photos only when Trips is opened". It needs a `usPick` guard
+   mirroring `gamesPick`.
+3. `gamesPick` lives in `js/core.js` and guards each game's poll. A second
+   chooser needs its own global — **claim it in SESSIONS.md first**.
+4. Each chooser must remember its last pick in memory (like `gamesPick`), or
+   🎭 Talk costs two taps every time — and that's the one used live on a call.
+
+Moving Talk off the nav also quietly improves its cover: the adult decks stop
+being advertised at the top level at all (the tab key stays `tfd`).
 
 ## Agreed platform plan
 - **Hosting:** Vercel — static, plus serverless functions in `api/`
