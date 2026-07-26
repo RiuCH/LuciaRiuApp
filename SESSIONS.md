@@ -63,7 +63,6 @@ out of each other's way.
 
 | Session | Who | Feature | Regions of index.html claimed | Status |
 |---|---|---|---|---|
-| 2026-07-26-answer-compare | Riu | **Task C1** — Answer & compare ✍️ | The Question-of-the-Day card inside `#page-home` ONLY (plus `js/home.js`); new `js/answers.js` + `css/answers.css` and their two tags. Does NOT touch `<nav>`, `TABS`/`NAVIDS`/`SUBTITLES`, or any other tab — no overlap with A1 | 🚧 in progress |
 | 2026-07-26-treats | Riu | **Track A** — the nav reshuffle (A1 ✅ · A2 ✅ · A3 next) | `<nav>` and the `TABS`/`NAVIDS`/`SUBTITLES` maps in `js/core.js` — held for A2/A3 | 🚧 in progress |
 | 2026-07-26-food-bucket | Riu | **Task B1** — #7 private food bucket: flip the bucket to `public = false` and mint signed URLs | none — no `index.html` changes expected; edits confined to the URL-resolution path in `js/food.js` plus `supabase/*.sql` | 🚧 in progress |
 
@@ -118,7 +117,7 @@ Track A only trivially (A never edits the Home section).
 
 | Task | Roadmap | Owns | Claims | Who |
 |---|---|---|---|---|
-| **C1** | #1 Answer & compare ✍️ — *the highest-value item on the roadmap* | js/home.js, Home markup | table `answers`, prefix `ac*` | **2026-07-26-answer-compare** 🚧 |
+| **C1** | #1 Answer & compare ✍️ — *the highest-value item on the roadmap* | js/home.js, Home markup | table `answers`, prefix `ac*` | ✅ shipped |
 
 ### Track D — needs A1 merged
 | Task | Roadmap | Owns | Claims | Who |
@@ -144,6 +143,7 @@ PR if you introduce a convention.
 
 | Date | Who | Feature | Notes |
 |---|---|---|---|
+| 2026-07-26 | Riu | **C1** ✍️ Answer & compare | Both answer the day's question on the Home card; **neither shows until both are in**, so the second answer isn't shaped by the first. Locked once submitted — and the lock is the database's, not the UI's: `answers` has a unique index on `(day, who)`, so a second insert is refused by Postgres. New `js/answers.js` + `css/answers.css`, prefix `ac*`, table `answers` (`supabase/answers.sql`, reuses `public.is_us()`). Side comes from the games' `#me`. The poller only wakes in the one state that can change — on Home, mine in, theirs pending — and backs off when hidden, per the idle-cost rules |
 | 2026-07-26 | Riu | It's an app now — Add to Home Screen, no App Store | `manifest.webmanifest` + checked-in `icons/icon-180\|192\|512.png` + the iOS meta block: own icon, own app-switcher card, no Safari chrome, and **no App Store, signing, fee or expiry**. Icons generated with macOS's own tools (`qlmanage -t` on an SVG → `sips -z`) so the no-build-step rule holds. `black-translucent` status bar puts the gradient behind the clock, so `body`/`.nav`/`.lock` now add `env(safe-area-inset-*)`, wrapped in `@supports` (a bare `calc(… + env())` is dropped whole by browsers without it). Insets are 0 in a normal tab ⇒ desktop unchanged. **Anything new pinned to a screen edge must add the insets too.** Deliberately NO service worker: a cached shell is exactly how two phones end up on different versions (golden rule 4). Known: `start_url` is `./` so an installed launch has no hash and re-runs the lock |
 | 2026-07-26 | Riu | Food: foldable organise panel, City/Country split | The Find & organise island collapses to a 49px title bar (576px → 49px, `fdOrganiseOpen`, in-memory so a refresh reopens it — it holds the search box). The single `place` tag kind became `city` + `country` with their own group-by views; `fdKindMatches` keeps legacy `place` tags visible under City so nothing vanishes pre-migration, and `supabase/food_split_place.sql` (already applied here over REST) moves them |
 | 2026-07-25 | Riu | Idle cost: the app stops working while nobody's looking | Home's 1s tick was building **4 `Intl.DateTimeFormat`s a second** (~86k/day) and parsing two `innerHTML` strings. Split into `homeTickFast()` (seconds) and `homeTickSlow()` (60s: the anniversary date + the SF/Phoenix gap, which moves twice a year) — measured **110× faster** per tick. Ticks now skip unless `activeTab === "home"`, with `TAB_HOOKS.home` repainting on return. The three pollers back off to ~30s while `document.hidden` (`wdTicks`/`q20Ticks`/`cyTicks`) — **back off, never stop**: some webviews report `hidden === true` while visible, and a duel that silently stopped syncing looks broken. Same reason the clock is deliberately NOT hidden-gated. Boot went **4 `settings` GETs → 1**: `loadSettings()` returns its rows and `js/init.js` hands them to `wdAdopt`/`q20AdoptRows`/`cyAdopt`. Deleted dead `.soonbox`/`.progress`/`.question` CSS (incl. a `@keyframes wiggle` animating `width`) |

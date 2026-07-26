@@ -37,6 +37,7 @@
 
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/home.css">
+<link rel="stylesheet" href="css/answers.css">
 <link rel="stylesheet" href="css/tfd.css">
 <link rel="stylesheet" href="css/journeys.css">
 <link rel="stylesheet" href="css/duel.css">
@@ -182,6 +183,20 @@
       <div class="qotd-foot">
         <span id="qotdDay">Day 1</span>
         <button id="qotdCopy">📋 Copy</button>
+      </div>
+
+      <div class="ac-box" id="acBox">
+        <div class="ac-status" id="acStatus"></div>
+        <div class="wd-whoami ac-who" id="acWho" style="display:none">
+          <span class="wd-whoami-lbl">I'm</span>
+          <span class="chip" data-me="lucia">Lucia</span>
+          <span class="chip" data-me="riu">Riu</span>
+        </div>
+        <div class="ac-compose" id="acCompose" style="display:none">
+          <textarea id="acInput" rows="2" placeholder="your answer — they can't see it until they've answered too…"></textarea>
+          <button class="primary" id="acSend">🔒 Lock it in</button>
+        </div>
+        <div class="ac-list" id="acList"></div>
       </div>
     </div>
 
@@ -630,6 +645,7 @@
 <script src="js/auth.js"></script>
 <script src="js/questions.js"></script>
 <script src="js/home.js"></script>
+<script src="js/answers.js"></script>
 <script src="js/tfd.js"></script>
 <script src="js/journeys.js"></script>
 <script src="js/duel.js"></script>

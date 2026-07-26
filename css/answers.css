@@ -1,0 +1,69 @@
+/* answers.css — Lucia ♥ Riu  (C1: Answer & compare ✍️)
+   Lives inside the Question-of-the-Day card on Home. Mobile is the source
+   of truth; there's no desktop block because the card is already in the
+   Home grid. */
+
+.ac-box {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--card-border);
+  text-align: left;
+}
+.ac-status {
+  font-size: 12px;
+  color: var(--text-dim);
+  letter-spacing: 0.3px;
+  min-height: 16px;
+  text-align: center;
+}
+.ac-box.ac-both .ac-status { color: var(--accent); font-weight: 600; }
+
+.ac-who { justify-content: center; margin-top: 10px; }
+.ac-who .chip { cursor: pointer; font-size: 11px; padding: 5px 14px; }
+.ac-who .chip.sel { box-shadow: 0 0 12px var(--accent-soft); }
+
+/* ------- the composer ------- */
+.ac-compose { margin-top: 10px; }
+.ac-compose textarea {
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text);
+  background: rgba(0,0,0,0.25);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 10px 12px;
+  width: 100%;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+.ac-compose textarea::placeholder { color: var(--text-dim); opacity: 1; }
+.ac-compose textarea:focus { border-color: var(--accent); }
+.ac-compose textarea:disabled { opacity: 0.6; }
+.ac-compose button { width: 100%; margin-top: 8px; }
+
+/* ------- the reveal ------- */
+.ac-list { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+.ac-answer {
+  background: rgba(0,0,0,0.2);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 10px 12px;
+  animation: acIn 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+}
+.ac-answer.ac-mine { border-color: var(--accent-soft); }
+.ac-name {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+.ac-text { font-size: 14.5px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+
+@keyframes acIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

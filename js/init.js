@@ -8,6 +8,8 @@
 // already carries your JWT if you have one.
 
 qotdRender();
+acRender();             // C1: paint the answer box from empty…
+acLoad();               // …then adopt today's answers if we're signed in
 wdRollLetters(false);   // local letters so the duel works offline…
 wdRenderAll();
 q20Render();            // 20 Questions paints from memory…
@@ -70,7 +72,7 @@ function homeAwake() { return activeTab === "home"; }
 setInterval(() => { if (homeAwake()) homeTickFast(); }, 1000);
 setInterval(() => { if (homeAwake()) homeTickSlow(); }, 60000);
 
-TAB_HOOKS.home = () => { homeTickFast(); homeTickSlow(); };
+TAB_HOOKS.home = () => { homeTickFast(); homeTickSlow(); acLoad(); };
 // Catch up after a lock screen or app switch, when timers were frozen.
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden && homeAwake()) { homeTickFast(); homeTickSlow(); }
@@ -82,4 +84,5 @@ for (let i = 0; i < 6; i++) setTimeout(spawnHeart, i * 350);
 // roll the home question over at midnight if the tab is left open
 setInterval(() => {
   if (qotdCurrent && dailyQuestion().text !== qotdCurrent.text) qotdRender();
+  acDayRolled();        // a new day means a new (empty) pair of answers
 }, 60000);
