@@ -87,8 +87,7 @@
      sets an inline display on #treatFood, and an inline style beats a rule
      here — which is exactly why it sets "" and never "block". */
   #page-treats.active { margin: 0 auto; }
-  #treatFood .fd-grid { grid-template-columns: repeat(5, 1fr); }
-  #treatFood .fd-rail { width: 84px; font-size: 12px; }
+  /* .fd-grid sizes itself by auto-fill now — no column count to override. */
   #treatFood .fd-albumgrid { grid-template-columns: repeat(6, 1fr); }
 
   /* ---- JOURNEYS: 5-up photo grid ----

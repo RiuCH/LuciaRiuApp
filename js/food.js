@@ -396,7 +396,7 @@ function fdMonthLabel(key) {
   if (!key) return "Undated";
   const [y, m] = key.split("-");
   return new Date(Date.UTC(Number(y), Number(m) - 1, 1))
-    .toLocaleDateString(undefined, { month: "long", timeZone: "UTC" }) + "\n" + y;
+    .toLocaleDateString(undefined, { month: "long", timeZone: "UTC" }) + " " + y;
 }
 
 // Rendered in UTC on purpose — taken_at holds a wall clock, not an instant
@@ -445,7 +445,52 @@ function fdRender() {
   else fdRenderByTag(box, photos, fdGroupBy);
 }
 
-// Default view: newest first, with the month running down the left.
+// One section header for every sort mode. Date used to be the odd one out —
+// a narrow rail of text floating to the LEFT of its grid, which left a month
+// with two photos looking like a rendering bug rather than a quiet month.
+// Same header for months and tags means switching the sort re-groups the
+// photos instead of redesigning the page.
+function fdSection(label, count, dim) {
+  const section = document.createElement("div");
+  section.className = "fd-section";
+  const head = document.createElement("div");
+  head.className = "fd-sectionhead";
+  const name = document.createElement("span");
+  name.className = "fd-sectionname" + (dim ? " fd-dim" : "");
+  name.textContent = label;
+  const rule = document.createElement("span");
+  rule.className = "fd-rule";
+  const c = document.createElement("span");
+  c.className = "fd-count";
+  c.textContent = count;
+  head.append(name, rule, c);
+  const grid = document.createElement("div");
+  grid.className = "fd-grid";
+  section.append(head, grid);
+  return { section, grid };
+}
+
+// Every 11th photo is a 2x2 tile — a bigger tile now and then gives the eye
+// somewhere to land in what is otherwise a spreadsheet of squares.
+//
+// The threshold is high on purpose. A hero eats two slots on each of two rows,
+// so in a SHORT section it opens a hole nothing can backfill: seven photos
+// across nine columns became one big tile, six small ones, and an empty second
+// row — worse than the plain grid it was meant to improve. CSS picks the
+// column count, so JS can't know it; 18 is "enough photos that row two fills
+// itself at any width". Below that, a plain grid, which never craters.
+const FD_HERO_MIN = 18;
+
+function fdFill(grid, items) {
+  const hero = items.length >= FD_HERO_MIN;
+  items.forEach((p, i) => {
+    const cell = fdThumb(p);
+    if (hero && i % 11 === 0) cell.classList.add("fd-hero");
+    grid.appendChild(cell);
+  });
+}
+
+// Default view: newest first, a month at a time.
 function fdRenderTimeline(box, photos) {
   const groups = [];
   photos.forEach(p => {
@@ -455,16 +500,9 @@ function fdRenderTimeline(box, photos) {
     else groups.push({ key, items: [p] });
   });
   groups.forEach(g => {
-    const row = document.createElement("div");
-    row.className = "fd-monthrow";
-    const rail = document.createElement("div");
-    rail.className = "fd-rail";
-    rail.textContent = fdMonthLabel(g.key);
-    const grid = document.createElement("div");
-    grid.className = "fd-grid";
-    g.items.forEach(p => grid.appendChild(fdThumb(p)));
-    row.append(rail, grid);
-    box.appendChild(row);
+    const { section, grid } = fdSection(fdMonthLabel(g.key), g.items.length, !g.key);
+    fdFill(grid, g.items);
+    box.appendChild(section);
   });
 }
 
@@ -479,43 +517,16 @@ function fdRenderByTag(box, photos, kind) {
     const items = photos.filter(p => p.tags.includes(tag.id));
     if (!items.length) return;
     shown++;
-    const section = document.createElement("div");
-    section.className = "fd-section";
-    const head = document.createElement("div");
-    head.className = "fd-sectionhead";
-    head.innerHTML = "";
-    const name = document.createElement("span");
-    name.className = "fd-sectionname";
-    name.textContent = tag.name;
-    const count = document.createElement("span");
-    count.className = "fd-count";
-    count.textContent = items.length;
-    head.append(name, count);
-    const grid = document.createElement("div");
-    grid.className = "fd-grid";
-    items.forEach(p => grid.appendChild(fdThumb(p)));
-    section.append(head, grid);
+    const { section, grid } = fdSection(tag.name, items.length);
+    fdFill(grid, items);
     box.appendChild(section);
   });
   const untagged = photos.filter(p => !p.tags.some(id => {
     const t = fdTagById(id); return t && fdKindMatches(t.kind, kind);
   }));
   if (untagged.length) {
-    const section = document.createElement("div");
-    section.className = "fd-section";
-    const head = document.createElement("div");
-    head.className = "fd-sectionhead";
-    const name = document.createElement("span");
-    name.className = "fd-sectionname fd-dim";
-    name.textContent = "Not tagged yet";
-    const count = document.createElement("span");
-    count.className = "fd-count";
-    count.textContent = untagged.length;
-    head.append(name, count);
-    const grid = document.createElement("div");
-    grid.className = "fd-grid";
-    untagged.forEach(p => grid.appendChild(fdThumb(p)));
-    section.append(head, grid);
+    const { section, grid } = fdSection("Not tagged yet", untagged.length, true);
+    fdFill(grid, untagged);
     box.appendChild(section);
   }
   if (!shown && !untagged.length) {
@@ -536,6 +547,14 @@ function fdThumb(p) {
   img.src = fdViewUrl(p);
   img.alt = p.caption || "food photo";
   cell.appendChild(img);
+  // Hover-only, and hover-capable screens only (css/food.css) — on a phone
+  // there is no hover and no room, and the lightbox says it all anyway.
+  if (p.caption) {
+    const cap = document.createElement("span");
+    cap.className = "fd-cap";
+    cap.textContent = p.caption;
+    cell.appendChild(cap);
+  }
   if (fdPicking) {
     cell.addEventListener("click", () => {
       if (fdPicked.has(p.id)) fdPicked.delete(p.id); else fdPicked.add(p.id);

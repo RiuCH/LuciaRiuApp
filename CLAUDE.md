@@ -87,7 +87,7 @@ because skipping them broke something.
 | `css/someday.css` | ⭐ Someday + 🗓️ Trip Plan: wish cards, kind filters, the add forms |
 | `css/money.css` | 💸 Money: the ledger rows, the log form, the Home headline |
 | `css/answers.css` | ✍️ Answer & compare: the compose box and the reveal |
-| `css/food.css` | 🍜 Food: month rail, photo grid, tag lightbox, album picker |
+| `css/food.css` | 🍜 Food: section headers, photo grid, tag lightbox, album picker |
 | `css/duel.css` | letter pair, hearts, penalty modes |
 | `css/twenty.css` | Games-tab chooser, 20 Questions board + interrogation log |
 | `css/cycle.css` | 🌙 Moon: month grid, day marks, stat tiles |
@@ -166,6 +166,12 @@ can reference anything.
   the phone. **You cannot upload INTO an Apple Shared Album** — Apple's API
   is read-only — so album photos are *copied* into our bucket by
   `api/food-import.js`; iCloud asset URLs are signed and expire.
+  **Every sort mode shares one section header** (`fdSection`) — date used to
+  be a narrow rail floating left of its grid, which made a quiet month look
+  like a rendering bug. The grid is `auto-fill minmax(128px)`, so tiles stay
+  one size and a leftover is a notch, not a crater; every 11th photo is a
+  2x2 tile but only in sections of 18+ (`FD_HERO_MIN`), because in a short
+  one a hero opens a hole nothing can backfill.
   EXIF gives us the capture date and GPS; `api/geocode.js` turns GPS into
   city/country tags via OpenStreetMap. `taken_at` holds a **wall clock**
   (rendered in UTC), never an instant — see the comment in `fdExifDate`.
@@ -189,7 +195,12 @@ can reference anything.
   the form degrades to one photo when it doesn't. ✎ edits in place and
   deletes any photo the edit dropped. Card photos are sized intrinsically
   (never `object-fit: cover` at card width — that cropped 76% off a
-  portrait on a laptop). Needs `supabase/gifts.sql` + `gifts_photos.sql`
+  portrait on a laptop), and stand on a `.gf-shots` mat sized to the photo so
+  an uncropped portrait is framed rather than adrift. **Two columns from
+  900px** — a grid with `align-items: start`, not CSS multi-column: masonry
+  would come free but it fills top-to-bottom-then-across, putting the middle
+  of a newest-first log at the top of the right column. Needs
+  `supabase/gifts.sql` + `gifts_photos.sql`
 - 📋 Plan (`#page-plan`): three chips — ⭐ Someday · 🗓️ Trip Plan · 💸 Money
   (`planShow` in `js/plan.js`, `planPick` in core). **💸 Money is a line
   AND a chip**: the reading (`pot − committed = left`) is a slim line

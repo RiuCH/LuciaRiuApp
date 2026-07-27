@@ -313,6 +313,12 @@ function gfCard(gift) {
   const shots = gfPhotoList(gift);
   const srcOf = p => (typeof fdViewUrl === "function" ? fdViewUrl(p) : (p.viewUrl || p.url));
   if (shots.length) {
+    // A mat to stand the photo on. Gift photos are never cropped (see
+    // .gf-photo), so a portrait one is narrow and used to float in the middle
+    // of a 532px card with dead space either side. The well turns that space
+    // into a frame, and gives the extra shots somewhere to belong.
+    const well = document.createElement("div");
+    well.className = "gf-shots";
     const main = document.createElement("img");
     main.className = "gf-photo";
     main.loading = "lazy";
@@ -320,7 +326,7 @@ function gfCard(gift) {
     main.src = srcOf(shots[0]);
     main.alt = gift.title;
     main.addEventListener("click", () => gfOpenPhoto(shots.map(srcOf), 0, gift.title));
-    card.appendChild(main);
+    well.appendChild(main);
 
     if (shots.length > 1) {
       const strip = document.createElement("div");
@@ -334,8 +340,9 @@ function gfCard(gift) {
         t.addEventListener("click", () => gfOpenPhoto(shots.map(srcOf), i + 1, gift.title));
         strip.appendChild(t);
       });
-      card.appendChild(strip);
+      well.appendChild(strip);
     }
+    card.appendChild(well);
   }
 
   const title = document.createElement("div");
