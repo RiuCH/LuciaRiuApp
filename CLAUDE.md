@@ -266,7 +266,10 @@ can reference anything.
   that expire. A trip can have both. Upload path is Food's, reused whole
   (`fdResize`/`fdUploadBlob`/`fdResolveViews`) and feature-detected, and it
   needs `supabase/journey_photos.sql` — `jrUploadOK` hides the button rather
-  than failing when the column isn't there. Element prefix: `jr*`. Tables: `journeys`,
+  than failing when the column isn't there. **Removing a photo is a lightbox
+  action**, not a thumbnail one: `openLightbox({..., onRemove})` shows a
+  🗑️ button, and only our uploads pass it (an Apple album is read-only, so
+  there's nothing to offer). Element prefix: `jr*`. Tables: `journeys`,
   `settings`, `questions` (schema in `supabase/`, guide in
   docs/SUPABASE.md). Serverless: `api/album.js` (iCloud CORS proxy)
 - Lock screen: `#lock` overlay, password = anniversary date (DB
