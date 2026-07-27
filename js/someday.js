@@ -488,6 +488,11 @@ function tpRender() {
       plan.addEventListener("click", () => trOpen(j));
       row.appendChild(plan);
     }
+    const del = document.createElement("button");
+    del.textContent = "🗑️ Delete";
+    del.title = "Delete this plan";
+    del.addEventListener("click", () => tpDelete(j));
+    row.appendChild(del);
     card.appendChild(row);
     frag.appendChild(card);
   });
@@ -513,6 +518,25 @@ function tpSetCountdown(j) {
   tickCountdown();
   saveReunion(j.start_date);
   popToast("Home is counting down to " + j.place + " 💞");
+}
+
+// A plan that isn't happening. "We went" was the only way off this list, which
+// meant a cancelled trip had to be lied about to get rid of it.
+// `trip_places` is `on delete cascade`, so the itinerary goes with it — say so
+// rather than surprising anyone.
+async function tpDelete(j) {
+  const places = "Delete the plan for " + j.place + "?" +
+    (typeof trOpen === "function" ? " Its itinerary goes too." : "");
+  if (!confirm(places)) return;
+  const keep = journeys.filter(x => x !== j);
+  if (supaOn() && typeof j.id === "number") {
+    try { await supa("journeys?id=eq." + j.id, { method: "DELETE" }); }
+    catch (e) { popToast("Couldn't delete that 😢 (" + e.message + ")"); return; }
+  }
+  journeys = keep;
+  tpRender();
+  if (typeof renderJourneys === "function") renderJourneys();
+  popToast("Plan deleted 🗑️");
 }
 
 async function tpGraduate(j) {

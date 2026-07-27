@@ -121,7 +121,13 @@ async function trMove(place, by) {
 }
 
 // ---------------- open / close ----------------
-function trOpen(trip) {
+// The planner lives inside 📋 Plan, but a finished trip's itinerary is worth
+// re-reading from ✈️ Trips — so trOpen() remembers which tab sent us and the
+// ‹ button hands you back there instead of stranding you in Plan.
+let trBackTab = null;
+
+function trOpen(trip, fromTab) {
+  trBackTab = fromTab || null;
   trTrip = trip;
   trPlaces = [];
   trReady = null;
@@ -138,10 +144,16 @@ function trOpen(trip) {
   trEl("trPlanner").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function trClose() {
+// `goBack` is only true for the ‹ button. planShow() also calls this, to stop
+// a planner left open in one sub-view from hiding #tpList in the next — and
+// that call must not bounce the user to another tab.
+function trClose(goBack) {
+  const back = trBackTab;
+  trBackTab = null;
   trTrip = null;
   trEl("trPlanner").style.display = "none";
   trEl("tpList").style.display = "";
+  if (goBack === true && back && typeof switchTab === "function") switchTab(back);
 }
 
 // ---------------- rendering ----------------
@@ -272,7 +284,7 @@ function trCloseMove() {
 
 // ---------------- wiring ----------------
 if (trEl("trPlanner")) {
-  trEl("trBack").addEventListener("click", trClose);
+  trEl("trBack").addEventListener("click", () => trClose(true));
   trEl("trMove").addEventListener("click", (e) => { if (e.target === trEl("trMove")) trCloseMove(); });
   trEl("trMoveCancel").addEventListener("click", trCloseMove);
 

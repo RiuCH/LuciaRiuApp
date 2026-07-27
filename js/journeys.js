@@ -259,6 +259,19 @@ function renderJourneys() {
       actions.appendChild(up);
     }
 
+    // The itinerary outlives the plan. "We went" flips status in place, which
+    // used to take the only 🗓️ Itinerary button with it — the trip_places rows
+    // were still there, with no way back to them. The planner lives in 📋 Plan,
+    // so this hops tabs and the planner's ‹ hands you back here.
+    if (typeof trOpen === "function") {
+      const plan = document.createElement("button");
+      plan.className = "jr-pickbtn";
+      plan.textContent = "🗓️ Itinerary";
+      plan.title = "Where we went, day by day";
+      plan.addEventListener("click", () => jrOpenItinerary(j));
+      actions.appendChild(plan);
+    }
+
     if (actions.children.length) card.appendChild(actions);
 
     item.appendChild(card);
@@ -336,6 +349,14 @@ document.getElementById("jrSaveBtn").addEventListener("click", async (e) => {
   resetJrForm();
   burst(e.clientX, e.clientY, ["✈️", "🧳", "📸", "💞"]);
 });
+
+// Order matters: switchTab fires TAB_HOOKS.plan, which re-runs planShow() and
+// closes any open planner. Open ours after that has settled, not before.
+function jrOpenItinerary(j) {
+  switchTab("plan");
+  if (typeof planShow === "function") planShow("trip");
+  trOpen(j, "journeys");
+}
 
 async function deleteJourney(j) {
   if (!confirm('Delete "' + j.place + '" from our timeline?')) return;
