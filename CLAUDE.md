@@ -169,9 +169,10 @@ can reference anything.
   **Every sort mode shares one section header** (`fdSection`) — date used to
   be a narrow rail floating left of its grid, which made a quiet month look
   like a rendering bug. The grid is `auto-fill minmax(128px)`, so tiles stay
-  one size and a leftover is a notch, not a crater; every 11th photo is a
-  2x2 tile but only in sections of 18+ (`FD_HERO_MIN`), because in a short
-  one a hero opens a hole nothing can backfill.
+  one size and a leftover is a notch, not a crater. **Tiles are uniform on
+  purpose** — a 2x2 "hero" tile was tried and removed: it spans two rows, and
+  CSS picks the column count, so JS can never tell whether enough tiles follow
+  to fill the second row. Near the end of a section it hung below everything.
   EXIF gives us the capture date and GPS; `api/geocode.js` turns GPS into
   city/country tags via OpenStreetMap. `taken_at` holds a **wall clock**
   (rendered in UTC), never an instant — see the comment in `fdExifDate`.

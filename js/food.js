@@ -470,24 +470,17 @@ function fdSection(label, count, dim) {
   return { section, grid };
 }
 
-// Every 11th photo is a 2x2 tile — a bigger tile now and then gives the eye
-// somewhere to land in what is otherwise a spreadsheet of squares.
+// Uniform tiles, deliberately. A 2x2 "hero" every 11th photo was tried and
+// removed: a big tile spans two rows, so unless a full two rows of small tiles
+// follow it, it opens a hole nothing can backfill. Landing near the END of a
+// section it was worst of all — the tile started a row of its own and hung
+// below every other photo on the page, which is what Riu saw and asked about.
 //
-// The threshold is high on purpose. A hero eats two slots on each of two rows,
-// so in a SHORT section it opens a hole nothing can backfill: seven photos
-// across nine columns became one big tile, six small ones, and an empty second
-// row — worse than the plain grid it was meant to improve. CSS picks the
-// column count, so JS can't know it; 18 is "enough photos that row two fills
-// itself at any width". Below that, a plain grid, which never craters.
-const FD_HERO_MIN = 18;
-
+// The column count is CSS's to choose (auto-fill), so JS can never know how
+// many tiles a row holds, which means it can never know whether a hero is safe.
+// A rule that depends on a number you can't read is a rule that will be wrong.
 function fdFill(grid, items) {
-  const hero = items.length >= FD_HERO_MIN;
-  items.forEach((p, i) => {
-    const cell = fdThumb(p);
-    if (hero && i % 11 === 0) cell.classList.add("fd-hero");
-    grid.appendChild(cell);
-  });
+  items.forEach(p => grid.appendChild(fdThumb(p)));
 }
 
 // Default view: newest first, a month at a time.
