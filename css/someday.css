@@ -197,3 +197,32 @@
   border-color: var(--accent);
   color: var(--text);
 }
+
+/* ------- trip-plan cards ------- */
+/* The three actions share ONE row at phone width. `flex: 1 1 0` makes them
+   split whatever the card is rather than each asking for its own label width,
+   so they can't wrap however narrow the phone. 🗑️ moved to the corner to buy
+   the space — see tpRender(). */
+#tpList .sd-card { position: relative; }
+#tpList .sd-title { padding-right: 34px; }
+#tpList .rowbtns { flex-wrap: nowrap; gap: 8px; }
+#tpList .rowbtns button {
+  flex: 1 1 0;
+  min-width: 0;
+  /* …but stop growing on a laptop, where an equal third of the card is a
+     comically wide button for the word "Countdown". */
+  max-width: 170px;
+  padding: 10px 6px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.tp-del {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 4px 9px;
+  font-size: 12px;
+  border-radius: 999px;
+  opacity: 0.5;
+}
+.tp-del:hover { opacity: 1; }

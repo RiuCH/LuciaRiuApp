@@ -469,6 +469,16 @@ function tpRender() {
       card.appendChild(c);
     }
 
+    // 🗑️ goes in the corner rather than the button row: it's the action you
+    // want least often, and moving it is what lets the other three share one
+    // row at phone width instead of wrapping onto a second.
+    const del = document.createElement("button");
+    del.className = "tp-del";
+    del.textContent = "🗑️";
+    del.title = "Delete this plan";
+    del.addEventListener("click", () => tpDelete(j));
+    card.appendChild(del);
+
     const row = document.createElement("div");
     row.className = "rowbtns";
     const done = document.createElement("button");
@@ -478,7 +488,7 @@ function tpRender() {
     done.addEventListener("click", () => tpGraduate(j));
     row.appendChild(done);
     const cd = document.createElement("button");
-    cd.textContent = "⏳ Count down to this";
+    cd.textContent = "⏳ Countdown";
     cd.addEventListener("click", () => tpSetCountdown(j));
     row.appendChild(cd);
     // Task F1 lives in js/trip.js; guarded so this card still works without it.
@@ -488,11 +498,6 @@ function tpRender() {
       plan.addEventListener("click", () => trOpen(j));
       row.appendChild(plan);
     }
-    const del = document.createElement("button");
-    del.textContent = "🗑️ Delete";
-    del.title = "Delete this plan";
-    del.addEventListener("click", () => tpDelete(j));
-    row.appendChild(del);
     card.appendChild(row);
     frag.appendChild(card);
   });
