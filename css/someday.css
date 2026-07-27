@@ -130,6 +130,11 @@
 .sd-ib {
   flex: 1 1 0;
   min-width: 0;
+  /* …but an emoji-only button gains nothing from being 190px wide, which is
+     what flex:1 gives it once a card is half of a 1080px laptop column
+     instead of half a phone. Grow to fill a narrow card, stop at a tap
+     target. */
+  max-width: 74px;
   padding: 7px 0;
   font-size: 13.5px;
   line-height: 1;
