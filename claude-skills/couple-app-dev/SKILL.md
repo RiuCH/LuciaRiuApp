@@ -196,6 +196,32 @@ exactly; each rule below exists because skipping it broke something:
 - The pick is remembered in memory for the session, so coming back lands where
   you left off rather than resetting.
 
+## Colour: everything comes from the five vars
+
+There are six palettes now (`css/themes.css`, picked in Settings, stored in
+`settings.theme` so it changes on **both** phones). They work because no
+component knows a colour — each theme only redefines `--bg1/2/3`, `--accent`,
+`--accent-soft`, and the rest of the app reads those.
+
+- **Never hardcode a hex in a component.** A literal is a colour that won't
+  follow the theme; it's how `button.toggled` sat on the wrong red for weeks.
+  `--card-bg`/`--card-border`/`--text`/`--text-dim` are deliberately
+  white-with-alpha so they sit on any dark background — leave them alone.
+- A theme is one class on **`<html>` AND `<body>`** (the root needs it: its
+  `background-color` paints the strip iOS rubber-bands into).
+- **💞 Together mode must outrank every theme.** `base.css` uses
+  `html.hot, body.hot` (0,1,1) rather than `.hot` for exactly that — theme
+  classes are also single classes and load later, so on equal specificity
+  source order would let a palette beat Together. Don't "tidy" that selector.
+- The `theme-color` meta (the phone's status-bar tint) is set from the live
+  computed `--bg1` by `thSyncBar()`. Don't write a hex into it — there isn't
+  one "normal" colour any more.
+- Adding a theme = one class in `css/themes.css` + one entry in `THEMES`
+  (`js/theme.js`). No other file changes.
+- All six are dark on purpose. A light theme needs the leftover hardcoded
+  `rgba(10,4,18,…)` in `.nav`, the `.mn-negative` red and friends turned into
+  variables first — half-legible is worse than not shipping it.
+
 ## Idle cost — the app must do nothing when nobody is looking
 
 This runs on two phones all day. Anything on a timer is a battery and data

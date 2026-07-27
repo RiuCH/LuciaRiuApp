@@ -1,0 +1,101 @@
+/* themes.css — Lucia ♥ Riu
+   The palettes you can pick in Settings. Loaded AFTER base.css on purpose:
+   these classes (0,1,0) have to beat base's `:root` (0,1,0), and source order
+   is what decides between equal specificities.
+
+   💞 Together mode still wins over all of them — base.css gives it
+   `html.hot, body.hot` (0,1,1) precisely so a theme can't outrank it. Pick
+   any palette you like; going Together still turns everything red.
+
+   Each theme only sets the five colour vars. `--card-bg`, `--card-border`,
+   `--text` and `--text-dim` stay as base.css defines them: they're
+   white-with-alpha, so they sit correctly on any dark background and one
+   fewer thing can drift out of step. That's also why every theme here is
+   dark — a light one needs the hardcoded `rgba(10,4,18,…)` in `.nav`, the
+   `.mn-negative` red and friends turned into variables first, and shipping a
+   half-legible light mode is worse than not shipping one. */
+
+/* 🌌 Midnight — deep blue, the quiet one */
+.theme-midnight {
+  --bg1: #070b1f;
+  --bg2: #12204a;
+  --bg3: #1b3b6f;
+  --accent: #7cb1ff;
+  --accent-soft: rgba(124, 177, 255, 0.26);
+}
+
+/* 🌅 Sunset — warm, the loud one */
+.theme-sunset {
+  --bg1: #2a0d12;
+  --bg2: #6b1f2a;
+  --bg3: #9c3d1e;
+  --accent: #ffa15c;
+  --accent-soft: rgba(255, 161, 92, 0.28);
+}
+
+/* 🌲 Forest — green and calm */
+.theme-forest {
+  --bg1: #05150f;
+  --bg2: #0f3a2c;
+  --bg3: #1c5c43;
+  --accent: #6fdcae;
+  --accent-soft: rgba(111, 220, 174, 0.25);
+}
+
+/* 🖤 Ink — near-black, lets the photos do the talking */
+.theme-ink {
+  --bg1: #0a0a0c;
+  --bg2: #16161a;
+  --bg3: #26262e;
+  --accent: #d8d8e0;
+  --accent-soft: rgba(216, 216, 224, 0.22);
+}
+
+/* 🍓 Berry — pinker and sweeter than the default */
+.theme-berry {
+  --bg1: #1e0a20;
+  --bg2: #4d0f3d;
+  --bg3: #7d1a4a;
+  --accent: #ff9ecb;
+  --accent-soft: rgba(255, 158, 203, 0.28);
+}
+
+
+/* ---------------- the picker in Settings ---------------- */
+.th-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 4px;
+}
+.th-swatch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 6px;
+  border-radius: 16px;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.3px;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.15s ease;
+}
+.th-swatch:hover { transform: translateY(-2px); background: var(--card-bg); }
+.th-swatch.sel {
+  border-color: var(--accent);
+  box-shadow: 0 0 14px var(--accent-soft);
+}
+/* The dot previews the theme it switches to, so the colours are the label —
+   inline styles set these three from THEMES in js/theme.js. */
+.th-dot {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.22);
+}
+.th-name { line-height: 1.2; text-align: center; }

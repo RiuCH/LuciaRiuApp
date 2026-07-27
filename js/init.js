@@ -32,7 +32,7 @@ boot("moon", cyRender);
 // had already fetched that whole table — four requests for one table's worth of
 // rows. Now loadSettings() hands its snapshot over: 4 boot round trips → 1.
 loadSettings().then(rows => {
-  if (rows) { wdAdopt(rows); q20AdoptRows(rows); cyAdopt(rows); return; }
+  if (rows) { thAdopt(rows); wdAdopt(rows); q20AdoptRows(rows); cyAdopt(rows); return; }
   // No snapshot: either local mode (these return without touching the network)
   // or the fetch failed (they retry and mark themselves unsynced). Same as before.
   wdPull(); q20Pull(); cyPull();

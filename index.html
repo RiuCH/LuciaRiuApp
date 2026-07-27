@@ -36,6 +36,9 @@
 <link rel="dns-prefetch" href="https://cvws.icloud-content.com">
 
 <link rel="stylesheet" href="css/base.css">
+<!-- after base.css: theme classes and :root have equal specificity,
+     so source order is what lets a theme override the default -->
+<link rel="stylesheet" href="css/themes.css">
 <link rel="stylesheet" href="css/home.css">
 <link rel="stylesheet" href="css/answers.css">
 <link rel="stylesheet" href="css/tfd.css">
@@ -98,6 +101,12 @@
 
   <div class="panel settings" id="settingsPanel" style="display:none">
     <div class="ptitle">Settings</div>
+
+    <div class="set-group">
+      <div class="set-label">Look</div>
+      <div class="th-grid" id="thGrid"></div>
+      <div class="hint">Changes it on both phones — it's one app we both look at 💞</div>
+    </div>
 
     <div class="set-group">
       <div class="set-label">Account</div>
@@ -896,6 +905,7 @@
 <script src="js/supabase.js"></script>
 <!-- after supabase.js (needs SUPABASE_URL), before everything that calls supa() -->
 <script src="js/auth.js"></script>
+<script src="js/theme.js"></script>
 <script src="js/questions.js"></script>
 <script src="js/home.js"></script>
 <script src="js/answers.js"></script>
