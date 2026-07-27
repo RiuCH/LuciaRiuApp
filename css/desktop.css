@@ -8,6 +8,16 @@
 @media (min-width: 900px) {
   body { padding: 34px 34px 130px; }
   .app { max-width: 1080px; }
+
+  /* ---- ONE COLUMN WIDTH FOR EVERY TAB ----
+     🏠 Home has no cap of its own — it fills `.app`. Every other tab used to
+     set its own (Plan 780, Journeys 880, Treats/Moon 940, Games 980, and
+     720–780 again for the sub-views inside Games), so switching tabs on a
+     laptop jumped the content column around by up to 360px and nothing lined
+     up with the header or the nav. They all fill `.app` now; `.app` is the
+     single place to change how wide the app is. Individual GRIDS still choose
+     their own column counts below — that's content density, not page width. */
+  .page.active { max-width: none; margin: 0 auto; }
   header .names { font-size: 34px; }
   header .sub { margin-bottom: 26px; font-size: 14px; }
 
@@ -64,30 +74,30 @@
      Talk lives inside 🎮 Games now, so its width keys off the SUB-VIEW rather
      than a page. gamesShow() sets an inline display on #gameTfd, and an inline
      style beats a rule here — which is why it sets "" and never "block". */
-  #page-journeys.active, #page-duel.active { margin: 0 auto; }
-  #gameTfd { max-width: 780px; margin: 0 auto; }
+  #gameTfd { margin: 0 auto; }
   .card { padding: 52px 40px 46px; }
   .tfd-text { font-size: 27px; }
   #page-home .qotd-q { font-size: 20px; }
 
-  /* ---- PLAN: same comfortable column as Trips ---- */
-  #page-plan.active { max-width: 780px; margin: 0 auto; }
+  /* ---- PLAN ---- */
+  #page-plan.active { margin: 0 auto; }
 
   /* ---- TREATS: wider Food grid, roomier month rail ----
      Keyed on the TAB for width and on the SUB-VIEW for the grids: treatsShow()
      sets an inline display on #treatFood, and an inline style beats a rule
      here — which is exactly why it sets "" and never "block". */
-  #page-treats.active { max-width: 940px; margin: 0 auto; }
+  #page-treats.active { margin: 0 auto; }
   #treatFood .fd-grid { grid-template-columns: repeat(5, 1fr); }
   #treatFood .fd-rail { width: 84px; font-size: 12px; }
   #treatFood .fd-albumgrid { grid-template-columns: repeat(6, 1fr); }
 
-  /* ---- JOURNEYS: wider timeline, 4-up photo grid ---- */
-  #page-journeys.active { max-width: 880px; }
-  .jr-photos { grid-template-columns: repeat(4, 1fr); }
+  /* ---- JOURNEYS: 5-up photo grid ----
+     Was 4-up against an 880px page; at the shared 1080 that made every
+     thumbnail 250px, which is a photo album, not a timeline. Five keeps them
+     the size they were. */
+  .jr-photos { grid-template-columns: repeat(5, 1fr); }
 
   /* ---- WORD DUEL: letters beside the scoreboard ---- */
-  #page-duel.active { max-width: 980px; }
   #page-duel #gameDuel {
     display: grid;
     grid-template-columns: 1.1fr 1fr;
@@ -107,13 +117,12 @@
   #gameDuel #wdPenaltyPanel  { grid-area: penalty; }
   .wd-letters .wd-l { font-size: 76px; }
 
-  /* ---- 20 QUESTIONS: a comfortable reading column ---- */
-  #game20q { max-width: 720px; margin: 0 auto; }
+  /* ---- 20 QUESTIONS ---- */
+  #game20q { margin: 0 auto; }
   #game20q .q20-log { max-height: 420px; }
 
   /* ---- MOON: the calendar beside the numbers ---- */
   #page-cycle.active {
-    max-width: 940px;
     margin: 0 auto;
     display: grid;
     grid-template-columns: 1.15fr 1fr;
