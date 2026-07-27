@@ -200,7 +200,16 @@ can reference anything.
   dropdown is the simple pipeline from an unfinished 📍 Someday wish: choosing
   one copies its title, note and estimated cost, and the wish becomes `done`
   only after the journey is saved locally. Opening or cancelling the form must
-  never make a wish disappear
+  never make a wish disappear. **Every subtab's top island is foldable and
+  starts folded** (`.foldbtn`/`data-fold` from `js/core.js` — `#sdIsland`,
+  `#tpIsland`, `#mnIsland`), same convention as Trips/Food/Gifts. A plan can
+  be **deleted** (`tpDelete`) as well as graduated — a cancelled trip used to
+  have to be lied about to get off the list; `trip_places` cascades, so the
+  confirm says so. The itinerary (`trOpen`) is reachable from BOTH sides:
+  `js/trip.js` remembers the tab that opened it (`trBackTab`) so ✈️ Trips can
+  hop into 📋 Plan and the planner's ‹ hands you back. `planShow()` calls
+  `trClose()` — an open planner hides `#tpList`, and it used to survive a
+  subtab switch and leave Trip Plan looking empty
 - 🎮 Games tab (key `duel`, nav "🎮 Games") holds TWO games behind a chooser:
   Word Duel and 20 Questions. `gamesShow(which)` in `js/twenty.js` swaps
   `#gameDuel`/`#game20q` and sets `gamesPick` (declared in `js/core.js`),

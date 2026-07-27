@@ -627,7 +627,10 @@
     <div id="planSomeday">
 
       <div class="panel">
-        <div class="ptitle">Everything we want</div>
+        <button class="ptitle foldbtn" data-fold="sdIsland" aria-expanded="false">
+          <span>Everything we want</span><span class="foldchev">▸</span>
+        </button>
+        <div id="sdIsland">
         <div class="sd-status" id="sdStatus">Loading…</div>
         <div class="sd-filters" id="sdFilters">
           <span class="chip sel" data-kind="all">✨ All</span>
@@ -642,6 +645,7 @@
           <button id="sdDoneToggle">👀 Show done</button>
         </div>
         <div class="sd-picked" id="sdPicked" style="display:none"></div>
+        </div>
       </div>
 
       <!-- Doubles as the edit form: sdStartEdit() fills it and retitles it,
@@ -670,11 +674,13 @@
     <div id="planTrip" style="display:none">
 
       <div class="panel">
-        <div class="ptitle">The next one</div>
-        <div style="font-size:17px; font-weight:600;">🗓️ When are we in the same place?</div>
-        <div class="rowbtns"><button class="primary" id="tpAddBtn">➕ Plan a trip</button></div>
-        <div class="hint">A planned trip is the same row as a real one — when it's over, tap
-          “We went” and it moves into ✈️ Trips, keeping its photos ✈️</div>
+        <button class="ptitle foldbtn" data-fold="tpIsland" aria-expanded="false">
+          <span>The next one</span><span class="foldchev">▸</span>
+        </button>
+        <div id="tpIsland">
+          <div style="font-size:17px; font-weight:600;">🗓️ When are we in the same place?</div>
+          <div class="rowbtns"><button class="primary" id="tpAddBtn">➕ Plan a trip</button></div>
+        </div>
       </div>
 
       <div class="panel sd-form" id="tpForm" style="display:none; text-align:left;">
@@ -740,7 +746,10 @@
     <div id="planMoney" style="display:none">
 
       <div class="panel">
-        <div class="ptitle">The pot</div>
+        <button class="ptitle foldbtn" data-fold="mnIsland" aria-expanded="false">
+          <span>The pot</span><span class="foldchev">▸</span>
+        </button>
+        <div id="mnIsland">
         <div class="mn-note" id="mnNote"></div>
         <div class="mn-form">
           <select id="mnKind">
@@ -751,6 +760,7 @@
           <input type="text" id="mnWhat" placeholder="What for? (optional)" maxlength="80">
           <input type="date" id="mnDate">
           <div class="rowbtns"><button class="primary" id="mnSave">💾 Log it</button></div>
+        </div>
         </div>
       </div>
 

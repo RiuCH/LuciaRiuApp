@@ -197,3 +197,36 @@
   border-color: var(--accent);
   color: var(--text);
 }
+
+/* ------- trip-plan cards ------- */
+/* The three actions share ONE row at phone width. `flex: 1 1 0` makes them
+   split whatever the card is rather than each asking for its own label width,
+   so they can't wrap however narrow the phone. 🗑️ moved to the corner to buy
+   the space — see tpRender(). */
+#tpList .sd-card { position: relative; }
+#tpList .sd-title { padding-right: 34px; }
+#tpList .rowbtns { gap: 6px; }
+#tpList .rowbtns button {
+  /* Natural width, NOT an equal third. Equal thirds fit the *box* at any
+     width but starve the longest label: "⏳ Countdown" needs 89px of an 84px
+     content box at 375px, so it ate its own padding and sat cramped against
+     its border while its neighbours had 14px to spare. Sized to their labels
+     the three come to ~281px of the ~305px a 375px phone gives them — one
+     row, and every button keeps its padding.
+     `wrap` is left on as the safety valve: below ~360px it becomes two rows
+     rather than spilling outside the card. */
+  flex: 0 1 auto;
+  padding: 10px 8px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.tp-del {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 4px 9px;
+  font-size: 12px;
+  border-radius: 999px;
+  opacity: 0.5;
+}
+.tp-del:hover { opacity: 1; }

@@ -20,6 +20,9 @@ const PLAN_SUBTITLES = { someday: "Someday", trip: "The Next One", money: "The P
 
 function planShow(which) {
   planPick = which;
+  // The day-by-day planner hides #tpList while it's open. Switching sub-views
+  // used to leave both in that state, so 🗓️ Trip Plan came back empty.
+  if (typeof trClose === "function") trClose();
   Object.keys(PLAN_VIEWS).forEach(k => {
     const el = document.getElementById(PLAN_VIEWS[k]);
     if (el) el.style.display = k === which ? "" : "none";

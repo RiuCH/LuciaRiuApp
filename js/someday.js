@@ -469,6 +469,16 @@ function tpRender() {
       card.appendChild(c);
     }
 
+    // 🗑️ goes in the corner rather than the button row: it's the action you
+    // want least often, and moving it is what lets the other three share one
+    // row at phone width instead of wrapping onto a second.
+    const del = document.createElement("button");
+    del.className = "tp-del";
+    del.textContent = "🗑️";
+    del.title = "Delete this plan";
+    del.addEventListener("click", () => tpDelete(j));
+    card.appendChild(del);
+
     const row = document.createElement("div");
     row.className = "rowbtns";
     const done = document.createElement("button");
@@ -478,7 +488,7 @@ function tpRender() {
     done.addEventListener("click", () => tpGraduate(j));
     row.appendChild(done);
     const cd = document.createElement("button");
-    cd.textContent = "⏳ Count down to this";
+    cd.textContent = "⏳ Countdown";
     cd.addEventListener("click", () => tpSetCountdown(j));
     row.appendChild(cd);
     // Task F1 lives in js/trip.js; guarded so this card still works without it.
@@ -513,6 +523,25 @@ function tpSetCountdown(j) {
   tickCountdown();
   saveReunion(j.start_date);
   popToast("Home is counting down to " + j.place + " 💞");
+}
+
+// A plan that isn't happening. "We went" was the only way off this list, which
+// meant a cancelled trip had to be lied about to get rid of it.
+// `trip_places` is `on delete cascade`, so the itinerary goes with it — say so
+// rather than surprising anyone.
+async function tpDelete(j) {
+  const places = "Delete the plan for " + j.place + "?" +
+    (typeof trOpen === "function" ? " Its itinerary goes too." : "");
+  if (!confirm(places)) return;
+  const keep = journeys.filter(x => x !== j);
+  if (supaOn() && typeof j.id === "number") {
+    try { await supa("journeys?id=eq." + j.id, { method: "DELETE" }); }
+    catch (e) { popToast("Couldn't delete that 😢 (" + e.message + ")"); return; }
+  }
+  journeys = keep;
+  tpRender();
+  if (typeof renderJourneys === "function") renderJourneys();
+  popToast("Plan deleted 🗑️");
 }
 
 async function tpGraduate(j) {
