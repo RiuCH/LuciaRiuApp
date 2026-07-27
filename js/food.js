@@ -847,7 +847,10 @@ function treatsShow(which) {
   if (gifts) gifts.style.display = which === "gifts" ? "" : "none";
   document.querySelectorAll("#treatsPicker .chip").forEach(c =>
     c.classList.toggle("sel", c.dataset.treat === which));
+  // only the visible tab owns `#sub`, or a boot-time call from another tab
+  // would overwrite the sub-view we are trying to restore
   if (activeTab === "treats") {
+    setHashParam("sub", which, true);
     document.getElementById("subtitle").textContent =
       which === "gifts" ? "Everything We've Given" : SUBTITLES.treats;
   }
@@ -865,3 +868,9 @@ function fdLoadIfNeeded() { if (fdReady === null || fdReady === false) fdLoad();
 // subtitle on screen. treatsShow() is idempotent and only touches the network
 // when Food is the visible one, so this stays cheap.
 TAB_HOOKS.treats = () => treatsShow(treatsPick);
+
+// Restore this tab's sub-view on refresh (js/init.js). Validated, because
+// treatsShow() hides anything it does not recognise — a stale or hand-typed
+// `#sub` would otherwise leave 💝 Treats blank.
+const TREAT_SUBS = ["food", "gifts"];
+TAB_SUBS.treats = which => { if (TREAT_SUBS.indexOf(which) !== -1) treatsShow(which); };

@@ -10,12 +10,19 @@ function getHashParam(name) {
     return m ? m[1] : null;
   } catch (e) { return null; }
 }
-function setHashParam(name, val) {
+// `replace` rewrites the current history entry instead of adding one. Used for
+// things that change constantly — which tab you're on — so the back button
+// still leaves the app instead of walking you through twenty tab switches.
+function setHashParam(name, val, replace) {
   try {
     const parts = location.hash.replace(/^#/, "").split("&")
       .filter(p => p && !p.startsWith(name + "="));
     parts.push(name + "=" + val);
-    location.hash = parts.join("&");
+    if (replace && history.replaceState) {
+      history.replaceState(null, "", location.pathname + location.search + "#" + parts.join("&"));
+    } else {
+      location.hash = parts.join("&");
+    }
   } catch (e) {}
 }
 
@@ -66,8 +73,18 @@ let planPick = "someday";     // 📋 Plan:   "someday" | "trip"   — js/plan.j
 // switch to that tab, so keep it cheap and idempotent.
 const TAB_HOOKS = {};
 
+// Which tab to reopen on refresh, and how each tab restores its sub-view.
+// A tab registers itself here so init.js can put you back exactly where you
+// were — see the restore step at the bottom of js/init.js.
+const TAB_SUBS = {};
+
 function switchTab(name) {
   activeTab = name;
+  // Remember it — EXCEPT 🌙 Moon. That tab is deliberately not sticky: a
+  // refresh is meant to land on Home so it re-hides itself, and writing
+  // `#tab=cycle` would also leave it sitting in the address bar. Its doors are
+  // the long-press and `#moon=1`, and that stays true.
+  if (name !== "cycle") setHashParam("tab", name, true);
   TABS.forEach(t => {
     document.getElementById("page-" + t).classList.toggle("active", t === name);
     const nav = NAVIDS[t] ? document.getElementById(NAVIDS[t]) : null;

@@ -29,7 +29,10 @@ function planShow(which) {
   });
   document.querySelectorAll("#planPicker .chip").forEach(c =>
     c.classList.toggle("sel", c.dataset.plan === which));
+  // only the visible tab owns `#sub`, or a boot-time call from another tab
+  // would overwrite the sub-view we are trying to restore
   if (activeTab === "plan") {
+    setHashParam("sub", which, true);
     document.getElementById("subtitle").textContent =
       PLAN_SUBTITLES[which] || SUBTITLES.plan;
   }
@@ -75,3 +78,7 @@ TAB_HOOKS.plan = () => {
 function planRenderMoney() {
   if (typeof mnRender === "function") mnRender();
 }
+
+// Restore this tab's sub-view on refresh (js/init.js). Validated against
+// PLAN_VIEWS, since planShow() hides every view it does not recognise.
+TAB_SUBS.plan = which => { if (PLAN_VIEWS[which]) planShow(which); };

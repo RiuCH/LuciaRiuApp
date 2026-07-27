@@ -39,6 +39,25 @@ loadSettings().then(rows => {
 });
 // The backup door into the hidden Moon tab, for when a long-press is awkward.
 // The long-press in js/core.js is the everyday way in.
+// Put you back where you were. `#tab` is written by switchTab() on every
+// switch, so a refresh reopens the same tab and sub-view instead of bouncing
+// to Home. Validated against TABS: a stale or hand-typed value falls through
+// to Home rather than leaving every page hidden.
+//
+// 🌙 Moon is excluded by switchTab() itself, so `#tab` can never say `cycle` —
+// that tab is meant to re-hide on refresh.
+boot("restore the tab", () => {
+  const want = getHashParam("tab");
+  if (!want || want === "cycle" || TABS.indexOf(want) === -1) return;
+  // Read `#sub` BEFORE switching: switchTab() fires TAB_HOOKS, whose chooser
+  // repaints its default sub-view and writes `#sub` on the way past — so
+  // reading afterwards gets the default back, not what we saved.
+  const sub = getHashParam("sub");
+  switchTab(want);
+  if (sub && TAB_SUBS[want]) TAB_SUBS[want](sub);   // each one validates its own
+});
+
+// AFTER the restore, so an explicit `#moon=1` still wins over a remembered tab.
 boot("moon door", () => { if (getHashParam("moon") === "1") switchTab("cycle"); });
 // couple photo: hash-param fallback first; loadSettings() overrides with the DB copy
 (function cpInit() {
