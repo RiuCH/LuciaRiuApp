@@ -37,7 +37,10 @@ function gamesShow(which) {
   });
   document.querySelectorAll("#gamesPicker .chip").forEach(c =>
     c.classList.toggle("sel", c.dataset.game === which));
+  // only the visible tab owns `#sub`, or a boot-time call from another
+  // tab would overwrite the sub-view we are trying to restore
   if (activeTab === "duel") {
+    setHashParam("sub", which, true);
     document.getElementById("subtitle").textContent = gamesSubtitle(which);
   }
   // Talk is a one-phone deck draw — nothing shared, so nothing to pull.
@@ -430,3 +433,8 @@ function pickStable(list) {
   const seed = q20.asked.length + (q20.word ? q20.word.length : 0);
   return list[seed % list.length];
 }
+
+// Restore this tab's sub-view on refresh (js/init.js). Validates first:
+// gamesShow() hides every view it does not recognise, so a stale or hand-typed
+// `#sub` would otherwise blank the tab.
+TAB_SUBS.duel = which => { if (GAMES_VIEWS[which]) gamesShow(which); };

@@ -223,6 +223,8 @@ PR if you introduce a convention.
 | `photo` | Couple photo (link/album fallback when DB is off) |
 | `me` | Which of us is on this phone (`lucia`/`riu`) — Word Duel |
 | `moon` | Backup door into the hidden 🌙 Moon tab (`#moon=1`) |
+| `tab` | Which tab to reopen on refresh. Written by `switchTab()` with replaceState, so it never piles up history. **Never `cycle`** — 🌙 Moon is deliberately not sticky |
+| `sub` | The sub-view inside a tab with a chooser (Games / Treats / Plan). Restored via the `TAB_SUBS` registry in `js/core.js`, each entry validating its own values |
 
 **Tabs** (`page-*` section ids + `NAVIDS`/`SUBTITLES` keys — plus the `TABS`
 array in `js/core.js`, which is what `switchTab` actually iterates):
