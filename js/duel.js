@@ -145,6 +145,34 @@ let wdPenaltyText = "";
 let wdMe = getHashParam("me") || null;    // which of us is on this phone
 let wdPushing = false;                    // don't let a poll clobber my own write
 
+// ---------------- the fair reveal ----------------
+// Rolling used to render locally and push afterwards, so the roller saw the
+// letters instantly while the other phone waited up to a full 2s poll — a
+// guaranteed head start in a game about speed.
+//
+// Now nobody sees them early: the roll writes the letters together with a
+// moment to reveal them, ~3s out on the SHARED clock (serverNow(), js/
+// supabase.js). Both phones count down to the same instant. Three seconds is
+// chosen to swallow the 2s poll interval, so even a phone that polls a
+// heartbeat before the deadline still gets a countdown rather than a jump.
+//
+// The precedent is the answer race, which lets Postgres decide who was first
+// rather than comparing two clocks. Same principle: agree on one timebase.
+const WD_REVEAL_MS = 3000;
+let wdRevealAt = 0;                       // shared-clock ms; 0 = nothing pending
+let wdRevealTimer = null;
+
+function wdRevealPending() { return wdRevealAt > 0 && serverNow() < wdRevealAt; }
+function wdRevealCount() { return Math.max(1, Math.ceil((wdRevealAt - serverNow()) / 1000)); }
+
+// Re-render while counting down, then once more the moment it lands.
+function wdRevealTick() {
+  clearTimeout(wdRevealTimer);
+  if (!wdRevealPending()) { wdRenderLetters(false); return; }
+  wdRenderLetters(false);
+  wdRevealTimer = setTimeout(wdRevealTick, 120);
+}                    // don't let a poll clobber my own write
+
 const wdLettersEl = document.getElementById("wdLetters");
 const wdWordInput = document.getElementById("wdWordInput");
 
@@ -185,7 +213,8 @@ let wdSynced = null;            // null = unknown yet, true = sharing, false = a
 function wdSnapshot() {
   return {
     hearts: wdHearts, round: wdRoundNum, l1: wdL.l1, l2: wdL.l2,
-    play: wdPlay, words: wdWords, pmode: wdPenaltyMode, penalty: wdPenaltyText
+    play: wdPlay, words: wdWords, pmode: wdPenaltyMode, penalty: wdPenaltyText,
+    revealAt: wdRevealAt
   };
 }
 
@@ -241,6 +270,10 @@ function wdApply(state, firstBy) {
     wdWords = state.words || { lucia: null, riu: null };
     wdPenaltyMode = WD_PENALTIES[state.pmode] ? state.pmode : "ldr";
     wdPenaltyText = state.penalty || "";
+    // Adopt the shared deadline. Both phones now count to the same instant
+    // rather than each revealing whenever its own poll happened to land.
+    const at = Number(state.revealAt) || 0;
+    if (at !== wdRevealAt) { wdRevealAt = at; wdRevealTick(); }
   }
   wdFirstBy = firstBy || null;
   // don't yank the keyboard out from under someone mid-word
@@ -304,6 +337,20 @@ window.addEventListener("focus", () => { if (activeTab === "duel" && gamesPick =
 
 // ---- rendering ----
 function wdRenderLetters(animate) {
+  // Counting down: hold the letters back and show the same number on both
+  // phones. wdRevealTick() drives the repaints and stops itself at zero.
+  if (wdRevealPending()) {
+    const n = wdRevealCount();
+    document.getElementById("wdL1").textContent = n;
+    document.getElementById("wdL2").textContent = n;
+    document.getElementById("wdSub").textContent =
+      "Both phones get these at the same moment — ready…";
+    wdLettersEl.classList.add("wd-counting");
+    wdLettersEl.classList.remove("swapping");
+    return;
+  }
+  wdLettersEl.classList.remove("wd-counting");
+
   const paint = () => {
     document.getElementById("wdL1").textContent = wdL.l1;
     document.getElementById("wdL2").textContent = wdL.l2;
@@ -441,13 +488,20 @@ function wdRollLetters(bumpRound) {
   wdWords = { lucia: null, riu: null };
   wdFirstBy = null;
   wdWordInput.value = "";
-  wdRenderLetters(true);
-  wdRenderHearts();
-  wdRenderRace();
+
+  // A shared round hides the letters behind a countdown so the roller gains
+  // nothing by being the one who tapped. Alone — local mode, or the boot roll
+  // that gives the duel something to show offline — there is nobody to be fair
+  // to, so reveal at once.
+  wdRevealAt = (bumpRound && supaOn()) ? serverNow() + WD_REVEAL_MS : 0;
+
   if (bumpRound) {
     wdPush();
     wdResetFirst();   // fresh round: nobody has answered yet
   }
+  wdRevealTick();     // paints the countdown, or the letters when there isn't one
+  wdRenderHearts();
+  wdRenderRace();
 }
 
 function wdLoseHeart(loser, e) {

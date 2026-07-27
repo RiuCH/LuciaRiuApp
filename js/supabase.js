@@ -22,6 +22,33 @@ function supaOn() { return SUPABASE_URL.length > 0 && SUPABASE_ANON_KEY.length >
 // the deploy and the lockdown don't have to happen in the same instant.
 // js/auth.js loads after this file, so authToken may not exist yet at parse
 // time — it's only ever called from inside a request, by which point it does.
+// ---------------- server clock ----------------
+// Two phones cannot reveal something simultaneously unless they agree on a
+// moment, and their own clocks are not that agreement — the duel's letter
+// reveal needs one shared timebase. Every Supabase response carries a `Date`
+// header, so the skew is free: no migration, no extra request.
+//
+// That header is SECOND resolution, so this is accurate to roughly ±0.5s and
+// no better. Don't build anything on it that needs more than that; the duel's
+// countdown is 3s precisely so half a second of error is invisible.
+let SUPA_SKEW_MS = 0;          // serverNow - localNow
+
+function supaNoteTime(res, sentAt) {
+  const raw = res.headers.get("date");
+  if (!raw) return;
+  const stamp = Date.parse(raw);
+  if (!stamp) return;
+  const rtt = Date.now() - sentAt;
+  // +500 centres the header's truncation-to-the-second; rtt/2 is the guess at
+  // one-way travel, which is the usual approximation and good enough here.
+  SUPA_SKEW_MS = (stamp + 500) - (sentAt + rtt / 2);
+}
+
+// The clock both phones agree on. Falls back to the local clock before the
+// first response has landed, which is correct: with no server contact there is
+// no second phone to be fair to.
+function serverNow() { return Date.now() + SUPA_SKEW_MS; }
+
 async function supa(path, opts) {
   opts = opts || {};
   // If a token renewal is in flight, wait for it rather than firing a request
@@ -31,6 +58,7 @@ async function supa(path, opts) {
     try { await authPending; } catch (e) { /* renewal failed — fall through to anon */ }
   }
   const token = (typeof authToken === "function" && authToken()) || SUPABASE_ANON_KEY;
+  const sentAt = Date.now();
   const res = await fetch(SUPABASE_URL + "/rest/v1/" + path, {
     method: opts.method || "GET",
     headers: {
@@ -41,6 +69,7 @@ async function supa(path, opts) {
     },
     body: opts.body ? JSON.stringify(opts.body) : undefined
   });
+  supaNoteTime(res, sentAt);      // keep the shared clock fresh on every call
   if (!res.ok) throw new Error("Supabase said " + res.status);
   const text = await res.text();
   return text ? JSON.parse(text) : null;

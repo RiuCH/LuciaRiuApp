@@ -85,3 +85,14 @@
 
 /* the flavour of the drawn penalty (funny / spicy / nasty) */
 .wd-flavor { margin-top: 14px; }
+
+/* counting down to a shared reveal — the numbers stand in for the letters */
+.wd-letters.wd-counting .wd-l {
+  color: var(--text-dim);
+  animation: wdCount 1s ease-in-out infinite;
+}
+.wd-letters.wd-counting .wd-arrow { opacity: 0.25; }
+@keyframes wdCount {
+  0%, 100% { transform: scale(1); opacity: 0.65; }
+  50%      { transform: scale(1.12); opacity: 1; }
+}
