@@ -64,7 +64,7 @@ out of each other's way.
 | Session | Who | Feature | Regions of index.html claimed | Status |
 |---|---|---|---|---|
 
-| _(none)_ | | | | |
+| 2026-07-26-theme | Riu | 🎨 Themes + a picker in Settings | New `js/theme.js` + `css/themes.css` and their tags; one `.set-group` inside `#settingsPanel`. One line of `css/base.css` (the `.hot` selector) and one of `js/tfd.js` (the `theme-color` meta). Touches no tab | 🚧 in progress |
 
 <!-- Row template:
 | 2026-07-24-login | Riu | Login page | lock CSS block, lock HTML block, LOCK SCREEN script block | ✅ shipped |
@@ -267,7 +267,9 @@ Settings keys claimed: `lock_keys`, `reunion_date`, `home_photo` (couple
 photo: image URL, upload data-URL, or `album:<link>` for photo-of-the-day),
 `duel_state` + `duel_first` (Word Duel shared game), `cycle_periods` +
 `love_log` (🌙 Moon calendar — `start:len` and `date:count` lists, both
-plain text so they can be repaired by hand in the table editor).
+plain text so they can be repaired by hand in the table editor), `theme`
+(the palette, a `THEMES` key from `js/theme.js` — **shared, so changing it
+changes both phones**, which is the point).
 
 **Chooser globals in `js/core.js`** (each guards its tab's on-screen work so
 only the visible sub-view fetches or polls): `gamesPick` (🎮 Games) is live;
