@@ -57,6 +57,15 @@ session's claims, ask the user before proceeding.
    wider. Add a Home/Duel panel ⇒ give it an id and assign it a grid area
    there, or it drops into an implicit row. Never fork the markup or add
    JS breakpoints — desktop must stay pure CSS on top of mobile.
+6. **Every tab is the same width on a laptop — don't give one its own
+   `max-width`.** `.page.active { max-width: none }` makes them all fill
+   `.app`, and `.app` is the single place to change how wide the app is.
+   Tabs used to cap themselves individually (Plan 780, Journeys 880, Treats
+   and Moon 940, Games 980, and 720–780 again for sub-views inside Games), so
+   switching tabs jumped the content column by up to 360px and nothing lined
+   up with the header or the nav. If a tab feels too wide, change the GRID
+   inside it (column count, card size) — that's content density. Page width
+   is not yours to set.
 
 ## The shared-daily pattern (the app's one clever trick)
 

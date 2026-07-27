@@ -91,7 +91,7 @@ because skipping them broke something.
 | `css/duel.css` | letter pair, hearts, penalty modes |
 | `css/twenty.css` | Games-tab chooser, 20 Questions board + interrogation log |
 | `css/cycle.css` | 🌙 Moon: month grid, day marks, stat tiles |
-| `css/desktop.css` | the whole `@media (min-width: 900px)` layout |
+| `css/desktop.css` | the whole `@media (min-width: 900px)` layout — every tab is `.app` wide, no per-tab caps |
 | `js/core.js` | hash params, `EPOCH`/`afterDark`, `mulberry32`, `dayNumber`, `switchTab`, `popToast`, `burst`, hearts |
 | `js/supabase.js` | `SUPABASE_*` config, `supa()`, `loadSettings()`, `saveReunion()`, `loadQuestions()` |
 | `js/questions.js` | `BANK` (11 prompt categories), `CHIPS`, `QUESTION_SOURCE`, the seeded daily deck (`dailyQuestion()`) |
