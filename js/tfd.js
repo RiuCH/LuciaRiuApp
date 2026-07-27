@@ -103,8 +103,10 @@ function tfdSetMode(together, e) {
   hotMode = together;
   [document.body, document.documentElement].forEach(el =>
     el.classList.toggle("hot", hotMode));
-  const meta = document.getElementById("themeColor");
-  if (meta) meta.content = hotMode ? "#0d0208" : "#1a0b2e";
+  // Read the live --bg1 instead of two hardcoded hexes: with themes there
+  // isn't one "normal" colour any more, and thSyncBar() gets it right for
+  // whichever palette is on as well as for hot mode.
+  if (typeof thSyncBar === "function") thSyncBar();
   // Talk is a sub-view of 🎮 Games now, so it owns the subtitle only while it
   // is the one on screen. gamesSubtitle() (js/twenty.js) has the same rule.
   if (activeTab === "duel" && gamesPick === "tfd") {

@@ -15,8 +15,13 @@
 }
 /* Together mode's hot palette. Matches <html> AND <body> — the root needs
    the vars too so the canvas colour below follows the theme (js/tfd.js
-   toggles both). */
-.hot {
+   toggles both).
+   `html.hot, body.hot` rather than plain `.hot` on purpose: the theme classes
+   in css/themes.css are also single classes and load later, so with equal
+   specificity they'd win on source order and a theme could outrank Together
+   mode. The extra element in the selector settles it — pick any palette, going
+   Together still turns the app red. */
+html.hot, body.hot {
   --bg1: #0d0208;
   --bg2: #2b040f;
   --bg3: #560a1f;
