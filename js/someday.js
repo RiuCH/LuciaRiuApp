@@ -86,6 +86,11 @@ async function sdPatch(wish, patch) {
 }
 
 async function sdDelete(wish) {
+  // 🗑️ is one emoji button among five on a small card, and this list is the
+  // only copy — there's no undo and nothing to restore from. Every other
+  // delete in the app asks first (deleteJourney, tpDelete, fdDelete); this
+  // one didn't.
+  if (!confirm('Delete "' + wish.title + '" from Someday?')) return;
   sdWishes = sdWishes.filter(w => w !== wish);
   sdRender();
   if (!supaOn() || String(wish.id).startsWith("tmp")) return;
