@@ -202,21 +202,21 @@ function renderJourneys() {
       grid.className = "jr-photos jr-ours";
       mine.forEach(p => {
         const src = typeof fdViewUrl === "function" ? fdViewUrl(p) : (p.viewUrl || p.url);
-        const cell = document.createElement("span");
-        cell.className = "jr-ourcell";
         const img = document.createElement("img");
         img.loading = "lazy";
         img.decoding = "async";
         img.src = src;
         img.alt = j.place;
-        img.addEventListener("click", () => openLightbox({ full: src, thumb: src }));
-        const x = document.createElement("button");
-        x.className = "jr-ourx";
-        x.textContent = "✕";
-        x.title = "Remove this photo";
-        x.addEventListener("click", (e) => { e.stopPropagation(); jrRemovePhoto(j, p); });
-        cell.append(img, x);
-        grid.appendChild(cell);
+        // Removing is a lightbox action, not a grid one. A ✕ on every
+        // thumbnail put a destructive control under your thumb on a phone,
+        // one mis-tap from the photo it deletes — and it cluttered the grid
+        // the tab exists to show. You open the photo, then you can bin it.
+        img.addEventListener("click", () => openLightbox({
+          full: src,
+          thumb: src,
+          onRemove: () => jrRemovePhoto(j, p)
+        }));
+        grid.appendChild(img);
       });
       card.appendChild(grid);
     }
@@ -706,10 +706,17 @@ document.getElementById("jrPickerCancel").addEventListener("click", closePicker)
 const jrLightbox = document.getElementById("jrLightbox");
 const jrLightboxImg = document.getElementById("jrLightboxImg");
 const jrLightboxVid = document.getElementById("jrLightboxVid");
+const jrLightboxDel = document.getElementById("jrLightboxDel");
 
 function openLightbox(p) {
   if (typeof p === "string") p = { full: p }; // tolerate plain-URL callers
   if (!p || !p.full) return;
+  // Only photos we uploaded pass onRemove — an Apple album is read-only, so
+  // for those there is nothing here to offer.
+  jrLightboxDel.style.display = p.onRemove ? "" : "none";
+  jrLightboxDel.onclick = p.onRemove
+    ? (e) => { e.stopPropagation(); closeLightbox(); p.onRemove(); }
+    : null;
   const isVid = !!p.video;
   jrLightboxImg.style.display = isVid ? "none" : "block";
   jrLightboxVid.style.display = isVid ? "block" : "none";
@@ -722,11 +729,15 @@ function openLightbox(p) {
   }
   jrLightbox.classList.add("show");
 }
-jrLightbox.addEventListener("click", (e) => {
-  if (e.target === jrLightboxVid) return; // let the video controls work
+function closeLightbox() {
   jrLightbox.classList.remove("show");
   jrLightboxVid.pause();
   jrLightboxVid.removeAttribute("src");
+}
+jrLightbox.addEventListener("click", (e) => {
+  if (e.target === jrLightboxVid) return;      // let the video controls work
+  if (e.target === jrLightboxDel) return;      // its own handler runs instead
+  closeLightbox();
 });
 
 

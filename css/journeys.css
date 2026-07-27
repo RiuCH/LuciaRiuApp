@@ -189,25 +189,22 @@
    4px taller than the square photos, and keeps a broken image (deleted or
    expired object) filling its cell instead of shrinking to its alt text
    and colliding with the button below. */
-.jr-ourcell { position: relative; display: block; }
-.jr-ourcell img { display: block; }
-.jr-ourx {
+/* Removing a photo is a lightbox action, so the grid is just photos again.
+   Sits under the image rather than over it: on a phone the bottom of the
+   screen is the reachable part, and nothing destructive should overlap the
+   thing it destroys. */
+.jr-lbdel {
   position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 22px;
-  height: 22px;
-  padding: 0;
-  line-height: 1;
-  font-size: 11px;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 600;
   border-radius: 999px;
-  border: none;
+  border: 1px solid rgba(255,255,255,0.22);
   color: #fff;
   background: rgba(0,0,0,0.55);
-  opacity: 0.5;
   cursor: pointer;
-  transition: opacity 0.15s ease;
 }
-/* Faint but always drawn rather than hover-only: this app is used on phones
-   first, and a control that only exists on hover doesn't exist there. */
-.jr-ourcell:hover .jr-ourx, .jr-ourx:focus { opacity: 1; }
+.jr-lbdel:hover { background: rgba(190,40,60,0.75); border-color: rgba(255,255,255,0.4); }
