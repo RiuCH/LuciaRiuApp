@@ -168,6 +168,15 @@ function trRender() {
     : "Loading…";
   trEl("trAddBtn").disabled = trReady !== true;
 
+  // ✨ appears only when it can actually work: signed in, table there, and the
+  // trip has dates to plan across. A trip with no dates has no days to fill.
+  const draft = trEl("trDraftBtn");
+  if (draft) {
+    draft.style.display = trDraftOK() ? "" : "none";
+    draft.disabled = trDrafting;
+    draft.textContent = trDrafting ? "✨ Thinking…" : "✨ Draft a plan";
+  }
+
   const box = trEl("trDays");
   box.innerHTML = "";
   if (trReady !== true) return;
@@ -282,8 +291,206 @@ function trCloseMove() {
   trEl("trMove").classList.remove("show");
 }
 
+// ---------------- ✨ the draft ----------------
+// Claude gets the trip, the days, what's already planned, our ⭐ Someday list
+// and the pot — and hands back rows shaped like `trip_places`. It writes
+// NOTHING: the suggestions land in a sheet you tick through, and only then do
+// they go in via the same POST the ➕ form uses. The itinerary is shared, so a
+// draft that filed itself would be putting a dozen decisions in front of the
+// other person that neither of us agreed to.
+//
+// Everything here is feature-detected. With api/claude.js undeployed, js/ai.js
+// absent, or signed out, the button never appears and the tab is exactly what
+// it was before (golden rule 6).
+let trDrafting = false;
+let trDraftRows = [];      // { place, keep }
+let trDraftTotal = 0;
+
+function trDraftOK() {
+  return typeof aiReady === "function" && aiReady() &&
+         trReady === true && !!trTrip && trDays(trTrip).length > 0;
+}
+
+// 🎁 things are gifts, not trip plans — the other three kinds (📍 place,
+// 🍜 restaurant, 🎢 activity) are all things you'd do on a trip.
+function trDraftWishes() {
+  if (typeof sdWishes === "undefined") return [];
+  return sdWishes
+    .filter(w => w.status !== "done" && w.kind !== "thing")
+    .map(w => ({ kind: w.kind, title: w.title, note: w.note,
+                 added_by: w.added_by, est_cost: w.est_cost }));
+}
+
+function trDraftMoney() {
+  if (typeof mnPot !== "function" || typeof mnCommitted !== "function") return {};
+  const pot = mnPot(), committed = mnCommitted();
+  return { pot: pot, committed: committed, left: pot - committed };
+}
+
+async function trDraftRun() {
+  if (trDrafting || !trDraftOK()) return;
+  trDrafting = true;
+  trRender();
+  try {
+    const out = await aiCall("trip_draft", {
+      trip: { place: trTrip.place, days: trDays(trTrip) },
+      planned: trPlaces.map(p => ({ name: p.name, kind: p.kind, day_date: p.day_date })),
+      wishes: trDraftWishes(),
+      money: trDraftMoney()
+    });
+    trDraftRows = (out.places || []).map(p => ({ place: p, keep: true }));
+    trDraftTotal = Number(out.estimated_total || 0);
+    if (!trDraftRows.length) { popToast("Nothing to suggest this time 🤔"); return; }
+    trOpenDraft(out.summary || "");
+  } catch (e) {
+    popToast(e.message);
+  } finally {
+    trDrafting = false;
+    trRender();
+  }
+}
+
+// A date that isn't one of the trip's own days would create a place on a day
+// nothing renders — trRender only draws trDays() plus the saved bucket, so the
+// row would save and then be invisible. Anything unrecognised goes to saved.
+function trDraftDay(iso) {
+  if (!iso) return null;
+  return trDays(trTrip).indexOf(iso) >= 0 ? iso : null;
+}
+
+function trDraftDayLabel(iso) {
+  const day = trDraftDay(iso);
+  if (!day) return "🗂️ Saved";
+  return trDayLabel(day, trDays(trTrip).indexOf(day));
+}
+
+function trOpenDraft(summary) {
+  trEl("trDraftTrip").textContent = trTrip.place;
+  trEl("trDraftNote").textContent = summary;
+  trDraftRender();
+  trEl("trDraft").classList.add("show");
+}
+
+function trCloseDraft() {
+  trDraftRows = [];
+  trEl("trDraft").classList.remove("show");
+}
+
+function trDraftRender() {
+  const box = trEl("trDraftList");
+  box.innerHTML = "";
+  const frag = document.createDocumentFragment();
+  trDraftRows.forEach(row => {
+    const p = row.place;
+    const label = document.createElement("label");
+    label.className = "tr-draftrow";
+
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = row.keep;
+    cb.addEventListener("change", () => { row.keep = cb.checked; trDraftCount(); });
+    label.appendChild(cb);
+
+    const body = document.createElement("span");
+    const name = document.createElement("span");
+    name.className = "tr-draftname";
+    name.textContent = trKind(p.kind).label.split(" ")[0] + " " + p.name;
+    body.appendChild(name);
+
+    const meta = document.createElement("span");
+    meta.className = "tr-draftmeta";
+    meta.textContent = [trDraftDayLabel(p.day_date),
+                        p.est_cost ? "~$" + Math.round(p.est_cost) : ""]
+                       .filter(Boolean).join(" · ");
+    body.appendChild(meta);
+
+    if (p.why) {
+      const why = document.createElement("span");
+      why.className = "tr-draftwhy";
+      why.textContent = p.why;
+      body.appendChild(why);
+    }
+    label.appendChild(body);
+    frag.appendChild(label);
+  });
+  box.appendChild(frag);
+  trDraftCount();
+}
+
+function trDraftCount() {
+  const n = trDraftRows.filter(r => r.keep).length;
+  const btn = trEl("trDraftAdd");
+  btn.disabled = n === 0;
+  btn.textContent = n ? "➕ Add these " + n : "➕ Nothing ticked";
+
+  const row = trEl("trDraftCostRow");
+  const show = trDraftTotal > 0 && n > 0;
+  row.style.display = show ? "" : "none";
+  if (show) {
+    trEl("trDraftCostLbl").textContent =
+      "Set this trip's estimate to ~$" + Math.round(trDraftTotal).toLocaleString();
+  }
+}
+
+async function trDraftApply() {
+  const picked = trDraftRows.filter(r => r.keep).map(r => r.place);
+  const wantCost = trEl("trDraftCost").checked && trDraftTotal > 0;
+  if (!picked.length) return;
+  trCloseDraft();
+
+  // Positions are handed out locally: trNextPosition() reads trPlaces, which
+  // isn't reloaded between these POSTs, so calling it per row would give every
+  // place on a day the same position.
+  const next = {};
+  const posFor = day => {
+    const k = day || "";
+    if (next[k] == null) next[k] = trNextPosition(day);
+    return next[k]++;
+  };
+
+  let added = 0;
+  for (const p of picked) {
+    const day = trDraftDay(p.day_date);
+    try {
+      await supa("trip_places", { method: "POST", body: {
+        journey_id: trTrip.id,
+        name: String(p.name || "").slice(0, 80),
+        kind: trKind(p.kind).key,
+        day_date: day,
+        position: posFor(day),
+        note: p.note ? String(p.note).slice(0, 140) : null,
+        // "why" is literally why it's in the plan — the same thing this column
+        // holds when a person fills it in ("Sarah said the rooftop").
+        recommended_by: p.why ? String(p.why).slice(0, 60) : null
+      }});
+      added++;
+    } catch (e) { /* counted below — one bad row shouldn't lose the rest */ }
+  }
+
+  if (wantCost && added) await trDraftSetCost(trDraftTotal);
+  popToast(added === picked.length
+    ? "Added " + added + " ✨"
+    : "Added " + added + " of " + picked.length + " — the rest didn't save");
+  await trLoad();
+}
+
+async function trDraftSetCost(n) {
+  try {
+    await supa("journeys?id=eq." + trTrip.id, { method: "PATCH", body: { est_cost: n } });
+    trTrip.est_cost = n;                                  // same object `journeys` holds
+    if (typeof mnRender === "function") mnRender();        // committed just moved
+    if (typeof tpRender === "function") tpRender();
+  } catch (e) { popToast("Added — but couldn't save the estimate"); }
+}
+
+
 // ---------------- wiring ----------------
 if (trEl("trPlanner")) {
+  trEl("trDraftBtn").addEventListener("click", trDraftRun);
+  trEl("trDraftCancel").addEventListener("click", trCloseDraft);
+  trEl("trDraftAdd").addEventListener("click", trDraftApply);
+  trEl("trDraft").addEventListener("click", (e) => { if (e.target === trEl("trDraft")) trCloseDraft(); });
+
   trEl("trBack").addEventListener("click", () => trClose(true));
   trEl("trMove").addEventListener("click", (e) => { if (e.target === trEl("trMove")) trCloseMove(); });
   trEl("trMoveCancel").addEventListener("click", trCloseMove);

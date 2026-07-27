@@ -108,6 +108,7 @@ because skipping them broke something.
 | `js/twenty.js` | 20 Questions (`q20*`) **and** the Games-tab chooser (`gamesShow`) |
 | `js/cycle.js` | 🌙 Moon: cycle calendar + our tally (`cy*`) — the hidden tab |
 | `js/auth.js` | Google sign-in via Supabase Auth (`auth*`) — session, JWT, URL scrub |
+| `js/ai.js` | the one door to the Claude API (`ai*`) — `aiReady()` is how every ✨ feature hides itself |
 | `js/lock.js` | login gate (offline door; real auth skips it) |
 | `js/init.js` | boot order — **loads last** |
 
@@ -271,6 +272,28 @@ can reference anything.
   (documented exception to "boot work goes in init.js") because `js/lock.js`
   needs the answer before `init.js` runs. Sign-in cannot work from `file://`
   — a double-clicked `index.html` runs offline-only
+- **Claude / AI (`js/ai.js` + `api/claude.js`)**: there is exactly ONE endpoint
+  and it is **gated and task-based**. Three rules, all load-bearing:
+  1. **It verifies the caller.** Every request must carry a Supabase user JWT
+     whose email is in `LR_ALLOWED_EMAILS`. The other `api/` functions check
+     nothing about their caller — copying that here would let anyone with the
+     Vercel URL spend the Anthropic balance. The issuer (`LR_SUPABASE_URL`) is
+     read from env and **never from the request body**; taking it from the body
+     the way `api/food-import.js` does would be a total bypass (point it at
+     your own project, sign in as an allowlisted address, walk through).
+  2. **Named tasks, not prompts.** The browser sends *data*; the system prompt
+     lives server-side in `TASKS`. Adding a feature means adding a task there,
+     not letting a caller pass prose. This is what bounds the damage of a
+     stolen JWT to "reads our trip plan" instead of "runs anything, on our
+     card".
+  3. **`aiReady()` gates every caller.** `file://`, signed out, or the function
+     not deployed ⇒ the button is not rendered and the tab is complete without
+     it. Golden rule 6 applies to Claude exactly as it does to Supabase.
+  Vercel env: `ANTHROPIC_API_KEY`, `LR_ALLOWED_EMAILS`, `LR_SUPABASE_URL`,
+  `LR_SUPABASE_ANON_KEY`. The allowlist must agree with `public.is_us()` and
+  `allowed_emails` — three lists, one set of two people. **🌙 Moon data never
+  goes to the API**; payloads are explicit field whitelists, never "send the
+  table". First caller: ✨ Draft a plan in `js/trip.js`
 - Couple photo: `cp*` block — home hero image from `settings.home_photo`
   (URL / upload data-URL / `album:<link>` = Apple-album photo-of-the-day,
   seed offset 15485863); `#photo=` hash + session fallbacks

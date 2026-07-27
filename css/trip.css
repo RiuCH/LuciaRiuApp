@@ -91,3 +91,44 @@
 .tr-movelist { display: flex; flex-direction: column; gap: 6px; margin: 10px 0; }
 .tr-movechip { cursor: pointer; text-align: center; padding: 10px 14px; font-size: 12px; }
 .tr-movechip.sel { box-shadow: 0 0 12px var(--accent-soft); opacity: 1; }
+
+/* ------- the ✨ draft sheet ------- */
+/* Same overlay as the move sheet (.fd-lightbox does the backdrop), a little
+   wider because each row carries a reason as well as a name. */
+.tr-draftbox { width: min(520px, 94vw); max-height: 82vh; overflow-y: auto; margin-bottom: 0; }
+.tr-draftnote {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-dim);
+  margin: 8px 0 4px;
+}
+.tr-draftlist { display: flex; flex-direction: column; gap: 6px; margin: 10px 0; }
+
+/* A label wrapping the checkbox, so the whole row is the hit target — these
+   get tapped with a thumb. */
+.tr-draftrow {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 9px 11px;
+  border-radius: 14px;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  cursor: pointer;
+  text-align: left;
+}
+.tr-draftrow input { margin-top: 3px; flex: none; accent-color: var(--accent); }
+.tr-draftrow > span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.tr-draftname { font-size: 13px; font-weight: 600; }
+.tr-draftmeta { font-size: 11px; color: var(--text-dim); }
+.tr-draftwhy { font-size: 11.5px; line-height: 1.45; opacity: 0.85; }
+
+.tr-draftcost {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  font-size: 12px;
+  padding: 8px 2px 2px;
+  cursor: pointer;
+}
+.tr-draftcost input { accent-color: var(--accent); }
