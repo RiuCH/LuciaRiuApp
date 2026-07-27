@@ -51,6 +51,11 @@ out of each other's way.
    (see "Keep the skills in sync" in `couple-app-dev`).
 
 **Merge rules for the one-file app:**
+- **Before pushing a follow-up commit to a branch you already opened a PR
+  from, check the PR is still open** (`gh pr view <n> --json state -q .state`).
+  Riu merges when he likes, mid-session, without saying so — pushing to a
+  merged branch silently strands the work. Full procedure and the 2026-07-27
+  incident: `couple-app-dev` → Deploy.
 - Pull-before-push, every time. Two sessions editing different regions of
   `index.html` merge cleanly; same region = conflict = talk to the user.
 - Never leave `main` broken between sessions — every push is a deploy.

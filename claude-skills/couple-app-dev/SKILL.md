@@ -391,6 +391,41 @@ Code is the opposite: branch + PR, as always. If a roadmap edit is sitting in
 a feature branch next to code, lift that one file over to `main` (stash it,
 switch, pop) instead of merging the branch to get it out.
 
+### Check the PR is still open before pushing to it
+
+**Riu merges PRs himself, whenever he likes — including in the middle of your
+session, without telling you.** A branch you opened a PR from is not yours to
+assume anything about. Before adding a commit to a branch whose PR you already
+opened:
+
+```bash
+gh pr view <n> --json state -q .state      # MERGED / CLOSED / OPEN
+```
+
+If it is not `OPEN`, that push goes to a dead branch: GitHub will accept it,
+the PR page will not show it, and nothing you wrote reaches `main`. It looks
+exactly like success. Start a fresh branch off the **current** `origin/main`
+instead and cherry-pick:
+
+```bash
+git fetch origin
+git worktree add ../lr-<task> -b fix/<name> origin/main
+git cherry-pick <sha>          # or just redo the edit
+```
+
+This happened on 2026-07-27: four commits went onto `feature/plan-polish`,
+Riu merged PR #49 after the third, and the fourth (the Someday delete
+confirm) sat on a merged branch — reported as shipped, actually nowhere.
+
+Two habits that make it a non-issue:
+- **Re-check before every follow-up push**, not once per session. "It was open
+  ten minutes ago" is not evidence.
+- **After any push, confirm the commit is reachable from main** before you
+  tell Riu it shipped:
+  `git merge-base --is-ancestor <sha> origin/main && echo ON-MAIN || echo STRANDED`
+  (Expect STRANDED while a PR is legitimately awaiting review — the point is
+  to know which of the two you are looking at, and say so.)
+
 ## Keep the skills in sync (do this as part of every feature)
 
 The skills in `claude-skills/` are living docs — when a change makes them
