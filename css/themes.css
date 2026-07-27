@@ -13,51 +13,59 @@
    fewer thing can drift out of step. That's also why every theme here is
    dark — a light one needs the hardcoded `rgba(10,4,18,…)` in `.nav`, the
    `.mn-negative` red and friends turned into variables first, and shipping a
-   half-legible light mode is worse than not shipping one. */
+   half-legible light mode is worse than not shipping one.
 
-/* 🌌 Midnight — deep blue, the quiet one */
+   ONE RULE IF YOU ADD A THEME: make bg1→bg2→bg3 travel across the colour
+   wheel, not up a lightness ramp. The body gradient animates its position over
+   18s, so a palette whose three stops share a hue has nothing to animate
+   between and reads flat no matter how pretty the swatch is. The original
+   "Us" moves 61° (violet → purple → rose); the first cut of these moved 4°
+   (Forest) and 13° (Midnight), which is exactly why they looked lifeless.
+   Aim for 50-70° of travel, keep lightness climbing bg1→bg3. */
+
+/* 🌌 Midnight — navy that opens into teal */
 .theme-midnight {
-  --bg1: #070b1f;
-  --bg2: #12204a;
-  --bg3: #1b3b6f;
-  --accent: #7cb1ff;
-  --accent-soft: rgba(124, 177, 255, 0.26);
+  --bg1: #090821;
+  --bg2: #132f53;
+  --bg3: #1f6775;
+  --accent: #70e2ff;
+  --accent-soft: rgba(112, 226, 255, 0.26);
 }
 
-/* 🌅 Sunset — warm, the loud one */
+/* 🌅 Sunset — plum into red into amber, the way one actually goes */
 .theme-sunset {
-  --bg1: #2a0d12;
-  --bg2: #6b1f2a;
-  --bg3: #9c3d1e;
-  --accent: #ffa15c;
-  --accent-soft: rgba(255, 161, 92, 0.28);
+  --bg1: #2b0d20;
+  --bg2: #611a23;
+  --bg3: #8c4d1d;
+  --accent: #ffb65c;
+  --accent-soft: rgba(255, 182, 92, 0.26);
 }
 
-/* 🌲 Forest — green and calm */
+/* 🌲 Forest — deep teal shallowing into leaf green */
 .theme-forest {
-  --bg1: #05150f;
-  --bg2: #0f3a2c;
-  --bg3: #1c5c43;
-  --accent: #6fdcae;
-  --accent-soft: rgba(111, 220, 174, 0.25);
+  --bg1: #07181d;
+  --bg2: #134939;
+  --bg3: #256a2e;
+  --accent: #70ebad;
+  --accent-soft: rgba(112, 235, 173, 0.26);
 }
 
-/* 🖤 Ink — near-black, lets the photos do the talking */
+/* 🖤 Ink — near-black, with just enough violet drift to not look dead */
 .theme-ink {
-  --bg1: #0a0a0c;
-  --bg2: #16161a;
-  --bg3: #26262e;
-  --accent: #d8d8e0;
-  --accent-soft: rgba(216, 216, 224, 0.22);
+  --bg1: #0b0b0f;
+  --bg2: #1e1b22;
+  --bg3: #372e38;
+  --accent: #ded4e2;
+  --accent-soft: rgba(222, 212, 226, 0.22);
 }
 
-/* 🍓 Berry — pinker and sweeter than the default */
+/* 🍓 Berry — violet through magenta to rose */
 .theme-berry {
-  --bg1: #1e0a20;
-  --bg2: #4d0f3d;
-  --bg3: #7d1a4a;
-  --accent: #ff9ecb;
-  --accent-soft: rgba(255, 158, 203, 0.28);
+  --bg1: #1b0a24;
+  --bg2: #4c103a;
+  --bg3: #761e32;
+  --accent: #ff9ec2;
+  --accent-soft: rgba(255, 158, 194, 0.26);
 }
 
 

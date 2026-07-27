@@ -16,13 +16,16 @@
 
 // `null` for the default: it's plain :root with no class, so there's nothing
 // to add and nothing to strip. `dot` is what the swatch previews.
+// `dot`/`bar` are the swatch preview — they MUST stay in step with the --bg3
+// and --bg1 of the matching class in css/themes.css, or the picker advertises
+// a palette the app doesn't have.
 const THEMES = {
-  us:       { name: "Us",       cls: null,               dot: "#451952", bar: "#1a0b2e" },
-  berry:    { name: "Berry",    cls: "theme-berry",      dot: "#7d1a4a", bar: "#1e0a20" },
-  midnight: { name: "Midnight", cls: "theme-midnight",   dot: "#1b3b6f", bar: "#070b1f" },
-  sunset:   { name: "Sunset",   cls: "theme-sunset",     dot: "#9c3d1e", bar: "#2a0d12" },
-  forest:   { name: "Forest",   cls: "theme-forest",     dot: "#1c5c43", bar: "#05150f" },
-  ink:      { name: "Ink",      cls: "theme-ink",        dot: "#26262e", bar: "#0a0a0c" }
+  us:       { name: "Us",       cls: null,             dot: "#662549", bar: "#1a0b2e" },
+  berry:    { name: "Berry",    cls: "theme-berry",    dot: "#761e32", bar: "#1b0a24" },
+  midnight: { name: "Midnight", cls: "theme-midnight", dot: "#1f6775", bar: "#090821" },
+  sunset:   { name: "Sunset",   cls: "theme-sunset",   dot: "#8c4d1d", bar: "#2b0d20" },
+  forest:   { name: "Forest",   cls: "theme-forest",   dot: "#256a2e", bar: "#07181d" },
+  ink:      { name: "Ink",      cls: "theme-ink",      dot: "#372e38", bar: "#0b0b0f" }
 };
 const TH_DEFAULT = "us";
 let thCurrent = TH_DEFAULT;
