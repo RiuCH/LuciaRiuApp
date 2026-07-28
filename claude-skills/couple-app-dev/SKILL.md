@@ -212,17 +212,21 @@ exception to theme-derived component colour: they encode fixed person identity,
 stay constant across palettes by product decision, and are paired with visible
 owner text so colour is never the only cue.
 
-## Colour: everything comes from the five vars
+## Colour: everything comes from shared vars
 
-There are six palettes now (`css/themes.css`, picked in Settings, stored in
-`settings.theme` so it changes on **both** phones). They work because no
-component knows a colour — each theme only redefines `--bg1/2/3`, `--accent`,
-`--accent-soft`, and the rest of the app reads those.
+Palettes live in `css/themes.css`, are picked in Settings, and are stored in
+`settings.theme` so a choice changes on **both** phones. Dark palettes only
+need `--bg1/2/3`, `--accent`, and `--accent-soft`. The light Daydream palette
+also redefines the shared surface, text, control, navigation, semantic and
+native-control tokens exposed by `css/base.css`.
 
 - **Never hardcode a hex in a component.** A literal is a colour that won't
   follow the theme; it's how `button.toggled` sat on the wrong red for weeks.
-  `--card-bg`/`--card-border`/`--text`/`--text-dim` are deliberately
-  white-with-alpha so they sit on any dark background — leave them alone.
+  Use the shared surface/text tokens for anything that has to remain readable
+  in both light and dark themes: `--card-bg`, `--card-border`, `--text`,
+  `--text-dim`, `--control-bg`, `--control-hover`, `--nav-bg`, `--nav-hover`,
+  `--on-accent`, `--danger`, the success/warning/danger text and border
+  tokens, and `--color-scheme`.
 - A theme is one class on **`<html>` AND `<body>`** (the root needs it: its
   `background-color` paints the strip iOS rubber-bands into).
 - **💞 Together mode must outrank every theme.** `base.css` uses
@@ -232,11 +236,9 @@ component knows a colour — each theme only redefines `--bg1/2/3`, `--accent`,
 - The `theme-color` meta (the phone's status-bar tint) is set from the live
   computed `--bg1` by `thSyncBar()`. Don't write a hex into it — there isn't
   one "normal" colour any more.
-- Adding a theme = one class in `css/themes.css` + one entry in `THEMES`
-  (`js/theme.js`). No other file changes.
-- All six are dark on purpose. A light theme needs the leftover hardcoded
-  `rgba(10,4,18,…)` in `.nav`, the `.mn-negative` red and friends turned into
-  variables first — half-legible is worse than not shipping it.
+- Adding a dark theme = one class in `css/themes.css` + one entry in `THEMES`
+  (`js/theme.js`). A light theme must also supply every shared light/dark token
+  above and be checked across every tab, including forms and semantic states.
 
 ## Idle cost — the app must do nothing when nobody is looking
 

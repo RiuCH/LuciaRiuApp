@@ -78,7 +78,7 @@ because skipping them broke something.
 
 | File | What lives there |
 |---|---|
-| `css/base.css` | theme vars, layout shell, `.panel`/`.card`/`.chip`/buttons, Daily Q page, nav, toast, burst, lock screen |
+| `css/base.css` | theme vars (including shared light/dark surface tokens), layout shell, `.panel`/`.card`/`.chip`/buttons, Daily Q page, nav, toast, burst, lock screen |
 | `css/home.css` | anniversary, clocks, countdown, teasers, couple photo |
 | `css/tfd.css` | Talk · Flirt · Dare: mode switches, deck buttons, prompt card |
 | `css/journeys.css` | timeline, journey cards, photo grid, lightbox, picker |

@@ -35,7 +35,7 @@
 .wd-player .wd-name { font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
 .wd-hearts { font-size: 15px; letter-spacing: 2px; }
 .wd-lostbtn { padding: 8px 14px; font-size: 13px; }
-.wd-player.wd-dead { opacity: 0.55; border-color: #ff2e63; }
+.wd-player.wd-dead { opacity: 0.55; border-color: var(--danger); }
 .wd-modes { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
 .wd-modes .chip { cursor: pointer; opacity: 0.5; transition: opacity 0.25s ease, box-shadow 0.25s ease; }
 .wd-modes .chip.sel { opacity: 1; box-shadow: 0 0 14px var(--accent-soft); }

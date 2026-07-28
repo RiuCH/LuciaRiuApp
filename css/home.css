@@ -46,7 +46,7 @@ input[type="date"] {
   border: 1px solid var(--card-border);
   border-radius: 12px;
   padding: 9px 12px;
-  color-scheme: dark;
+  color-scheme: var(--color-scheme);
 }
 .missyou {
   display: none;

@@ -41,7 +41,7 @@
   border: 1px solid var(--card-border);
   border-radius: 12px;
   padding: 10px 8px;
-  color-scheme: dark;
+  color-scheme: var(--color-scheme);
 }
 .fd-newtag { margin-top: 12px; }
 .fd-pickbar {

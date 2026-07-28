@@ -11,10 +11,10 @@
   min-height: 16px;
 }
 /* Spending past what's in the pot is worth seeing, not hiding */
-.plan-pot.mn-negative { color: #ff6b6b; }
+.plan-pot.mn-negative { color: var(--danger); }
 /* Committing to more than we have — the question the simulation exists to
    answer, so it shouldn't be a number you have to squint at */
-.plan-sums.mn-over { color: #ff6b6b; font-weight: 600; }
+.plan-sums.mn-over { color: var(--danger); font-weight: 600; }
 
 .mn-panel {
   margin-top: 14px;
