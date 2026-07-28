@@ -110,7 +110,7 @@
      simulation sums over. A pot with nothing to spend it on is a calculator.
 
 4. **Gifts** 🎁 ✅ **shipped 2026-07-26 (task D1)** — the given half is live as
-   the second chip in 💝 Treats. Photos, giver/occasion filters, no prices.
+   the second chip in 💝 Memories. Photos, giver/occasion filters, no prices.
    Wishing still belongs to #5.
    *Original entry:* **one tap that shows everything we've ever given each other.**
    A running log: what it was, who gave it, when, and the occasion (birthday,
@@ -136,7 +136,7 @@
    - ~~Do Google login first~~ **— done in v10**, same reasoning as Money.
      **Unblocked.** The photos still inherit whatever we decide in #7 about
      private buckets.
-   - **Where it lives:** a chip in the 💝 Treats tab, beside 🍜 Food — see
+   - **Where it lives:** a chip in the 💝 Memories tab, beside 🍜 Food — see
      "Agreed tab structure" below. Not a nav button.
 
 5. **Someday** ⭐ — **one list of everything we want: places to go, restaurants
@@ -215,17 +215,18 @@ Now
 🏠 Home · 🎭 Talk · ✈️ Trips · 🍜 Food · 🎮 Games            + 🌙 Moon (hidden)
 
 Agreed
-🏠 Home · ✈️ Trips · 💝 Treats · 📋 Plan · 🎮 Games          + 🌙 Moon (hidden)
+🏠 Home · ✈️ Trips · 💝 Memories · 📋 Plan · 🎮 Games        + 🌙 Moon (hidden)
               │          │          │         │
               │          │          │         └─ 🎭 Talk · 🔤 Duel · 🎯 20Q
               │          │          └─ 💸 Money (strip) + ⭐ Someday · 🗓️ Trip Plan
-              │          └─ 🍜 Food · 🎁 Gifts
+              │          └─ 🍜 Food · 🎁 Gifts · 🖼️ Moodboard
               └─ the past ones (same `journeys` table as Trip Plan)
 ```
 
 **It splits by tense, which is the durable line.** ✈️ Trips is the big things
-that happened; 💝 Treats the small things eaten and given; 📋 Plan everything
-ahead; 🎮 Games is now. Answer & compare (#1) stays a Home card and costs no nav.
+that happened; 💝 Memories the small things eaten, given, and collected about
+each other; 📋 Plan everything ahead; 🎮 Games is now. Answer & compare (#1)
+stays a Home card and costs no nav.
 
 **The point of the layout — the lifecycle is visible:**
 
@@ -236,7 +237,7 @@ ahead; 🎮 Games is now. Answer & compare (#1) stays a Home card and costs no n
 
 A wish becomes a plan becomes a memory. The first two sit together in 📋 Plan;
 the payoff gets its own tab. Same shape for the other kinds: a restaurant wish
-graduates into 🍜 Food, a thing into 🎁 Gifts — both in 💝 Treats.
+graduates into 🍜 Food, a thing into 🎁 Gifts — both in 💝 Memories.
 
 **💸 Money is a line AND a chip** (revised 2026-07-26). The *reading* is one
 line pinned above the chooser — `pot − committed = what's left` on screen while
@@ -248,13 +249,13 @@ the reunion countdown. See #3.
 
 **Why the names.** "Us" was rejected: the app already uses it as a heading
 everywhere (`Us, in one picture`, `Us, so far`, `Us, by the numbers`, and
-Trips' own `Us, but with luggage`), so a tab called Us says nothing. 💝 Treats
-covers food and gifts honestly. And the games tab **keeps its 🎮 Games label
+Trips' own `Us, but with luggage`), so a tab called Us says nothing. 💝 Memories
+covers food, gifts, and the two moodboards honestly. And the games tab **keeps its 🎮 Games label
 rather than becoming "Play"** — `Plan` and `Play` are four letters starting
 `Pla`, adjacent, at 11px on a phone. That is a misfire waiting to happen.
 
-**Order: 💝 Treats first, then 📋 Plan, then 🎮 Games. One PR each, never one
-big one** — every push is a deploy to both phones. Treats is first because it
+**Order: 💝 Memories first, then 📋 Plan, then 🎮 Games. One PR each, never one
+big one** — every push is a deploy to both phones. Memories is first because it
 unblocks 🎁 Gifts; Plan is second because 💸 Money's simulation needs ⭐ Someday
 and 🗓️ Trip Plan to exist to sum over; folding 🎭 Talk into Games is the small
 tidy-up at the end and blocks nothing.
@@ -265,7 +266,7 @@ tidy-up at the end and blocks nothing.
    container, and the chooser must set `display = ""` **not** `"block"`, or the
    inline style kills the grid. `gamesShow()` carries that comment already.
 2. `TAB_HOOKS.food` calls `fdLoad()` and `TAB_HOOKS.journeys` hydrates photos,
-   both on tab open. Merged naively, opening 💝 Treats fires **both** — undoing
+   both on tab open. Merged naively, opening 💝 Memories fires **both** — undoing
    "journey photos only when Trips is opened". Each merged tab needs a `*Pick`
    guard mirroring `gamesPick`.
 3. `gamesPick` lives in `js/core.js` and guards each game's poll. Every new

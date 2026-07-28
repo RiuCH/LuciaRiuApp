@@ -841,22 +841,24 @@ fdEl("fdAlbumImport").addEventListener("click", async () => {
   if (done) { popToast(done + " copied in 🍜"); await fdLoad(); }
 });
 
-// ---------------- 💝 Treats chooser ----------------
-// The tab hosts Food and (from task D1) Gifts. Same shape as gamesShow() in
+// ---------------- 💝 Memories chooser ----------------
+// The tab hosts Food, Gifts and Moodboards. Same shape as gamesShow() in
 // js/twenty.js, including the one non-obvious bit: `display = ""` rather than
 // `"block"`, because css/desktop.css puts the wide grid on #treatFood and an
 // inline display would win over it.
 //
 // `treatsPick` lives in js/core.js so TAB_HOOKS below can guard on it — the
-// whole point being that opening 💝 Treats must NOT load a sub-view you can't
+// whole point being that opening 💝 Memories must NOT load a sub-view you can't
 // see. It's also remembered for the session, so coming back to the tab lands
 // you where you left off rather than always resetting to Food.
 function treatsShow(which) {
   treatsPick = which;
   const food = document.getElementById("treatFood");
   const gifts = document.getElementById("treatGifts");
+  const moodboard = document.getElementById("treatMoodboard");
   if (food) food.style.display = which === "food" ? "" : "none";
   if (gifts) gifts.style.display = which === "gifts" ? "" : "none";
+  if (moodboard) moodboard.style.display = which === "moodboard" ? "" : "none";
   document.querySelectorAll("#treatsPicker .chip").forEach(c =>
     c.classList.toggle("sel", c.dataset.treat === which));
   // only the visible tab owns `#sub`, or a boot-time call from another tab
@@ -864,9 +866,12 @@ function treatsShow(which) {
   if (activeTab === "treats") {
     setHashParam("sub", which, true);
     document.getElementById("subtitle").textContent =
-      which === "gifts" ? "Everything We've Given" : SUBTITLES.treats;
+      which === "gifts" ? "Everything We've Given"
+        : which === "moodboard" ? "Nine Little Windows Into Us"
+        : "Everything We've Eaten";
   }
   if (which === "food") fdLoadIfNeeded();
+  if (which === "moodboard" && typeof mbLoadIfNeeded === "function") mbLoadIfNeeded();
 }
 
 document.querySelectorAll("#treatsPicker .chip").forEach(chip =>
@@ -876,13 +881,13 @@ function fdLoadIfNeeded() { if (fdReady === null || fdReady === false) fdLoad();
 
 // Re-run the chooser on every open rather than just loading Food. switchTab()
 // sets the subtitle from SUBTITLES[tab] and knows nothing about sub-views, so
-// coming back to the tab with 🎁 Gifts remembered would otherwise leave Food's
+// coming back to the tab with 🎁 Gifts or 🖼️ Moodboard remembered would otherwise leave Food's
 // subtitle on screen. treatsShow() is idempotent and only touches the network
 // when Food is the visible one, so this stays cheap.
 TAB_HOOKS.treats = () => treatsShow(treatsPick);
 
 // Restore this tab's sub-view on refresh (js/init.js). Validated, because
 // treatsShow() hides anything it does not recognise — a stale or hand-typed
-// `#sub` would otherwise leave 💝 Treats blank.
-const TREAT_SUBS = ["food", "gifts"];
+// `#sub` would otherwise leave 💝 Memories blank.
+const TREAT_SUBS = ["food", "gifts", "moodboard"];
 TAB_SUBS.treats = which => { if (TREAT_SUBS.indexOf(which) !== -1) treatsShow(which); };

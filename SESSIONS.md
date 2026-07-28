@@ -68,6 +68,7 @@ out of each other's way.
 
 | Session | Who | Feature | Regions of index.html claimed | Status |
 |---|---|---|---|---|
+| 2026-07-27-memories-moodboard | Codex | Rename 💝 Treats → 💝 Memories + shared flippable moodboards | Treats chooser/nav, new Moodboard sub-view + tags | 🟡 active |
 
 
 <!-- Row template:
@@ -152,6 +153,12 @@ at all** (OSM has none) and nothing for Riu to pay for or configure.
 | **F4** | 🏨 Hotels + ✈️ Flights: docs and photos, reusing Food's upload path (PDFs stored as-is — a canvas can't resize one) | js/trip.js | table `trip_docs` | _(free, needs F1)_ |
 | **F5** | Drag-and-drop, replacing tap-to-assign — only if F1–F4 feel good | js/trip.js | — | _(free, needs F1)_ |
 
+### Track G — 💝 Memories moodboards
+
+| Task | What | Owns | Claims | Who |
+|---|---|---|---|---|
+| **G1** | Rename Treats to Memories; add Lucia/Riu expandable photo moodboards with per-square Flip, pink/blue ownership glow, and confirmed deletion | index.html, js/core.js, js/food.js, js/init.js, js/moodboard.js, css/moodboard.css, css/desktop.css | prefix `mb*`, settings keys `moodboard_prompts`, `moodboard_lucia`, `moodboard_riu` | 2026-07-27-memories-moodboard 🟡 active |
+
 ### Suggested first wave (four sessions, no overlap)
 **A1** · **B1** · **B2** · **C1** — then D1 and E1 open up as A lands.
 
@@ -224,7 +231,7 @@ PR if you introduce a convention.
 | `me` | Which of us is on this phone (`lucia`/`riu`) — Word Duel |
 | `moon` | Backup door into the hidden 🌙 Moon tab (`#moon=1`) |
 | `tab` | Which tab to reopen on refresh. Written by `switchTab()` with replaceState, so it never piles up history. **Never `cycle`** — 🌙 Moon is deliberately not sticky |
-| `sub` | The sub-view inside a tab with a chooser (Games / Treats / Plan). Restored via the `TAB_SUBS` registry in `js/core.js`, each entry validating its own values |
+| `sub` | The sub-view inside a tab with a chooser (Games / Memories / Plan). Restored via the `TAB_SUBS` registry in `js/core.js`, each entry validating its own values |
 
 **Tabs** (`page-*` section ids + `NAVIDS`/`SUBTITLES` keys — plus the `TABS`
 array in `js/core.js`, which is what `switchTab` actually iterates):
@@ -238,7 +245,7 @@ array in `js/core.js`, which is what `switchTab` actually iterates):
 | `cycle` | 🌙 Moon — cycle calendar + our tally. **Hidden: no nav button**, so it has a `TABS`/`SUBTITLES` entry but deliberately NO `NAVIDS` one |
 
 **Element id / CSS class prefixes:** `lock*` (login), `cd*` (countdown),
-`nav*` (nav buttons), `fd*` (🍜 Food), `q20*` (20 Questions), `tick*` (home widget functions), `tfd*` (Talk · Flirt ·
+`nav*` (nav buttons), `fd*` (🍜 Food), `mb*` (Lucia/Riu moodboards), `q20*` (20 Questions), `tick*` (home widget functions), `tfd*` (Talk · Flirt ·
 Dare), `qotd*` (home Question of the Day), `jr*` (journeys
 timeline), `wd*` (Word Duel), `cp*` (couple photo), `cy*` (🌙 Moon calendar), `auth*` (Google sign-in).
 **Pre-reserved for the Task board** (don't take these for anything else):
@@ -276,11 +283,13 @@ photo: image URL, upload data-URL, or `album:<link>` for photo-of-the-day),
 `love_log` (🌙 Moon calendar — `start:len` and `date:count` lists, both
 plain text so they can be repaired by hand in the table editor), `theme`
 (the palette, a `THEMES` key from `js/theme.js` — **shared, so changing it
-changes both phones**, which is the point).
+changes both phones**, which is the point), `moodboard_prompts`,
+`moodboard_lucia`, and `moodboard_riu` (shared square requirements and each
+person's ordered photo records for 💝 Memories).
 
 **Chooser globals in `js/core.js`** (each guards its tab's on-screen work so
 only the visible sub-view fetches or polls): `gamesPick` (🎮 Games) is live;
-`treatsPick` (💝 Treats, js/food.js) and `planPick` (📋 Plan, js/plan.js) are live. Any new merged tab
+`treatsPick` (💝 Memories, js/food.js) and `planPick` (📋 Plan, js/plan.js) are live. Any new merged tab
 needs one — a merged tab whose `TAB_HOOKS` entry ignores the pick will run
 *every* sub-view's loader on open, which is how the lazy-photo work gets undone.
 

@@ -67,7 +67,7 @@ chooser, so `#page-*` and "the thing you see" stopped being the same:
 
 | Tab | Sub-views | Pick lives in |
 |---|---|---|
-| 💝 Treats (`#page-treats`) | `#treatFood` · `#treatGifts` | `treatsPick` |
+| 💝 Memories (`#page-treats`) | `#treatFood` · `#treatGifts` · `#treatMoodboard` | `treatsPick` |
 | 📋 Plan (`#page-plan`) | `#planSomeday` · `#planTrip` · `#planMoney` | `planPick` |
 | 🎮 Games (`#page-duel`) | `#gameDuel` · `#game20q` · `#gameTfd` | `gamesPick` |
 
@@ -83,6 +83,7 @@ because skipping them broke something.
 | `css/tfd.css` | Talk · Flirt · Dare: mode switches, deck buttons, prompt card |
 | `css/journeys.css` | timeline, journey cards, photo grid, lightbox, picker |
 | `css/gifts.css` | 🎁 Gifts: log form, filter chips, gift cards |
+| `css/moodboard.css` | 🖼️ Moodboards: 3-column squares, Lucia/Riu ownership glow, Flip/delete controls |
 | `css/plan.css` | 📋 Plan: the money line above the chooser |
 | `css/someday.css` | ⭐ Someday + 🗓️ Trip Plan: wish cards, kind filters, the add forms |
 | `css/money.css` | 💸 Money: the ledger rows, the log form, the Home headline |
@@ -99,6 +100,7 @@ because skipping them broke something.
 | `js/home.js` | `MISSYOU`, anniversary/clock/countdown ticks, couple photo (`cp*`) |
 | `js/journeys.js` | timeline CRUD + sort, our photo uploads, iCloud album, lightbox (`jr*`) |
 | `js/gifts.js` | 🎁 Gifts: the given-half log, giver/occasion filters (`gf*`) |
+| `js/moodboard.js` | 🖼️ Lucia/Riu photo moodboards: shared requirements, uploads, per-square Flip (`mb*`) |
 | `js/trip.js` | 🗓️ Itinerary: days, saved bucket, tap-to-assign (`tr*`) |
 | `js/plan.js` | 📋 Plan: the ⭐/🗓️/💸 chooser + the money line (`planShow`) |
 | `js/money.js` | 💸 Money: the pot, the ledger, the committed sums (`mn*`) |
@@ -112,7 +114,7 @@ because skipping them broke something.
 | `js/init.js` | boot order — **loads last** |
 
 Script order in `index.html` is load-bearing: `core` → `supabase` →
-`auth` → `questions` → `home` → `journeys` → `food` → `duel` → `twenty` → `cycle` →
+`auth` → `questions` → `home` → `journeys` → `food` → `gifts` → `moodboard` → `duel` → `twenty` → `cycle` →
 `lock` → `init`.
 Anything
 running at *top level* may only reference things defined in an
@@ -158,7 +160,7 @@ can reference anything.
   exhausted — `shuffledOrder`/`deckForCycle`);
   pool comes from `QUESTION_SOURCE` (= `BANK`, swapped to the DB copy once
   `loadQuestions()` succeeds — content identical, so the pick doesn't change)
-- 🍜 Food (`#treatFood`, a chip in 💝 Treats; `fd*` in `js/food.js`): every meal we've eaten
+- 🍜 Food (`#treatFood`, a chip in 💝 Memories; `fd*` in `js/food.js`): every meal we've eaten
   together. Photos live in **Supabase Storage** (bucket `food`) with rows in
   `food_photos` / `food_tags` / `food_photo_tags` — the app's first real
   file storage, and it needs `supabase/food.sql` run once (the tab says so
@@ -182,7 +184,7 @@ can reference anything.
   replaced a single `place` kind — `js/food.js` still shows any leftover
   `place` tag under City, and `supabase/food_split_place.sql` migrates it).
   The Find & organise panel folds (`fdOrganiseOpen`, memory only)
-- 🎁 Gifts (`gf*` in `js/gifts.js`, D1): the second chip in 💝 Treats — the
+- 🎁 Gifts (`gf*` in `js/gifts.js`, D1): the second chip in 💝 Memories — the
   record of what we've **given** each other (wishing is Someday/E1, and
   there are deliberately **no prices**: a number makes it an expense, which
   is 💸 Money's job). Filter by giver or occasion. Photos reuse Food's
@@ -202,6 +204,16 @@ can reference anything.
   would come free but it fills top-to-bottom-then-across, putting the middle
   of a newest-first log at the top of the right column. Needs
   `supabase/gifts.sql` + `gifts_photos.sql`
+- 🖼️ Moodboard (`mb*` in `js/moodboard.js`): the third chip in 💝 Memories.
+  Starts with nine shared requirements; either person can add more. Every
+  square has one Lucia photo and one Riu photo, stored in the existing private
+  `food` bucket under `moodboards/<person>/`. The top Lucia/Riu chips reset the
+  whole board; 🔄 flips only one square. Lucia ownership is always signalled
+  by a pink glow and Riu by blue, plus a visible name. Empty squares all use
+  💕. Deleting asks first, then removes the shared requirement and both photos.
+  State uses `settings.moodboard_prompts`, `moodboard_lucia`, and
+  `moodboard_riu`, so there is no migration; signed-out/file mode is an honest
+  in-memory preview.
 - 📋 Plan (`#page-plan`): three chips — ⭐ Someday · 🗓️ Trip Plan · 💸 Money
   (`planShow` in `js/plan.js`, `planPick` in core). **💸 Money is a line
   AND a chip**: the reading (`pot − committed = left`) is a slim line

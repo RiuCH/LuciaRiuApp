@@ -1,5 +1,5 @@
 /* gifts.css — Lucia ♥ Riu  (D1: 🎁 Gifts)
-   The gifts half of 💝 Treats: the log form, the giver/occasion filters and
+   The gifts part of 💝 Memories: the log form, the giver/occasion filters and
    the cards. Mobile is the source of truth. */
 
 .gf-status { font-size: 12px; color: var(--text-dim); margin-bottom: 4px; }
@@ -54,7 +54,7 @@
 .gf-card:hover { transform: translateY(-2px); box-shadow: 0 20px 46px rgba(0,0,0,0.34); }
 /* Show the WHOLE gift, never a slice of it. `width: 100%` + a fixed
    max-height + `object-fit: cover` looked fine on a phone, where the card is
-   narrow — but the Treats page is 940px on a laptop, so the photo was forced
+   narrow — but the Memories page is wide on a laptop, so the photo was forced
    to ~900×320 and cover ate the rest: 24% of a portrait photo was visible.
    Sizing it intrinsically (auto width, capped height) keeps the aspect ratio,
    so nothing is ever cropped at any width. The photo IS the feature here. */

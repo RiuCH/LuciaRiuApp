@@ -27,7 +27,7 @@ falls back to the hardcoded copies and in-memory state ("local mode").
 | Table | Contents | App fallback when unreachable |
 |---|---|---|
 | `journeys` | timeline entries (place, dates, description, album link, `photos` = our own uploads) | seed entry + in-memory adds |
-| `settings` | `lock_keys` (password), `reunion_date` (shared countdown), `home_photo` (home photo: URL, upload data-URL, or `album:<link>`), `duel_state` + `duel_first` (Word Duel — see below), `q20_state` (20 Questions, JSON) | hardcoded `LOCK_KEYS`, `#reunion=` / `#photo=` hash params |
+| `settings` | `lock_keys` (password), `reunion_date` (shared countdown), `home_photo` (home photo: URL / data-URL / `album:<link>`), shared game/theme state, and `moodboard_prompts` + `moodboard_lucia` + `moodboard_riu` | hardcoded `LOCK_KEYS`, hash fallbacks where safe, and in-memory moodboard preview |
 | `questions` | the full question bank (`category`, `text`) | hardcoded `BANK` |
 | `questions` | the full prompt bank (`category`, `text`) — 345 rows in 11 categories: the Question-of-the-Day pool, the Talk/Flirt decks, and both Dare decks | hardcoded `BANK` |
 | `food_photos` / `food_tags` / `food_photo_tags` | the 🍜 Food library: one row per photo (url, path, `taken_at`, GPS), the tag catalogue with a `kind`, and the links between them | none — the tab says to run `supabase/food.sql` |
