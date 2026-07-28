@@ -53,11 +53,11 @@
 .q20-pending-q { font-size: 17px; font-weight: 600; line-height: 1.4; margin-bottom: 12px; }
 .q20-answers { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
 .q20-answers button { padding: 12px 18px; font-weight: 700; letter-spacing: 1px; }
-#q20Yes       { border-color: #8dd694; color: #d8f5db; }
-#q20No        { border-color: #ff6b6b; color: #ffd9d9; }
-#q20Sometimes { border-color: #ffd166; color: #fff0c9; }
-#q20Correct   { border-color: #8dd694; color: #d8f5db; }
-#q20Wrong     { border-color: #ff6b6b; color: #ffd9d9; }
+#q20Yes       { border-color: var(--success-border); color: var(--success-text); }
+#q20No        { border-color: var(--danger); color: var(--danger-text); }
+#q20Sometimes { border-color: var(--warning-border); color: var(--warning-text); }
+#q20Correct   { border-color: var(--success-border); color: var(--success-text); }
+#q20Wrong     { border-color: var(--danger); color: var(--danger-text); }
 
 /* ------- the interrogation log ------- */
 .q20-log { max-height: 320px; overflow-y: auto; text-align: left; }
@@ -88,11 +88,11 @@
   border-radius: 999px;
   border: 1px solid var(--card-border);
 }
-.q20-yes       { color: #d8f5db; border-color: #8dd694; }
-.q20-no        { color: #ffd9d9; border-color: #ff6b6b; }
-.q20-sometimes { color: #fff0c9; border-color: #ffd166; }
-.q20-correct   { color: #d8f5db; border-color: #8dd694; }
-.q20-nope      { color: #ffd9d9; border-color: #ff6b6b; }
+.q20-yes       { color: var(--success-text); border-color: var(--success-border); }
+.q20-no        { color: var(--danger-text); border-color: var(--danger); }
+.q20-sometimes { color: var(--warning-text); border-color: var(--warning-border); }
+.q20-correct   { color: var(--success-text); border-color: var(--success-border); }
+.q20-nope      { color: var(--danger-text); border-color: var(--danger); }
 .q20-empty { font-size: 13px; color: var(--text-dim); padding: 14px 4px; text-align: center; }
 
 #game20q .cp-linkrow { margin-top: 10px; }

@@ -14,13 +14,15 @@
 // specific selector for exactly that reason. Pick any palette; going Together
 // still turns the app red.
 
-// `null` for the default: it's plain :root with no class, so there's nothing
-// to add and nothing to strip. `dot` is what the swatch previews.
+// `null` means the original root palette, kept as "Classic". Daydream owns
+// the long-standing `us` key so existing shared settings that saved the old
+// default automatically adopt Lucia's new default without a database migration.
 // `dot`/`bar` are the swatch preview — they MUST stay in step with the --bg3
 // and --bg1 of the matching class in css/themes.css, or the picker advertises
 // a palette the app doesn't have.
 const THEMES = {
-  us:       { name: "Us",       cls: null,             dot: "#662549", bar: "#1a0b2e" },
+  us:       { name: "Daydream", cls: "theme-daydream", dot: "#a3b1db", bar: "#f7f3e8" },
+  classic:  { name: "Classic",  cls: null,             dot: "#662549", bar: "#1a0b2e" },
   berry:    { name: "Berry",    cls: "theme-berry",    dot: "#761e32", bar: "#1b0a24" },
   midnight: { name: "Midnight", cls: "theme-midnight", dot: "#1f6775", bar: "#090821" },
   sunset:   { name: "Sunset",   cls: "theme-sunset",   dot: "#8c4d1d", bar: "#2b0d20" },
