@@ -47,6 +47,7 @@
 <link rel="stylesheet" href="css/twenty.css">
 <link rel="stylesheet" href="css/food.css">
 <link rel="stylesheet" href="css/gifts.css">
+<link rel="stylesheet" href="css/moodboard.css">
 <link rel="stylesheet" href="css/plan.css">
 <link rel="stylesheet" href="css/trip.css">
 <link rel="stylesheet" href="css/someday.css">
@@ -282,8 +283,8 @@
     <div class="jr-timeline" id="jrTimeline"></div>
   </section>
 
-  <!-- ================= TREATS (Food + Gifts) =================
-       The small things: what we've eaten, and what we've given each other.
+  <!-- ================= MEMORIES (Food + Gifts + Moodboards) =================
+       The small things: what we've eaten, given, and chosen to show each other.
        Same chooser pattern as 🎮 Games — `treatsShow()` in js/food.js swaps
        the panels and sets `treatsPick`, which TAB_HOOKS.treats guards on so
        only the visible one loads. -->
@@ -292,6 +293,7 @@
     <div class="games-picker" id="treatsPicker">
       <span class="chip sel" data-treat="food">🍜 Food</span>
       <span class="chip" data-treat="gifts">🎁 Gifts</span>
+      <span class="chip" data-treat="moodboard">🖼️ Moodboard</span>
     </div>
 
     <div id="treatFood">
@@ -405,6 +407,30 @@
 
       <div class="gf-filters" id="gfFilters"></div>
       <div class="gf-list" id="gfList"></div>
+    </div>
+
+    <div id="treatMoodboard" style="display:none">
+      <div class="panel mb-panel">
+        <div class="ptitle">Our moodboards</div>
+        <div class="hint">Nine little windows into who we are — and room for every new version of us.</div>
+
+        <div class="mb-people" id="mbPeople" aria-label="Choose a complete moodboard">
+          <span class="chip sel" data-person="lucia">💗 Lucia</span>
+          <span class="chip" data-person="riu">💙 Riu</span>
+        </div>
+        <div class="mb-status" id="mbStatus">Loading our squares…</div>
+
+        <div class="mb-grid" id="mbGrid" aria-live="polite"></div>
+        <input type="file" id="mbFile" accept="image/*" style="display:none">
+
+        <div class="mb-add">
+          <input type="text" id="mbNewPrompt"
+                 placeholder="requirement for the new square…"
+                 maxlength="80">
+          <button class="primary" id="mbAddSquare">＋ Add square</button>
+        </div>
+        <div class="hint">Tap 💕 to add or replace a photo · 🔄 flips only that square · 🗑️ asks before deleting it.</div>
+      </div>
     </div>
 
   </section>
@@ -842,7 +868,7 @@
 <nav class="nav">
   <button id="navHome" class="active">🏠 Home</button>
   <button id="navJourneys">✈️ Trips</button>
-  <button id="navTreats">💝 Treats</button>
+  <button id="navTreats">💝 Memories</button>
   <button id="navPlan">📋 Plan</button>
   <button id="navDuel">🎮 Games</button>
 </nav>
@@ -925,6 +951,7 @@
 <script src="js/twenty.js"></script>
 <script src="js/food.js"></script>
 <script src="js/gifts.js"></script>
+<script src="js/moodboard.js"></script>
 <script src="js/plan.js"></script>
 <script src="js/someday.js"></script>
 <script src="js/trip.js"></script>

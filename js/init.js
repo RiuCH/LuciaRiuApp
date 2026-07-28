@@ -32,10 +32,10 @@ boot("moon", cyRender);
 // had already fetched that whole table — four requests for one table's worth of
 // rows. Now loadSettings() hands its snapshot over: 4 boot round trips → 1.
 loadSettings().then(rows => {
-  if (rows) { thAdopt(rows); wdAdopt(rows); q20AdoptRows(rows); cyAdopt(rows); return; }
+  if (rows) { thAdopt(rows); wdAdopt(rows); q20AdoptRows(rows); cyAdopt(rows); mbAdopt(rows); return; }
   // No snapshot: either local mode (these return without touching the network)
   // or the fetch failed (they retry and mark themselves unsynced). Same as before.
-  wdPull(); q20Pull(); cyPull();
+  wdPull(); q20Pull(); cyPull(); mbLoadIfNeeded();
 });
 // The backup door into the hidden Moon tab, for when a long-press is awkward.
 // The long-press in js/core.js is the everyday way in.

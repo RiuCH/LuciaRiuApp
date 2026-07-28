@@ -181,8 +181,8 @@ App Store, no signing, no $99/yr, no expiry** — Share → Add to Home Screen.
 
 ## Tabs that host more than one thing (the chooser pattern)
 
-Used twice now — 🎮 Games (`gamesShow`, js/twenty.js) and 💝 Treats
-(`treatsShow`, js/food.js) — and the roadmap's tab plan needs it again. Copy it
+Used by 🎮 Games (`gamesShow`, js/twenty.js), 💝 Memories
+(`treatsShow`, js/food.js), and 📋 Plan (`planShow`, js/plan.js). Copy it
 exactly; each rule below exists because skipping it broke something:
 
 - The tab keeps a `*Pick` global **in `js/core.js`** (`gamesPick`,
@@ -204,6 +204,13 @@ exactly; each rule below exists because skipping it broke something:
   on open silently undoes the lazy-loading work (see "Idle cost" below).
 - The pick is remembered in memory for the session, so coming back lands where
   you left off rather than resetting.
+
+💝 Memories has three sub-views now: Food, Gifts and Moodboard. Moodboard
+reuses Food's photo helpers and bucket, but it must only load when
+`treatsPick === "moodboard"`. Its Lucia-pink/Riu-blue tile glows are the narrow
+exception to theme-derived component colour: they encode fixed person identity,
+stay constant across palettes by product decision, and are paired with visible
+owner text so colour is never the only cue.
 
 ## Colour: everything comes from the five vars
 
@@ -261,7 +268,7 @@ bill, so four rules:
 
 `loadSettings()` is the **boot handoff** for every settings-backed feature: it
 already fetches the whole `settings` table, so `js/init.js` passes its rows to
-`wdAdopt`/`q20AdoptRows`/`cyAdopt` instead of each firing its own GET. Adding a
+`wdAdopt`/`q20AdoptRows`/`cyAdopt`/`mbAdopt` instead of each firing its own GET. Adding a
 settings-backed feature? Give it an `*Adopt(rows)` that its poll also reuses,
 and hook it in there — don't add a fifth boot request.
 
