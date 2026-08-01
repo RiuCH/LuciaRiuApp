@@ -1,0 +1,207 @@
+/* calendar.css — Lucia ♥ Riu
+   📅 Our calendar: the Home card and the month sheet it opens.
+
+   The two person colours are FIXED, not derived from --accent. Themes move the
+   accent from pink to teal to amber (css/themes.css), and an identity colour
+   that changes with the palette stops being an identity. Both hues were picked
+   to stay legible on the light theme as well as the dark ones. */
+:root {
+  --who-riu: #4c9bff;
+  --who-riu-soft: rgba(76, 155, 255, 0.22);
+  --who-lucia: #ff5fa8;
+  --who-lucia-soft: rgba(255, 95, 168, 0.22);
+}
+
+.cal-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 999px;
+}
+.cal-dot.cal-riu { background: var(--who-riu); }
+.cal-dot.cal-lucia { background: var(--who-lucia); }
+
+.cal-dots { display: flex; gap: 3px; justify-content: center; height: 6px; }
+.cal-dim { color: var(--text-dim); }
+
+/* ------- the Home card ------- */
+.cal-card { cursor: pointer; }
+.cal-card:hover { border-color: var(--accent); }
+.cal-minihead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.cal-open { color: var(--text-dim); font-weight: 600; letter-spacing: 0.6px; }
+
+.cal-mini { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.cal-dow {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--text-dim);
+  text-align: center;
+  padding-bottom: 2px;
+}
+.cal-mday {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  font-size: 11.5px;
+  color: var(--text-dim);
+}
+.cal-mday i { font-style: normal; }
+/* Today is a ring, not a fill: a filled day would outrank the person colours,
+   and the dots are the information here. */
+.cal-mday.cal-today { box-shadow: inset 0 0 0 1.5px var(--accent); color: var(--text); font-weight: 700; }
+
+.cal-next { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+
+.cal-key {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  margin-top: 12px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.cal-keyone { display: inline-flex; align-items: center; gap: 5px; }
+
+/* ------- one event ------- */
+/* The colour is a bar down the left edge rather than a tinted row: at two
+   entries on a card, a full tint fights the panel behind it. */
+.cal-ev {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  gap: 8px;
+  text-align: left;
+  padding: 7px 9px;
+  border-radius: 10px;
+  background: var(--control-bg);
+  border-left: 3px solid var(--card-border);
+}
+.cal-ev.cal-riu { border-left-color: var(--who-riu); }
+.cal-ev.cal-lucia { border-left-color: var(--who-lucia); }
+.cal-evwhen {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.cal-evwhat { font-size: 13.5px; font-weight: 600; }
+.cal-evnote { grid-column: 2 / -1; font-size: 12px; color: var(--text-dim); }
+.cal-evx {
+  padding: 2px 6px;
+  font-size: 12px;
+  border-radius: 999px;
+  opacity: 0.5;
+  align-self: center;
+}
+.cal-evx:hover { opacity: 1; }
+
+/* ------- the popout ------- */
+.cal-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(5, 2, 10, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.cal-sheet.show { display: flex; }
+.cal-panel {
+  width: 100%;
+  max-width: 460px;
+  max-height: 88vh;
+  overflow-y: auto;
+  background: var(--bg2);
+  border: 1px solid var(--card-border);
+  border-radius: 22px;
+  padding: 16px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+.cal-head { display: flex; align-items: center; gap: 6px; }
+.cal-head button { padding: 6px 12px; font-size: 15px; line-height: 1; }
+.cal-month { flex: 1; font-size: 15px; font-weight: 700; }
+.cal-todaybtn { font-size: 12px !important; padding: 6px 12px; }
+.cal-x { margin-left: 2px; }
+.cal-status { font-size: 11.5px; color: var(--text-dim); margin: 8px 0 10px; }
+
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  aspect-ratio: 1;
+  padding: 0;
+  border-radius: 10px;
+  font-size: 13px;
+  background: var(--control-bg);
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+.cal-day i { font-style: normal; }
+.cal-day:hover { background: var(--control-hover); transform: none; }
+.cal-day.cal-today { box-shadow: inset 0 0 0 1.5px var(--accent); font-weight: 700; }
+.cal-day.cal-picked { border-color: var(--accent); background: var(--accent-soft); }
+
+.cal-daybox { margin-top: 14px; text-align: left; }
+.cal-daytitle {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.cal-daylist { display: flex; flex-direction: column; gap: 6px; font-size: 13px; margin-bottom: 12px; }
+.cal-who { justify-content: flex-start; margin-bottom: 6px; }
+.cal-who .chip { cursor: pointer; opacity: 0.5; }
+.cal-who .chip.sel { opacity: 1; box-shadow: 0 0 12px var(--accent-soft); }
+/* Whose colour you are about to write in, shown on the chip itself. */
+.cal-who .chip[data-me="riu"].sel { border-color: var(--who-riu); background: var(--who-riu-soft); }
+.cal-who .chip[data-me="lucia"].sel { border-color: var(--who-lucia); background: var(--who-lucia-soft); }
+
+.cal-form { display: flex; flex-direction: column; gap: 8px; }
+.cal-form input[type="text"] {
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--control-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+.cal-form input:focus { border-color: var(--accent); }
+.cal-form input::placeholder { color: var(--text-dim); opacity: 1; }
+.cal-row { display: flex; gap: 8px; }
+.cal-row input { flex: 1 1 auto; min-width: 0; }
+.cal-row button { flex: none; }
+#calSave:disabled { opacity: 0.45; pointer-events: none; }
+
+@media (max-width: 420px) {
+  .cal-panel { padding: 13px; max-height: 92vh; }
+  .cal-day { font-size: 12px; border-radius: 8px; }
+}

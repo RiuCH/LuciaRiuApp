@@ -31,7 +31,7 @@
       "photo cd"
       "qotd teased"
       "qotd trips";
-    /* The Question card spans the last two rows. Without this, grid splits its
+    /* The calendar card spans the last two rows. Without this, grid splits its
        extra height BETWEEN rows 4 and 5 — which padded the Word Duel teaser
        with dead space and left the visible gap above the Trips card. Pinning
        rows 1-4 to their content sends all the slack to row 5, where the Trips
@@ -46,7 +46,7 @@
   #page-home #annivBar   { grid-area: anniv; }
   #page-home #homeClocks { grid-area: clocks; }
   #page-home #homeCd     { grid-area: cd; }
-  #page-home #qotdCard   { grid-area: qotd; }
+  #page-home #calCard    { grid-area: qotd; }
   #page-home #wdTeaser   { grid-area: teased; }
   #page-home #jrHomeCard { grid-area: trips; }
 
@@ -54,7 +54,7 @@
      landed, which left the right column stopping well short of it. Both bottom
      cells stretch, so whichever column is shorter grows to meet the other —
      true as either card changes height later, rather than tuned to today's. */
-  #page-home #qotdCard,
+  #page-home #calCard,
   #page-home #jrHomeCard { align-self: stretch; }
   #page-home #jrHomeCard { justify-content: center; }
 
