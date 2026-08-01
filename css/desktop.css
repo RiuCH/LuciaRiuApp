@@ -21,23 +21,26 @@
   header .names { font-size: 34px; }
   header .sub { margin-bottom: 26px; font-size: 14px; }
 
-  /* ---- HOME: photo hero beside a stack of widgets ---- */
+  /* ---- HOME: photo hero beside a stack of widgets ----
+     Nine cards, two columns, every one placed EXPLICITLY. An unplaced panel
+     drops into an implicit row and lands wherever grid feels like — which is
+     what the calendar card would have hit. Add a card to Home ⇒ add it to the
+     areas below, or it will float.
+     (Question of the day is NOT here: it lives in 🎮 Games → Talk now.) */
   #page-home.active {
     display: grid;
     grid-template-columns: 1.05fr 1fr;
     grid-template-areas:
-      "photo anniv"
-      "photo clocks"
-      "photo cd"
-      "photo where"
-      "qotd teased"
-      "qotd trips";
-    /* The calendar card spans the last two rows. Without this, grid splits its
-       extra height BETWEEN rows 4 and 5 — which padded the Word Duel teaser
-       with dead space and left the visible gap above the Trips card. Pinning
-       rows 1-4 to their content sends all the slack to row 5, where the Trips
-       card absorbs it. */
-    grid-template-rows: min-content min-content min-content min-content 1fr;
+      "photo  anniv"
+      "photo  clocks"
+      "photo  cd"
+      "cal    where"
+      "cal    trips"
+      "cal    teased";
+    /* Rows 1-5 are exactly as tall as their content; all the slack goes to row
+       6. Otherwise a card that spans two rows has its extra height split
+       BETWEEN them, which silently pads whatever sits alongside. */
+    grid-template-rows: repeat(5, min-content) 1fr;
     grid-auto-rows: min-content;
     gap: 18px;
     align-items: start;
@@ -48,23 +51,31 @@
   #page-home #homeClocks { grid-area: clocks; }
   #page-home #homeCd     { grid-area: cd; }
   #page-home #wherePanel { grid-area: where; }
-  #page-home #calCard    { grid-area: qotd; }
-  #page-home #wdTeaser   { grid-area: teased; }
+  #page-home #calCard    { grid-area: cal; }
   #page-home #jrHomeCard { grid-area: trips; }
+  #page-home #wdTeaser   { grid-area: teased; }
 
-  /* Bottom row ends flush. The Question card grew a lot when Answer & compare
-     landed, which left the right column stopping well short of it. Both bottom
-     cells stretch, so whichever column is shorter grows to meet the other —
-     true as either card changes height later, rather than tuned to today's. */
-  #page-home #calCard,
-  #page-home #jrHomeCard { align-self: stretch; }
-  #page-home #jrHomeCard { justify-content: center; }
-
-  /* the photo is the centrepiece — let it fill its column */
-  #page-home .cp-panel { display: flex; flex-direction: column; align-self: stretch; }
-  #page-home .cp-frame { flex: 1; }
+  /* THE PHOTO KEEPS ITS OWN SHAPE. It used to stretch to whatever height the
+     right-hand column happened to be — align-self:stretch plus height:100% —
+     so every card added over there quietly cropped and re-proportioned the
+     picture. 4/3 is what mobile uses, and now desktop matches: the hero looks
+     the same whatever else lands on this page. */
+  #page-home .cp-panel { flex-direction: column; }
+  #page-home .cp-frame { width: 100%; }
   #page-home .cp-frame img,
-  #page-home .cp-empty { aspect-ratio: auto; height: 100%; min-height: 380px; }
+  #page-home .cp-empty { width: 100%; aspect-ratio: 4 / 3; height: auto; }
+
+  /* Only the two bottom teasers stretch, so the columns finish level. They're
+     the one pair where filling space is harmless — a photo would distort and
+     a calendar would stretch its own grid. */
+  #page-home #jrHomeCard,
+  #page-home #wdTeaser {
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
   .together { font-size: 20px; }
   .clock .time { font-size: 32px; }
   .cd-cell { width: 88px; padding: 12px 0; }
