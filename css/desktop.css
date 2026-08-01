@@ -65,10 +65,44 @@
   #page-home .cp-frame img,
   #page-home .cp-empty { width: 100%; aspect-ratio: 4 / 3; height: auto; }
 
+  /* The Trips card goes side-by-side on a laptop: the two numbers beside the
+     latest trip rather than stacked above it. Same information, roughly 80px
+     shorter, and it finally uses the width a desktop card actually has —
+     which is what brings the two columns level at the bottom.
+
+     Done by re-laying-out rather than by shaving padding: a fixed trim would
+     be right until the day a trip has a long name. */
+  #page-home #jrHomeCard {
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-template-areas:
+      "title  title"
+      "stats  latest";
+    align-content: center;
+    justify-content: center;
+    column-gap: 26px;
+    row-gap: 4px;
+  }
+  #page-home #jrHomeCard .ptitle      { grid-area: title; }
+  #page-home #jrHomeCard .jrh-stats   { grid-area: stats; margin: 0; }
+  #page-home #jrHomeCard .jrh-latest  { grid-area: latest; text-align: left; }
+  /* the label is only there to explain a stacked block — side by side it's obvious */
+  #page-home #jrHomeCard .jrh-label   { display: none; }
+
   /* Only the two bottom teasers stretch, so the columns finish level. They're
      the one pair where filling space is harmless — a photo would distort and
      a calendar would stretch its own grid. */
-  #page-home #jrHomeCard,
+  /* The calendar spans rows 4-6 and the right column fills them. Stretching
+     the calendar is what makes the two columns finish on the same line: it
+     grows to whatever the right column needs, instead of the right column
+     hanging below it. Its month grid keeps its own size — the extra becomes
+     breathing room inside the card, not a distorted calendar. */
+  #page-home #calCard { align-self: stretch; }
+
+  /* NB: #jrHomeCard is NOT in this rule — it lays itself out as a grid above,
+     and setting display:flex here would silently undo that. It gets the
+     stretch on its own line instead. */
+  #page-home #jrHomeCard { align-self: stretch; }
   #page-home #wdTeaser {
     align-self: stretch;
     display: flex;
