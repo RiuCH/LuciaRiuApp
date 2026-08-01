@@ -169,7 +169,16 @@ can reference anything.
   adding, shared with the duel and 20 Questions. Days are `"YYYY-MM-DD"`
   strings end to end and times are free text — two timezones mean a timestamp
   would render as a different DAY on the two phones (the bug 🍜 Food already
-  paid for). `calMinutes()` parses "6am"/"19:30" so a day sorts by clock
+  paid for). **Recurring entries** are one `repeat` column
+  (`weekly|monthly|yearly`, null = once) with `day` as the anchor — a birthday
+  is one fact, and writing sixty rows for it would mean sixty rows to fix a
+  typo in and a horizon past which the calendar goes blank.
+  `calOccursOn`/`calNextFrom` expand it for the month you're looking at; Feb 29
+  and the 31st **clamp** to the last day that exists rather than skipping,
+  because an anniversary that vanishes three years in four is worse than one
+  that moves a day. Deleting an occurrence deletes the series and the confirm
+  says so. Needs `supabase/calendar_repeat.sql`; `calRepeatOK` hides the picker
+  without it. `calMinutes()` parses "6am"/"19:30" so a day sorts by clock
   rather than alphabetically. Needs `supabase/calendar.sql`; until it's run
   the card says so. Its own TABLE, not a `settings` JSON row: two people add
   independently, and a read-modify-write blob loses whoever saves second

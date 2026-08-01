@@ -22,6 +22,11 @@ let calReady = null;        // null unknown · true table exists · false needs 
 let calMonth = null;        // {y, m} the sheet is showing, m is 0-11
 let calPickedDay = null;    // "YYYY-MM-DD" the sheet has open, or null
 let calOpen = false;
+// Which repeat the form will save. `calRepeatOK` is null until we know whether
+// the column exists (supabase/calendar_repeat.sql); false hides the picker
+// rather than failing every save with a 400.
+let calRepeatPick = "none";
+let calRepeatOK = null;
 // The last load failure, verbatim. Without it every failure looked identical
 // to "the table isn't there", which sent Riu to re-run SQL he had already run.
 let calError = null;
@@ -58,6 +63,28 @@ function calPrettyDay(key) {
 function calDaysIn(y, m) { return new Date(y, m + 1, 0).getDate(); }
 function calFirstDow(y, m) { return new Date(y, m, 1).getDay(); }
 
+// Whole days since the epoch, from the PARTS. Everything here stays in UTC so
+// a recurrence can never land on a different date than the one it was counted
+// from — the same discipline as the rest of this file.
+function calUTC(key) {
+  const [y, m, d] = key.split("-").map(Number);
+  return Date.UTC(y, m - 1, d);
+}
+function calDayNum(key) { return calUTC(key) / 86400000; }
+function calAddDays(key, n) {
+  const d = new Date(calUTC(key) + n * 86400000);
+  return calKey(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+}
+
+// The 29th of February problem, and its smaller cousin the 31st of the month.
+// Both get CLAMPED to the last day that exists: a Feb-29 birthday shows on the
+// 28th in a common year, and a monthly entry anchored to the 31st shows on the
+// 30th in April. Skipping instead would make an anniversary silently vanish
+// three years in four, which is the one thing a birthday must never do.
+function calClampDay(y, monthIndex, day) {
+  return Math.min(day, calDaysIn(y, monthIndex));
+}
+
 function calShift(mo, delta) {
   const d = new Date(mo.y, mo.m + delta, 1);
   return { y: d.getFullYear(), m: d.getMonth() };
@@ -85,15 +112,58 @@ function calMinutes(at) {
 
 const calByTime = (a, b) => calMinutes(a.at) - calMinutes(b.at);
 
-function calOn(key) {
-  return calEvents.filter(e => e.day === key).sort(calByTime);
+const CAL_REPEATS = [
+  { key: "none", label: "Once" },
+  { key: "weekly", label: "Weekly" },
+  { key: "monthly", label: "Monthly" },
+  { key: "yearly", label: "Yearly" }
+];
+
+// Does this entry land on this day? `day` is the anchor and an entry never
+// appears before it, so string comparison does the "not yet started" check for
+// free — ISO dates sort chronologically.
+function calOccursOn(ev, key) {
+  const rep = ev.repeat || "none";
+  if (rep === "none") return ev.day === key;
+  if (!ev.day || key < ev.day) return false;
+  const a = ev.day.split("-").map(Number);   // [y, m, d] of the anchor
+  const k = key.split("-").map(Number);
+  if (rep === "yearly") return k[1] === a[1] && k[2] === calClampDay(k[0], a[1] - 1, a[2]);
+  if (rep === "monthly") return k[2] === calClampDay(k[0], k[1] - 1, a[2]);
+  if (rep === "weekly") return (calDayNum(key) - calDayNum(ev.day)) % 7 === 0;
+  return false;
 }
 
-// The next few things coming up, today included. Sorted by day then time.
+// The first day on or after `fromKey` that this entry lands on, or null.
+// Walked a day at a time rather than solved in closed form: with clamping,
+// leap years and 31-day anchors, the arithmetic has more corners than the loop
+// has iterations, and this runs over a handful of rows twice per render.
+function calNextFrom(ev, fromKey) {
+  const rep = ev.repeat || "none";
+  if (rep === "none") return ev.day >= fromKey ? ev.day : null;
+  let probe = ev.day > fromKey ? ev.day : fromKey;
+  for (let i = 0; i < 400; i++) {         // 366 covers the yearly worst case
+    if (calOccursOn(ev, probe)) return probe;
+    probe = calAddDays(probe, 1);
+  }
+  return null;
+}
+
+function calRepeats(ev) { return !!ev.repeat && ev.repeat !== "none"; }
+
+function calOn(key) {
+  return calEvents.filter(e => calOccursOn(e, key)).sort(calByTime);
+}
+
+// The next few things coming up, today included. Each entry contributes its
+// next OCCURRENCE, not its anchor — a birthday anchored in 2026 is "next week"
+// every year, and sorting on `day` would have buried it under everything.
 function calUpcoming(limit) {
   const today = calToday();
-  return calEvents.filter(e => e.day >= today)
-    .sort((a, b) => a.day === b.day ? calByTime(a, b) : a.day.localeCompare(b.day))
+  return calEvents
+    .map(ev => ({ ev, on: calNextFrom(ev, today) }))
+    .filter(x => x.on)
+    .sort((a, b) => a.on === b.on ? calByTime(a.ev, b.ev) : a.on.localeCompare(b.on))
     .slice(0, limit);
 }
 
@@ -107,8 +177,20 @@ async function calLoad() {
     calReady = false;
     calError = (e && e.message) || String(e);
   }
+  if (calReady) await calProbeRepeat();
   calRenderHome();
   if (calOpen) calRenderSheet();
+}
+
+// supabase/calendar_repeat.sql adds `repeat`. Without it a POST carrying that
+// column 400s, so the picker hides rather than breaking every save — the same
+// migration-optional shape ✈️ Trips uses for its photos.
+async function calProbeRepeat() {
+  if (calRepeatOK !== null) return calRepeatOK;
+  if (!supaOn()) return (calRepeatOK = false);
+  try { await supa(CAL_TABLE + "?select=repeat&limit=1"); calRepeatOK = true; }
+  catch (e) { calRepeatOK = false; }
+  return calRepeatOK;
 }
 
 // What actually went wrong, in the words of whatever went wrong. Every branch
@@ -148,7 +230,13 @@ async function calAdd(fields) {
 }
 
 async function calDelete(ev) {
-  if (!confirm('Remove "' + ev.title + '" from ' + calPrettyDay(ev.day) + "?")) return;
+  // One row IS the whole series, so there is no "just this one" to offer. Say
+  // so plainly rather than letting a tap on a single occurrence quietly take a
+  // birthday out of every year.
+  const ask = calRepeats(ev)
+    ? 'Remove "' + ev.title + '" and every repeat of it?'
+    : 'Remove "' + ev.title + '" from ' + calPrettyDay(ev.day) + "?";
+  if (!confirm(ask)) return;
   calEvents = calEvents.filter(x => x !== ev);
   calRenderHome(); calRenderSheet();
   if (!supaOn() || String(ev.id).startsWith("tmp")) return;
@@ -223,21 +311,31 @@ function calRenderHome() {
       next.textContent = calReady === null ? "Loading…" : "Nothing planned yet — tap to add something 💞";
     } else {
       next.className = "cal-next";
-      soon.forEach(e => next.appendChild(calLine(e, false)));
+      soon.forEach(x => next.appendChild(calLine(x.ev, false, x.on)));
     }
   }
 }
 
 // One event, as a line. Used on the card and in the sheet's day panel.
-function calLine(ev, withDelete) {
+function calLine(ev, withDelete, onKey) {
+  // `onKey` is the day it is being shown ON, which for a repeat is not the
+  // anchor stored in ev.day.
+  const day = onKey || ev.day;
   const row = document.createElement("div");
   row.className = "cal-ev cal-" + ev.who;
   const when = document.createElement("span");
   when.className = "cal-evwhen";
-  when.textContent = withDelete ? (ev.at || "—") : calPrettyDay(ev.day) + (ev.at ? " · " + ev.at : "");
+  when.textContent = withDelete ? (ev.at || "—") : calPrettyDay(day) + (ev.at ? " · " + ev.at : "");
   const what = document.createElement("span");
   what.className = "cal-evwhat";
   what.textContent = ev.title;
+  if (calRepeats(ev)) {
+    const rep = document.createElement("span");
+    rep.className = "cal-rep";
+    rep.textContent = "↻";
+    rep.title = "Repeats " + ev.repeat;
+    what.appendChild(rep);
+  }
   row.append(when, what);
   if (ev.note) {
     const note = document.createElement("span");
@@ -316,9 +414,10 @@ function calRenderSheet() {
     empty.textContent = "Nothing on this day yet.";
     list.appendChild(empty);
   } else {
-    on.forEach(e => list.appendChild(calLine(e, true)));
+    on.forEach(e => list.appendChild(calLine(e, true, calPickedDay)));
   }
   calRenderWho();
+  calRenderRepeat();
   calEl("calStatus").textContent =
     calReady === false ? "⚠️ " + calWhyNot()
       : calReady === null ? "Loading…"
@@ -347,11 +446,25 @@ function calSubmit() {
   if (!title) { popToast("Give it a name 📅"); return; }
   const at = calEl("calAt").value.trim();
   const note = calEl("calNote").value.trim();
-  calAdd({ day: calPickedDay, title, at: at || null, note: note || null, who: me });
+  const fields = { day: calPickedDay, title, at: at || null, note: note || null, who: me };
+  // Only send the column when we know it is there, so a project that hasn't
+  // run the migration keeps saving one-off entries instead of 400ing on all.
+  if (calRepeatOK && calRepeatPick !== "none") fields.repeat = calRepeatPick;
+  calAdd(fields);
   calEl("calTitle").value = "";
   calEl("calAt").value = "";
   calEl("calNote").value = "";
+  calRepeatPick = "none";
+  calRenderRepeat();
   burst(innerWidth / 2, innerHeight / 2, ["📅", "💞", "✨"]);
+}
+
+function calRenderRepeat() {
+  const box = calEl("calRepeat");
+  if (!box) return;
+  box.style.display = calRepeatOK === false ? "none" : "";
+  box.querySelectorAll(".chip").forEach(c =>
+    c.classList.toggle("sel", c.dataset.repeat === calRepeatPick));
 }
 
 // ---------------- wiring ----------------
@@ -368,4 +481,6 @@ calEl("calToday").addEventListener("click", () => {
   calRenderSheet();
 });
 calEl("calSave").addEventListener("click", calSubmit);
+document.querySelectorAll("#calRepeat .chip").forEach(chip =>
+  chip.addEventListener("click", () => { calRepeatPick = chip.dataset.repeat; calRenderRepeat(); }));
 calEl("calTitle").addEventListener("keydown", (e) => { if (e.key === "Enter") calSubmit(); });

@@ -176,6 +176,14 @@
 .cal-who .chip[data-me="riu"].sel { border-color: var(--who-riu); background: var(--who-riu-soft); }
 .cal-who .chip[data-me="lucia"].sel { border-color: var(--who-lucia); background: var(--who-lucia-soft); }
 
+/* Wraps to two rows on a narrow phone rather than shrinking four labels into
+   illegibility — this sits above the time row, so it has the width to spare. */
+.cal-repeat { display: flex; flex-wrap: wrap; gap: 6px; }
+.cal-repeat .chip { cursor: pointer; font-size: 11px; padding: 5px 12px; opacity: 0.5; }
+.cal-repeat .chip.sel { opacity: 1; box-shadow: 0 0 12px var(--accent-soft); border-color: var(--accent); }
+/* The ↻ rides with the title, so it stays attached when the row wraps. */
+.cal-rep { margin-left: 5px; font-size: 11px; opacity: 0.65; }
+
 .cal-form { display: flex; flex-direction: column; gap: 8px; }
 .cal-form input[type="text"] {
   font-family: inherit;

@@ -102,6 +102,11 @@ Projects set up before v6 need one-off migrations, run in the SQL editor.
   Until it's run the card renders (it's a real month either way) and says to
   run it; nothing can be added. `day` is a `date` and `at` is free text on
   purpose — see the comments in the file.
+- `supabase/calendar_repeat.sql` — adds `calendar_events.repeat`
+  (`weekly | monthly | yearly`, null = once), for birthdays and anniversaries.
+  ONE column, not a table of occurrences: the row stores the rule and
+  `js/calendar.js` works out which days it lands on. Until it's run the repeat
+  picker hides and the calendar keeps saving one-off entries.
 - `supabase/journey_photos.sql` — adds `journeys.photos` (jsonb), the trip's
   own uploaded photos as `[{url, path}]`. Until it's run, ✈️ Trips still shows
   and syncs everything else; the "📸 Add photos" button simply doesn't appear.
