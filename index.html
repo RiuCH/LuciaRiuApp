@@ -124,6 +124,14 @@
 
     <!-- Editing `allowed_emails`, which the Before User Created hook checks
          (supabase/allowlist.sql). Signed-in-only, and RLS gates it anyway. -->
+    <div class="set-group">
+      <div class="set-label">Location</div>
+      <div class="rowbtns">
+        <button id="whereToggle">📍 Share where I am</button>
+      </div>
+      <div class="hint" id="whereStatus"></div>
+    </div>
+
     <div class="authpanel set-group" id="authAllowPanel" style="display:none">
       <div class="set-label">Who can sign in</div>
       <div class="auth-allow-list" id="authAllowList"></div>
@@ -206,6 +214,15 @@
            the countdown has to 🗓️ Trip Plan. Hidden until there's a pot. -->
       <div class="mn-home" id="mnHome" style="display:none"></div>
       <div class="missyou" id="missyou"></div>
+    </div>
+
+    <!-- 📍 Where we are. Not live tracking — a browser can't read location in
+         the background — so this is where each of us was when we last opened
+         the app. City only, never a pin. See js/where.js. -->
+    <div class="panel" id="wherePanel">
+      <div class="ptitle">Where we are</div>
+      <div class="wh-lines" id="whereLine"></div>
+      <div class="hint" id="whereHint"></div>
     </div>
 
     <!-- 📅 Our calendar. Tapping anywhere on the card opens the month sheet
@@ -1037,6 +1054,7 @@
 <script src="js/journeys.js"></script>
 <script src="js/duel.js"></script>
 <script src="js/twenty.js"></script>
+<script src="js/where.js"></script>
 <script src="js/food.js"></script>
 <script src="js/gifts.js"></script>
 <script src="js/moodboard.js"></script>
