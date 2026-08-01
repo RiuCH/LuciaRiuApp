@@ -80,15 +80,66 @@ let reunionDate = null;
   } catch (e) {}
 })();
 
+// THE CLOCKS FOLLOW US. Each of us publishes our phone's own IANA timezone
+// along with our location (js/where.js), so when one of us travels the other's
+// Home shows the city we're actually in and the time it actually is there.
+// Nobody sharing ⇒ these fall back to the home pair above, which is what they
+// were before and what a signed-out phone still sees.
+const CLOCKS = {
+  riu:   { tz: TZ_RIU.tz,   label: TZ_RIU.label,   fmt: null },
+  lucia: { tz: TZ_LUCIA.tz, label: TZ_LUCIA.label, fmt: null }
+};
+
 // Building an Intl.DateTimeFormat costs one to two orders of magnitude more
-// than calling .format() on one, and these two never change — so build them
-// once here rather than four times a second inside the tick.
-const FMT_RIU = new Intl.DateTimeFormat("en-US", {
-  hour: "2-digit", minute: "2-digit", hour12: false, timeZone: TZ_RIU.tz
-});
-const FMT_LUCIA = new Intl.DateTimeFormat("en-US", {
-  hour: "2-digit", minute: "2-digit", hour12: false, timeZone: TZ_LUCIA.tz
-});
+// than calling .format() on one, so a formatter is built ONLY when its zone
+// changes — never inside the tick, which runs four times a second.
+function clockFmt(who) {
+  const c = CLOCKS[who];
+  if (!c.fmt) {
+    c.fmt = new Intl.DateTimeFormat("en-US", {
+      hour: "2-digit", minute: "2-digit", hour12: false, timeZone: c.tz
+    });
+  }
+  return c.fmt;
+}
+
+// Point one clock at a place. Falls back to that person's home city when they
+// stop sharing, or when the geocoder gave us a zone but no name.
+// "Asia/Tokyo" → "Tokyo", "America/Argentina/Buenos_Aires" → "Buenos Aires".
+// Used when we know the zone but the geocoder gave us no name: showing Tokyo
+// time under a "San Francisco" label is worse than a slightly clinical label.
+function tzCityName(tz) {
+  if (!tz || tz.indexOf("/") === -1) return "";
+  return tz.split("/").pop().replace(/_/g, " ");
+}
+
+function homeSetPlace(who, tz, label) {
+  const c = CLOCKS[who];
+  if (!c) return;
+  const home = who === "riu" ? TZ_RIU : TZ_LUCIA;
+  const nextTz = tz || home.tz;
+  const nextLabel = label || tzCityName(tz) || home.label;
+
+  if (nextTz !== c.tz) {
+    // An unknown zone would make Intl throw and take the clock down with it,
+    // so prove it works before adopting it.
+    try {
+      const probe = new Intl.DateTimeFormat("en-US", {
+        hour: "2-digit", minute: "2-digit", hour12: false, timeZone: nextTz
+      });
+      probe.format(new Date());
+      c.tz = nextTz;
+      c.fmt = probe;
+      tickTzDiff();                       // the gap between us just moved
+    } catch (e) { /* keep the zone we had */ }
+  }
+  if (nextLabel !== c.label) {
+    c.label = nextLabel;
+    const el = document.getElementById(who === "riu" ? "cityRiu" : "cityLucia");
+    if (el) el.textContent = nextLabel;
+  }
+  tickClocks();
+}
 
 function tzOffsetHours(tz, now) {
   const loc = new Date(now.toLocaleString("en-US", { timeZone: tz }));
@@ -102,9 +153,9 @@ let lastRiu = "", lastLucia = "";
 // FAST path — two formats and (at most) two text writes.
 function tickClocks() {
   const now = new Date();
-  const r = FMT_RIU.format(now);
+  const r = clockFmt("riu").format(now);
   if (r !== lastRiu) { lastRiu = r; elTimeRiu.textContent = r; }
-  const l = FMT_LUCIA.format(now);
+  const l = clockFmt("lucia").format(now);
   if (l !== lastLucia) { lastLucia = l; elTimeLucia.textContent = l; }
 }
 
@@ -113,7 +164,7 @@ function tickClocks() {
 // every single second. Driven by the 60s timer in js/init.js.
 function tickTzDiff() {
   const now = new Date();
-  const diff = tzOffsetHours(TZ_LUCIA.tz, now) - tzOffsetHours(TZ_RIU.tz, now);
+  const diff = tzOffsetHours(CLOCKS.lucia.tz, now) - tzOffsetHours(CLOCKS.riu.tz, now);
   const el = document.getElementById("tzdiff");
   const txt = diff === 0
     ? "Same clock right now — zero excuses not to call 📞"

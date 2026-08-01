@@ -110,7 +110,13 @@ async function whPublish(announce) {
   try {
     const pt = await whPosition();
     const place = await whPlace(pt);
-    const mine = { lat: pt.lat, lon: pt.lon, city: place.city, country: place.country, at: Date.now() };
+    // The phone already knows its IANA zone exactly. Deriving one from lat/lon
+    // would need a lookup table or a third-party call, and would still be a
+    // guess near a border — this is the same answer, for free.
+    let tz = "";
+    try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) {}
+    const mine = { lat: pt.lat, lon: pt.lon, city: place.city, country: place.country,
+                   tz: tz, at: Date.now() };
     await supa("settings?on_conflict=key", {
       method: "POST", prefer: "resolution=merge-duplicates",
       body: { key: whKey(me), value: JSON.stringify(mine) }
@@ -217,6 +223,16 @@ function whRender() {
     : whDistanceLine(miles);
 
   // the Settings row
+  // The clocks follow us: whoever is sharing drives the city label and the
+  // timezone in "Miles apart, same heart". Cheap and idempotent — home.js only
+  // rebuilds a formatter when the zone actually changes.
+  if (typeof homeSetPlace === "function") {
+    WH_PEOPLE.forEach(who => {
+      const w = whWhere[who];
+      homeSetPlace(who, w && w.tz, w && (w.city || w.country));
+    });
+  }
+
   const btn = document.getElementById("whereToggle");
   if (btn) {
     btn.textContent = whSharing() ? "📍 Stop sharing" : "📍 Share where I am";
