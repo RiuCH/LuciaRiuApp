@@ -365,6 +365,10 @@ document.getElementById("appGear").addEventListener("click", (e) => {
   e.currentTarget.setAttribute("aria-expanded", String(open));
   e.currentTarget.classList.toggle("on", open);
   if (open) window.scrollTo({ top: 0, behavior: "smooth" });
+  // The notification toggle reads live state (permission, subscription), so it
+  // repaints when the panel opens rather than at boot. Feature-detected — the
+  // app still runs with js/push.js absent.
+  if (open && typeof pushRender === "function") pushRender();
 });
 
 document.getElementById("authSignIn").addEventListener("click", authSignIn);
