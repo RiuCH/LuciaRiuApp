@@ -233,13 +233,17 @@ growing a fifth picker.
 
 Two things to know before touching it:
 
-- **Signed in, it isn't asked at all.** `meFromAccount()` maps the Google
-  address through `AUTH_ALLOWED` in `js/auth.js`, whose **order is
-  load-bearing: Riu is `[0]`, Lucia is `[1]`.** Reordering that array swaps the
-  two of them across the whole app. It deliberately returns null while the list
-  still holds its `@example.com` placeholder — asking once beats mislabelling
-  who added something. This also matters because `start_url` is `./`: an
-  installed launch has no hash, so the hash alone could never be the answer.
+- **Signed in, it isn't asked at all.** The email→person mapping lives in two
+  `settings` rows (`account_lucia`, `account_riu`) and is written by *picking
+  your name while signed in* — there's no separate form to fill in. They ride
+  the one boot fetch (`loadSettings` → `meAdopt`), so no extra request and **no
+  migration**. This matters because `start_url` is `./`: an installed launch
+  has no hash, so the hash alone could never be the answer.
+  `AUTH_ALLOWED` in `js/auth.js` is now only the **fallback**, for a phone that
+  hasn't seen those rows yet. It reads **by position — Riu `[0]`, Lucia `[1]`**
+  — and disables itself while the list holds its `@example.com` placeholder.
+  Once someone has picked themselves once, the database answers instead, and
+  changing who's who is a tap rather than a code edit and a deploy.
 - **`ME_LOCKS`** is how a tab refuses a change: push a function returning a
   reason string. Word Duel uses it so nobody can swap sides mid-match. Keep the
   rule in the tab that owns it — `me.js` shouldn't learn what a duel is.

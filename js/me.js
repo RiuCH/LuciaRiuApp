@@ -40,17 +40,96 @@ function meName(w) { return w === "lucia" ? "Lucia" : w === "riu" ? "Riu" : null
 function meOther(w) { return w === "lucia" ? "riu" : "lucia"; }
 function meGet() { return meWho; }
 
-// Riu is AUTH_ALLOWED[0], Lucia is AUTH_ALLOWED[1]. That ordering is load
-// bearing — if you reorder that array, you swap the two of you everywhere.
-// Returns null rather than guessing when the list still has its placeholder:
-// mislabelling which of you added something is worse than asking once.
+// ---------------- which account is which of us ----------------
+// Two `settings` rows, `account_lucia` and `account_riu`, each holding a Google
+// address. They ride the ONE boot fetch (loadSettings → meAdopt), so this costs
+// no extra request, and `settings` is key/value so there's nothing to migrate.
+//
+// It's written by picking who you are in ⚙️ Settings while signed in — no
+// second tap, no separate form. That's the whole feature: choose once, ever.
+let meAccounts = {};                       // { lucia: "email", riu: "email" }
+
+function meEmail() {
+  return ((typeof authEmail === "function" && authEmail()) || "").trim().toLowerCase();
+}
+
+// The learned mapping wins; AUTH_ALLOWED in js/auth.js is the fallback for a
+// phone that hasn't seen the settings rows yet (first boot, or offline).
+//
+// That fallback reads AUTH_ALLOWED **by position** — Riu is [0], Lucia is [1] —
+// and it disables itself while the list still holds its `@example.com`
+// placeholder. Once you've picked yourself once while signed in, none of that
+// matters any more: the mapping in the database is what answers, and it's
+// editable from Settings instead of from a code edit and a deploy.
 function meFromAccount() {
+  const email = meEmail();
+  if (!email) return null;
+
+  const learned = ME_PEOPLE.filter(w => meAccounts[w] === email)[0];
+  if (learned) return learned;
+
   if (typeof AUTH_ALLOWED === "undefined") return null;
   if (typeof authAllowlistReady === "function" && !authAllowlistReady()) return null;
-  const email = ((typeof authEmail === "function" && authEmail()) || "").trim().toLowerCase();
-  if (!email) return null;
   const i = AUTH_ALLOWED.map(e => String(e).trim().toLowerCase()).indexOf(email);
   return i === 0 ? "riu" : i === 1 ? "lucia" : null;
+}
+
+// Remember this account as this person. Best-effort: a phone that can't reach
+// the database still works off the hash for the session, and will simply learn
+// the mapping the next time it can.
+async function meRemember(who) {
+  const email = meEmail();
+  if (!email || !supaOn()) return;
+  if (meAccounts[who] === email) return;              // already known
+
+  meAccounts[who] = email;
+  // One address can't be both of you. Swapping identity on a phone would
+  // otherwise leave the app believing one email is Lucia AND Riu, and
+  // meFromAccount() would answer with whichever it happened to scan first.
+  const other = meOther(who);
+  const dropOther = meAccounts[other] === email;
+  if (dropOther) delete meAccounts[other];
+
+  try {
+    await supa("settings?on_conflict=key", {
+      method: "POST",
+      prefer: "resolution=merge-duplicates",
+      body: { key: "account_" + who, value: email }
+    });
+    if (dropOther) await supa("settings?key=eq.account_" + other, { method: "DELETE" });
+  } catch (e) { /* the hash still holds it for this session */ }
+  meRender();
+}
+
+// Unlink this account, for a phone that was signed in as the wrong person.
+async function meForget() {
+  const who = meWho;
+  if (!who || !meAccounts[who]) return;
+  delete meAccounts[who];
+  if (supaOn()) {
+    try { await supa("settings?key=eq.account_" + who, { method: "DELETE" }); }
+    catch (e) { popToast("Couldn't forget that — try again when you're online"); }
+  }
+  popToast("Unlinked 🔓 you'll be asked again next launch");
+  meRender();
+}
+
+// Called from the ONE boot settings fetch in js/init.js. If nobody has been
+// chosen yet, the mapping answers it — which is what makes a cold launch of
+// the home-screen app (no hash at all, `start_url: "./"`) stop asking.
+function meAdopt(rows) {
+  (rows || []).forEach(r => {
+    if (r.key === "account_lucia" || r.key === "account_riu") {
+      const who = r.key.replace("account_", "");
+      const val = String(r.value || "").trim().toLowerCase();
+      if (val) meAccounts[who] = val; else delete meAccounts[who];
+    }
+  });
+  if (!meWho) {
+    const fromAccount = meFromAccount();
+    if (fromAccount) { meSet(fromAccount, { quiet: true }); return; }
+  }
+  meRender();
 }
 
 // ---------------- vetoes ----------------
@@ -72,7 +151,12 @@ function meLockReason() {
 function meSet(who, opts) {
   if (ME_PEOPLE.indexOf(who) === -1) return false;
   const quiet = !!(opts && opts.quiet);
-  if (who === meWho) { if (!quiet) meRender(); return false; }
+  // Tapping the name you're already on is not a no-op: it's how you RE-link an
+  // account you've unlinked, which is exactly what that hint tells you to do.
+  if (who === meWho) {
+    if (!quiet) { meRemember(who); meRender(); }
+    return false;
+  }
 
   if (!quiet) {
     const blocked = meLockReason();
@@ -81,7 +165,14 @@ function meSet(who, opts) {
 
   meWho = who;
   setHashParam("me", who);
-  if (!quiet) popToast("You're " + meName(who) + " 💞");
+  if (!quiet) {
+    // The point of the whole feature: choosing is also remembering, so this is
+    // the last time you're asked on this account.
+    meRemember(who);
+    popToast(meEmail()
+      ? "You're " + meName(who) + " — remembered for this account 💞"
+      : "You're " + meName(who) + " 💞");
+  }
   meBroadcast();
   return true;
 }
@@ -120,15 +211,28 @@ function meRender() {
   });
 
   const hint = meEl("meWhoHint");
-  if (!hint) return;
-  hint.textContent =
-    locked ? locked
-    : !meWho ? "Pick one — the calendar, the games and 📍 Location all use this"
-    : meFromAccount() === meWho ? "From your Google account — no need to pick again 💞"
-    : "Lasts until the app is reopened. Sign in and it's remembered for good";
+  const linked = meWho && meAccounts[meWho] && meAccounts[meWho] === meEmail();
+  if (hint) {
+    hint.textContent =
+      locked ? locked
+      : !meWho ? "Pick one — the calendar, the games and 📍 Location all use this"
+      // Say the address out loud. "Remembered" on its own is a promise; naming
+      // the account is something you can actually check.
+      : linked ? meAccounts[meWho] + " is " + meName(meWho) + " — you won't be asked again 💞"
+      : meFromAccount() === meWho ? "From the sign-in list in js/auth.js 💞"
+      // Signed in but not linked — either mid-write, or just unlinked. Don't
+      // claim to be saving: after a deliberate unlink that's simply untrue.
+      : meEmail() ? "Not linked — tap your name again to remember it on this account"
+      : "Lasts until the app is reopened. Sign in and it's remembered for good";
+  }
+
+  // Only offered when there's something to undo.
+  const row = meEl("meForgetRow");
+  if (row) row.style.display = linked ? "" : "none";
 }
 
 if (meEl("meWhoPick")) {
   document.querySelectorAll("#meWhoPick .chip").forEach(chip =>
     chip.addEventListener("click", () => meSet(chip.dataset.me)));
 }
+if (meEl("meForget")) meEl("meForget").addEventListener("click", meForget);

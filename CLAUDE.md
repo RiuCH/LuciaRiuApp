@@ -313,14 +313,22 @@ can reference anything.
   picked in ⚙️ Settings and nowhere else. It was `wdMe` in `js/duel.js` with
   four separate pickers reading it (Word Duel, 20 Questions, ✍️ Answer &
   compare, 📅 the calendar) — identity was never the duel's to own.
-  - **Signed in, we don't ask.** `meFromAccount()` maps the Google address via
-    `AUTH_ALLOWED` in `js/auth.js`, whose **order is load-bearing: Riu is [0],
-    Lucia is [1]**. Reorder that array and you swap the two of them everywhere.
-    It returns null rather than guessing while the list still holds its
-    `@example.com` placeholder — mislabelling who added something is worse than
-    asking once.
-  - **Nothing is stored for it.** No new table, no settings row; it's derived
-    every launch from the session, so there's no state to migrate or go stale.
+  - **Signed in, we don't ask.** The mapping lives in two `settings` rows,
+    `account_lucia` and `account_riu`, each holding a Google address — and it's
+    written by *picking your name while signed in*, not by a separate form.
+    They ride the one boot fetch (`loadSettings` → `meAdopt`), so it costs no
+    extra request, and `settings` is key/value so there's **no migration**.
+  - **`AUTH_ALLOWED` in `js/auth.js` is only the fallback now**, for a phone
+    that hasn't seen those rows yet. It reads **by position — Riu `[0]`, Lucia
+    `[1]`** — and disables itself while the list holds its `@example.com`
+    placeholder. Once either of you has picked yourself once, the database
+    answers and that array stops mattering: changing who's who is a tap in
+    ⚙️ Settings, not a code edit and a deploy.
+  - **One address is never both of you.** Re-picking on a linked account
+    deletes the other slot, or `meFromAccount()` would answer with whichever it
+    scanned first.
+  - **Tapping the name you're already on is not a no-op** — it re-links an
+    account you've unlinked, which is what the hint tells you to do.
   - **`ME_LOCKS`** lets a tab veto a change with a reason — Word Duel pushes
     one so you can't swap sides mid-match. The rule stays in `js/duel.js`;
     `me.js` doesn't know what a duel is.
