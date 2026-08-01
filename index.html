@@ -58,6 +58,18 @@
 </head>
 <body>
 
+<!-- ================= BOOT VEIL =================
+     Held over everything (including the lock screen) until the shared
+     settings have landed, so the theme swap and the couple photo appearing
+     happen behind it rather than in front of you. js/boot.js lifts it, and
+     lifts it on a timer no matter what, so a slow network can never leave
+     you looking at this. -->
+<div class="boot" id="boot">
+  <div class="bootheart">💞</div>
+  <div class="boottitle">Lucia <span class="amp">♥</span> Riu</div>
+  <div class="bootbar"><i></i></div>
+</div>
+
 <!-- ================= LOCK SCREEN ================= -->
 <div class="lock" id="lock">
   <div class="lockheart">💞</div>
@@ -1034,6 +1046,7 @@
 <!-- Classic scripts, deliberately not ES modules: modules are blocked on
      file:// so the app would stop working when opened by double-click.
      Order matters — core first, init last. -->
+<script src="js/boot.js"></script>
 <script src="js/core.js"></script>
 <script src="js/supabase.js"></script>
 <!-- after supabase.js (needs SUPABASE_URL), before everything that calls supa() -->

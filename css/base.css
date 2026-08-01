@@ -433,6 +433,72 @@ button.toggled {
   100% { transform: translate(var(--dx), var(--dy)) scale(1.4) rotate(50deg); opacity: 0; }
 }
 
+/* ------- boot veil (js/boot.js) -------
+   Sits above the lock screen, because it covers the moment BEFORE we know
+   whether there is one.
+
+   The background is var(--bg1), so the veil always wears the CURRENT palette.
+   It does not animate between them: changing a custom property doesn't fire a
+   transition on the property that reads it (measured — six samples over 360ms,
+   all the end colour), so `background-color` is deliberately not in the
+   transition list rather than sitting there pretending.
+
+   It doesn't need to. js/init.js applies the theme and lifts the veil in the
+   same tick, and bootLift() waits a frame, so the recolour and the fade-out
+   start together — and what the veil uncovers is an app that is already the
+   right colour, which is the part that used to flash. */
+.boot {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: var(--bg1);
+  transition: opacity 0.42s ease;
+}
+.boot.bootgone { opacity: 0; pointer-events: none; }
+.bootheart { font-size: 44px; animation: bootpulse 1.4s ease-in-out infinite; }
+.boottitle {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.boottitle .amp { color: var(--accent); }
+/* An indeterminate sweep, not a percentage: nothing here knows how far along
+   it is, and a fake percentage is a lie with extra steps. */
+.bootbar {
+  width: 132px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--control-bg);
+  overflow: hidden;
+}
+.bootbar i {
+  display: block;
+  width: 42%;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  animation: bootsweep 1.15s ease-in-out infinite;
+}
+@keyframes bootpulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+}
+@keyframes bootsweep {
+  0% { transform: translateX(-115%); }
+  100% { transform: translateX(240%); }
+}
+/* Respect the setting: the veil still covers, it just stops moving. */
+@media (prefers-reduced-motion: reduce) {
+  .bootheart, .bootbar i { animation: none; }
+}
+
 /* ------- lock screen ------- */
 .lock {
   position: fixed;
