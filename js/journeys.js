@@ -100,7 +100,12 @@ function jrPast() { return journeys.filter(j => j.status !== "planned"); }
 function jrRenderHomeCard() {
   const card = document.getElementById("jrHomeCard");
   if (!card) return;
-  const list = (journeys || []).filter(j => j.start_date);
+  // jrPast(), not `journeys`: a row with status = 'planned' is a 🗓️ Trip Plan
+  // entry, not somewhere we've been. They carry FUTURE dates, so including
+  // them made a plan win "latest" almost every time — and quietly inflated
+  // the trip count and days-away totals as well. This card is the record of
+  // where we've actually been; 📋 Plan owns what's still ahead.
+  const list = jrPast().filter(j => j.start_date);
   const days = list.reduce((n, j) => n + jrDays(j), 0);
   document.getElementById("jrhTrips").textContent = list.length;
   document.getElementById("jrhDays").textContent = days;
