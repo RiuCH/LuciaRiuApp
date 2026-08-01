@@ -139,9 +139,23 @@ async function calAdd(fields) {
     const [row] = await supa(CAL_TABLE, { method: "POST", body: fields }) || [];
     if (row) Object.assign(temp, row);
     calReady = true;
+    calError = null;
   } catch (e) {
-    calReady = false;
-    popToast("Couldn't sync that — run supabase/calendar.sql 📅");
+    // NOT `calReady = false`. That flag means "can we read the calendar", and
+    // this is a write. Failing an insert used to repaint the card as
+    // "run supabase/calendar.sql" even though the table was demonstrably
+    // there and readable — which is exactly how a working install ended up
+    // being told to re-run SQL it had already run.
+    //
+    // A read that works while a write is refused has one likely cause: RLS.
+    // `using (is_us())` filters SELECT to zero rows silently, and
+    // `with check (is_us())` rejects the INSERT loudly, so 200-then-403 is
+    // what a signed-in account that isn't on the allowlist looks like.
+    calEvents = calEvents.filter(x => x !== temp);
+    const why = (e && e.message) || String(e);
+    popToast(/40[13]/.test(why)
+      ? "Supabase refused that (" + why + ") — is this account on the allowlist?"
+      : "Couldn't save that — " + why);
   }
   calRenderHome(); calRenderSheet();
 }
@@ -152,7 +166,13 @@ async function calDelete(ev) {
   calRenderHome(); calRenderSheet();
   if (!supaOn() || String(ev.id).startsWith("tmp")) return;
   try { await supa(CAL_TABLE + "?id=eq." + ev.id, { method: "DELETE" }); }
-  catch (e) { popToast("Couldn't delete that 😢 (" + e.message + ")"); }
+  catch (e) {
+    // Put it back. It is still in the database, so a list that no longer shows
+    // it is lying until the next reload.
+    calEvents.push(ev);
+    calRenderHome(); calRenderSheet();
+    popToast("Couldn't delete that 😢 (" + e.message + ")");
+  }
 }
 
 // One dot per person present, not per event — five dots in a 40px cell is a
