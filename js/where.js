@@ -242,7 +242,7 @@ function whRender() {
   const st = document.getElementById("whereStatus");
   if (st) {
     st.textContent = !whMe()
-      ? "Pick who you are on this phone first — the chips in 🎮 Games"
+      ? "Say who you are first — ⚙️ Settings → I'm"
       : whSharing()
         ? "Sharing your city with " + whName(whMe() === "lucia" ? "riu" : "lucia") +
           " — refreshed whenever you open the app"

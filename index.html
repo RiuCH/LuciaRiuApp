@@ -143,6 +143,10 @@
         <span class="chip" data-me="riu">Riu</span>
       </div>
       <div class="hint" id="meWhoHint"></div>
+      <!-- only shown once this account is actually linked (js/me.js) -->
+      <div class="rowbtns" id="meForgetRow" style="display:none">
+        <button id="meForget">🔓 Not me — unlink this account</button>
+      </div>
     </div>
 
     <div class="set-group">
@@ -554,7 +558,7 @@
 
       <div class="panel">
         <div class="ptitle">20 Questions</div>
-        <div class="q20-role" id="q20Role">Pick who you are, then somebody think of something.</div>
+        <div class="q20-role" id="q20Role">Say who you are in ⚙️ Settings, then somebody think of something.</div>
         <div class="rowbtns">
           <button class="primary" id="q20Start">🧠 I'll think of something</button>
           <button id="q20Again" style="display:none">🔄 Play again</button>
