@@ -142,7 +142,9 @@ let wdWords = { lucia: null, riu: null };
 let wdFirstBy = null;                     // who answered first this round
 let wdL = { l1: "?", l2: "?" };
 let wdPenaltyText = "";
-let wdMe = getHashParam("me") || null;    // which of us is on this phone
+// `meWho` (which of us is on this phone) used to be declared here and reached
+// into from three other files. It moved to js/me.js — identity isn't the
+// duel's to own, and it's asked once now, in ⚙️ Settings.
 let wdPushing = false;                    // don't let a poll clobber my own write
 
 // ---------------- the fair reveal ----------------
@@ -185,7 +187,7 @@ function wdStarted() {
 }
 // You may pick a side freely until a game starts; after that you're stuck with
 // it, so nobody can swap into the other's identity mid-match. Restart is the
-// way out if you tapped the wrong name. Note this only bites once wdMe is set —
+// way out if you tapped the wrong name. Note this only bites once meWho is set —
 // otherwise a game started on one phone would lock the other one out of ever
 // choosing.
 //
@@ -194,8 +196,17 @@ function wdStarted() {
 // q20Started() lives in js/twenty.js, which loads after this file — the typeof
 // guard is why this is safe to call from here.
 function wdSideLocked() {
-  if (!wdMe) return false;
+  if (!meWho) return false;
   return wdStarted() || (typeof q20Started === "function" && q20Started());
+}
+
+// The picker lives in ⚙️ Settings now, so the lock has to travel to it: me.js
+// asks every registered veto before letting you change identity. The rule stays
+// here, where it's true, rather than me.js needing to know what a duel is.
+if (typeof ME_LOCKS !== "undefined") {
+  ME_LOCKS.push(() => wdSideLocked()
+    ? "No swapping mid-game 😌 Hit 🔄 Restart in 🎮 Games if you picked wrong"
+    : null);
 }
 function wdCap(p) { return p === "lucia" ? "Lucia" : "Riu"; }
 function wdOther(p) { return p === "lucia" ? "riu" : "lucia"; }
@@ -253,12 +264,12 @@ async function wdResetFirst() {
 // If the row doesn't exist yet (very first round ever) we create it as ours.
 async function wdClaimFirst() {
   const rows = await supa("settings?key=eq." + WD_FIRST + "&value=eq.", {
-    method: "PATCH", body: { value: wdMe }
+    method: "PATCH", body: { value: meWho }
   });
   if (rows && rows.length) return true;
   const existing = await supa("settings?key=eq." + WD_FIRST + "&select=value");
-  if (!existing || !existing.length) { await wdSaveKey(WD_FIRST, wdMe); return true; }
-  return existing[0].value === wdMe;
+  if (!existing || !existing.length) { await wdSaveKey(WD_FIRST, meWho); return true; }
+  return existing[0].value === meWho;
 }
 
 function wdApply(state, firstBy) {
@@ -278,7 +289,7 @@ function wdApply(state, firstBy) {
   wdFirstBy = firstBy || null;
   // don't yank the keyboard out from under someone mid-word
   const typing = document.activeElement === wdWordInput;
-  if (!typing) wdWordInput.value = wdWords[wdMe] || "";
+  if (!typing) wdWordInput.value = wdWords[meWho] || "";
   wdRenderAll();
 }
 
@@ -371,7 +382,7 @@ function wdRenderHearts() {
       "❤️".repeat(wdHearts[p]) + "🖤".repeat(5 - wdHearts[p]);
     const row = document.getElementById("wdRow" + wdCap(p));
     row.classList.toggle("wd-dead", wdHearts[p] === 0);
-    row.classList.toggle("wd-me", wdMe === p);
+    row.classList.toggle("wd-me", meWho === p);
   });
   document.getElementById("wdRound").textContent = wdRoundNum;
 }
@@ -383,9 +394,9 @@ function wdRenderRace() {
     c.classList.toggle("sel", c.dataset.play === wdPlay));
   if (wdPlay !== "type") return;
 
-  const iAnswered = wdMe && wdWords[wdMe];
-  wdWordInput.disabled = !wdMe || !!iAnswered;
-  wdWordInput.placeholder = !wdMe ? "pick who you are first ↓"
+  const iAnswered = meWho && wdWords[meWho];
+  wdWordInput.disabled = !meWho || !!iAnswered;
+  wdWordInput.placeholder = !meWho ? "say who you are in ⚙️ Settings first"
     : iAnswered ? "answered — hit New letters for the next round" : "your word…";
 
   box.innerHTML = "";
@@ -399,7 +410,7 @@ function wdRenderRace() {
     if (!wdWords[p]) {
       w.className += " wd-hidden";
       w.textContent = "thinking…";
-    } else if (iAnswered || !wdMe) {
+    } else if (iAnswered || !meWho) {
       // only reveal once you've committed your own answer — no peeking
       w.textContent = wdWords[p];
     } else {
@@ -437,24 +448,13 @@ function wdRenderPenalty() {
   flavor.style.display = label ? "inline-flex" : "none";
 }
 
-// Both games in the tab show an "I'm playing as" row for the SAME `#me`, and
-// either game starting or restarting flips the lock for both. So one function
-// paints both rows and each game's render calls it — otherwise restarting the
-// duel leaves 20 Questions still claiming your side is locked in until
-// something happens to re-render it.
+// Both games used to carry their own "I'm playing as" row; the picker is in
+// ⚙️ Settings now. The function stays — several callers in both games and in
+// ✍️ Answer & compare still fire it — but its job is now to keep the Settings
+// picker honest, because starting or restarting a game is exactly what flips
+// the lock that greys it out.
 function renderWhoAmIRows() {
-  const locked = wdSideLocked();
-  ["wdWhoAmI", "q20WhoAmI"].forEach(id => {
-    const box = document.getElementById(id);
-    if (!box) return;
-    box.querySelectorAll(".chip").forEach(c => {
-      c.classList.toggle("sel", c.dataset.me === wdMe);
-      // dimmed, but still clickable — the handler explains why it won't budge
-      c.classList.toggle("wd-fixed", locked && c.dataset.me !== wdMe);
-    });
-    const lbl = box.querySelector(".wd-whoami-lbl");
-    if (lbl) lbl.textContent = locked ? "Playing as (locked in)" : "I'm playing as";
-  });
+  if (typeof meRender === "function") meRender();
 }
 
 function wdRenderWhoAmI() {
@@ -521,27 +521,27 @@ function wdLoseHeart(loser, e) {
 
 async function wdSubmitWord() {
   const word = wdWordInput.value.trim();
-  if (!wdMe) { popToast("Tap who you are first 😌"); return; }
+  if (!meWho) { popToast("Say who you are in ⚙️ Settings first 😌"); return; }
   if (!word) return;
   if (!new RegExp("^" + wdL.l1 + ".*" + wdL.l2 + "$", "i").test(word)) {
     popToast("That has to start with " + wdL.l1 + " and end with " + wdL.l2 + " 🤨");
     return;
   }
-  const col = "word_" + wdMe;
-  wdWords[wdMe] = word;
+  const col = "word_" + meWho;
+  wdWords[meWho] = word;
   wdRenderRace();
 
-  if (!supaOn()) { wdFirstBy = wdFirstBy || wdMe; wdRenderRace(); return; }
+  if (!supaOn()) { wdFirstBy = wdFirstBy || meWho; wdRenderRace(); return; }
   wdPushing = true;
   try {
     const won = await wdClaimFirst();
-    wdFirstBy = wdFirstBy || (won ? wdMe : wdOther(wdMe));
+    wdFirstBy = wdFirstBy || (won ? meWho : wdOther(meWho));
     await wdSaveKey(WD_KEY, JSON.stringify(wdSnapshot()));
     wdSynced = true;
-    popToast(won ? "First! ⚡" : "Submitted — " + wdCap(wdOther(wdMe)) + " beat you to it ⚡");
+    popToast(won ? "First! ⚡" : "Submitted — " + wdCap(wdOther(meWho)) + " beat you to it ⚡");
   } catch (e) {
     // DB unreachable: fall back to this phone deciding the race, same as local mode
-    wdFirstBy = wdFirstBy || wdMe;
+    wdFirstBy = wdFirstBy || meWho;
     wdSynced = false;
     popToast("Couldn't sync that one — it still counts here 💞");
   } finally {
@@ -603,19 +603,8 @@ document.querySelectorAll("#wdPlayModes .chip").forEach(chip => {
     wdPush();
   });
 });
-document.querySelectorAll("#wdWhoAmI .chip").forEach(chip => {
-  chip.addEventListener("click", () => {
-    if (chip.dataset.me === wdMe) return;
-    if (wdSideLocked()) {
-      popToast("No swapping mid-game 😌 Hit 🔄 Restart if you picked wrong");
-      return;
-    }
-    wdMe = chip.dataset.me;
-    setHashParam("me", wdMe);   // survives refresh, no localStorage needed
-    wdRenderAll();
-    popToast("You're playing as " + wdCap(wdMe) + " 💞");
-  });
-});
+// The 'I'm playing as' picker moved to ⚙️ Settings (js/me.js). The side
+// lock it used to enforce now travels with it, via ME_LOCKS above.
 
 
 // ---- restart ----

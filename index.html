@@ -132,6 +132,19 @@
 
     <!-- Editing `allowed_emails`, which the Before User Created hook checks
          (supabase/allowlist.sql). Signed-in-only, and RLS gates it anyway. -->
+    <!-- 👤 Who is holding this phone. ONE place for it now — the calendar,
+         both games, ✍️ Answer & compare and 📍 Location all read js/me.js.
+         Signed in with a recognised address, this is set for you and you
+         never come here at all. -->
+    <div class="set-group" id="meWhoRow">
+      <div class="set-label">I'm</div>
+      <div class="wd-whoami" id="meWhoPick">
+        <span class="chip" data-me="lucia">Lucia</span>
+        <span class="chip" data-me="riu">Riu</span>
+      </div>
+      <div class="hint" id="meWhoHint"></div>
+    </div>
+
     <div class="set-group">
       <div class="set-label">Location</div>
       <div class="rowbtns">
@@ -517,11 +530,6 @@
           <button class="wd-lostbtn" id="wdLostRiu">I lost 💔</button>
         </div>
       </div>
-      <div class="wd-whoami" id="wdWhoAmI">
-        <span class="wd-whoami-lbl">I'm playing as</span>
-        <span class="chip" data-me="lucia">Lucia</span>
-        <span class="chip" data-me="riu">Riu</span>
-      </div>
       <div class="hint" id="wdSyncHint">Hearts are shared — you'll both see the same score 💞</div>
     </div>
 
@@ -547,11 +555,6 @@
       <div class="panel">
         <div class="ptitle">20 Questions</div>
         <div class="q20-role" id="q20Role">Pick who you are, then somebody think of something.</div>
-        <div class="wd-whoami" id="q20WhoAmI">
-          <span class="wd-whoami-lbl">I'm playing as</span>
-          <span class="chip" data-me="lucia">Lucia</span>
-          <span class="chip" data-me="riu">Riu</span>
-        </div>
         <div class="rowbtns">
           <button class="primary" id="q20Start">🧠 I'll think of something</button>
           <button id="q20Again" style="display:none">🔄 Play again</button>
@@ -633,11 +636,6 @@
       <div class="qotd-q" id="qotdText">Loading today's question…</div>
       <div class="ac-box" id="acBox">
         <div class="ac-status" id="acStatus"></div>
-        <div class="wd-whoami ac-who" id="acWho" style="display:none">
-          <span class="wd-whoami-lbl">I'm</span>
-          <span class="chip" data-me="lucia">Lucia</span>
-          <span class="chip" data-me="riu">Riu</span>
-        </div>
         <div class="ac-compose" id="acCompose" style="display:none">
           <textarea id="acInput" rows="2" placeholder="your answer — they can't see it until they've answered too…"></textarea>
           <button class="primary" id="acSend">🔒 Lock it in</button>
@@ -1007,11 +1005,6 @@
     <div class="cal-daybox">
       <div class="cal-daytitle" id="calDayTitle">—</div>
       <div class="cal-daylist" id="calDayList"></div>
-      <div class="wd-whoami cal-who" id="calWho">
-        <span class="wd-whoami-lbl">I'm</span>
-        <span class="chip" data-me="lucia">Lucia</span>
-        <span class="chip" data-me="riu">Riu</span>
-      </div>
       <div class="hint" id="calWhoHint"></div>
       <div class="cal-form">
         <input type="text" id="calTitle" placeholder="What's happening?" maxlength="80">
@@ -1051,6 +1044,9 @@
 <script src="js/supabase.js"></script>
 <!-- after supabase.js (needs SUPABASE_URL), before everything that calls supa() -->
 <script src="js/auth.js"></script>
+<!-- after auth.js (identity can come from the signed-in address), before
+     every tab that asks who you are -->
+<script src="js/me.js"></script>
 <!-- after auth.js (aiCall sends the user's JWT), before any tab that offers ✨ -->
 <script src="js/ai.js"></script>
 <!-- after auth.js (a subscription is tied to an account, not a device) -->

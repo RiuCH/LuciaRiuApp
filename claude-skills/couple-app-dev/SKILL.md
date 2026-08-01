@@ -219,6 +219,35 @@ exception to theme-derived component colour: they encode fixed person identity,
 stay constant across palettes by product decision, and are paired with visible
 owner text so colour is never the only cue.
 
+## Who is on this phone — ask js/me.js, never the hash
+
+`meWho` in `js/me.js` is the app's one identity, picked in ⚙️ Settings.
+Consumers call `meGet()`; **nothing but `js/me.js` may write `#me`**.
+
+It used to be `wdMe` in `js/duel.js`, with four separate "I'm playing as"
+pickers all setting the same param — Word Duel, 20 Questions, ✍️ Answer &
+compare and 📅 the calendar — while 📍 Location silently refused to work until
+you'd found one of them. If you add a feature that needs to know which of you
+is acting, call `meGet()` and, when it's null, point at ⚙️ Settings rather than
+growing a fifth picker.
+
+Two things to know before touching it:
+
+- **Signed in, it isn't asked at all.** `meFromAccount()` maps the Google
+  address through `AUTH_ALLOWED` in `js/auth.js`, whose **order is
+  load-bearing: Riu is `[0]`, Lucia is `[1]`.** Reordering that array swaps the
+  two of them across the whole app. It deliberately returns null while the list
+  still holds its `@example.com` placeholder — asking once beats mislabelling
+  who added something. This also matters because `start_url` is `./`: an
+  installed launch has no hash, so the hash alone could never be the answer.
+- **`ME_LOCKS`** is how a tab refuses a change: push a function returning a
+  reason string. Word Duel uses it so nobody can swap sides mid-match. Keep the
+  rule in the tab that owns it — `me.js` shouldn't learn what a duel is.
+
+`meBroadcast()` repaints everything that draws identity; add your render
+function to that list. Every call there is feature-detected *and* individually
+caught, so one absent function can't take the others down with it.
+
 ## Colour: everything comes from shared vars
 
 Palettes live in `css/themes.css`, are picked in Settings, and are stored in
