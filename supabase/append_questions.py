@@ -7,10 +7,24 @@ order — a full reseed is fine, but appending is non-destructive and keeps
 per-category order aligned with BANK as long as new questions are added at
 the END of their category array (which is the convention).
 
+    export LR_TOKEN="$(open the app, sign in, run authToken() in the console)"
     python3 supabase/append_questions.py            # dry run: shows the diff
     python3 supabase/append_questions.py --apply    # actually insert
 
 Reads SUPABASE_URL / SUPABASE_ANON_KEY from js/supabase.js.
+
+AUTHENTICATION — read this before running it.
+Since supabase/auth_policies.sql (v10), `questions` is `to authenticated
+using (public.is_us())` and there is NO policy for anon. The anon key
+therefore reads ZERO rows — PostgREST returns an empty array rather than an
+error — so this script used to conclude the table was empty and offer to
+append the entire bank. Running that against a populated table would have
+duplicated every question and desynced the online and offline decks forever.
+
+So it now needs a real user token in LR_TOKEN. Get one by opening the
+deployed app, signing in, and running authToken() in the browser console;
+it lasts about an hour, which is plenty. Without it the script refuses to
+do anything rather than guessing.
 """
 import json
 import os
@@ -29,11 +43,21 @@ def config():
     return url.rstrip("/"), key
 
 
+def bearer(key):
+    """The user JWT if we were given one, else the anon key.
+
+    RLS is the reason: `questions` is us-only, so the anon key can neither
+    read nor write it. The anon key path is kept only for a project that
+    hasn't run auth_policies.sql yet.
+    """
+    return os.environ.get("LR_TOKEN") or key
+
+
 def request(url, key, path, method="GET", body=None):
     data = json.dumps(body).encode() if body is not None else None
     req = urllib.request.Request(url + "/rest/v1/" + path, data=data, method=method)
     req.add_header("apikey", key)
-    req.add_header("Authorization", "Bearer " + key)
+    req.add_header("Authorization", "Bearer " + bearer(key))
     req.add_header("Content-Type", "application/json")
     req.add_header("Prefer", "return=representation")
     with urllib.request.urlopen(req) as res:
@@ -46,6 +70,21 @@ def main():
     url, key = config()
     bank = load_bank()
     rows = request(url, key, "questions?select=id,category,text&order=id.asc")
+
+    # An empty read is far more likely to be RLS silently filtering us out
+    # than a genuinely empty table — the anon key gets exactly this result on
+    # any project that has run auth_policies.sql. Appending the whole bank on
+    # that assumption would duplicate every existing row, so refuse.
+    if not rows and not os.environ.get("LR_TOKEN"):
+        sys.exit(
+            "ABORT: read 0 questions with the anon key.\n"
+            "Since auth_policies.sql, `questions` is us-only and anon sees nothing —\n"
+            "so this is almost certainly a permissions problem, not an empty table.\n"
+            "Set LR_TOKEN to a signed-in user's JWT (authToken() in the browser\n"
+            "console) and try again. For a genuinely fresh project, use\n"
+            "generate_seed.py + seed_questions.sql instead."
+        )
+
     db = {}
     for r in rows:
         db.setdefault(r["category"], []).append(r["text"])
