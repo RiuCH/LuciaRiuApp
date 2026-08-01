@@ -154,36 +154,65 @@ function whLabel(who) {
   return { place, ago: whAgo(w.at) };
 }
 
+// Distance, said with some warmth. The number alone is a bit clinical for a
+// panel that sits under "Miles apart, same heart".
+function whDistanceLine(miles) {
+  if (miles === null) return "";
+  if (miles < 1)  return "Same place, same second 💞";
+  if (miles < 30) return miles + " miles — practically neighbours 💞";
+  return miles.toLocaleString() + " miles apart · same sky though 💫";
+}
+
+// One end of the little map: pin, place, name, when.
+function whPin(who) {
+  const w = whWhere[who];
+  const box = document.createElement("div");
+  box.className = "wh-pin" + (w ? "" : " wh-quiet");
+
+  const dot = document.createElement("div");
+  dot.className = "wh-dot";
+  dot.textContent = w ? "📍" : "·";
+  const place = document.createElement("div");
+  place.className = "wh-place";
+  place.textContent = w ? (w.city || w.country || "somewhere") : "not sharing";
+  const nm = document.createElement("div");
+  nm.className = "wh-who";
+  nm.textContent = whName(who);
+  const ago = document.createElement("div");
+  ago.className = "wh-ago";
+  ago.textContent = w ? whAgo(w.at) : "";
+
+  box.appendChild(dot); box.appendChild(place); box.appendChild(nm); box.appendChild(ago);
+  return box;
+}
+
 function whRender() {
   const panel = document.getElementById("wherePanel");
   if (!panel) return;
-  const line = document.getElementById("whereLine");
+  const map = document.getElementById("whereLine");
   const hint = document.getElementById("whereHint");
-  const a = whWhere.lucia, b = whWhere.riu;
+  const miles = whMiles(whWhere.lucia, whWhere.riu);
+  const together = miles !== null && miles < 1;
 
-  line.innerHTML = "";
-  WH_PEOPLE.forEach(who => {
-    const got = whLabel(who);
-    const row = document.createElement("div");
-    row.className = "wh-row" + (got ? "" : " wh-quiet");
-    const nm = document.createElement("span");
-    nm.className = "wh-who";
-    nm.textContent = whName(who);
-    const pl = document.createElement("span");
-    pl.className = "wh-place";
-    pl.textContent = got ? got.place : "not sharing";
-    const ag = document.createElement("span");
-    ag.className = "wh-ago";
-    ag.textContent = got ? got.ago : "";
-    row.appendChild(nm); row.appendChild(pl); row.appendChild(ag);
-    line.appendChild(row);
-  });
+  // Lucia on the left, Riu on the right — same order as the clocks above, so
+  // your eye doesn't have to re-learn which side is whom.
+  map.innerHTML = "";
+  map.appendChild(whPin("lucia"));
 
-  const miles = whMiles(a, b);
+  const link = document.createElement("div");
+  link.className = "wh-link" + (together ? " wh-together" : "");
+  const icon = document.createElement("span");
+  icon.className = "wh-icon";
+  // ✈️ when there's a journey between us; 💞 when there isn't one to make
+  icon.textContent = miles === null ? "·  ·  ·" : together ? "💞" : "✈️";
+  link.appendChild(icon);
+  map.appendChild(link);
+
+  map.appendChild(whPin("riu"));
+
   hint.textContent = whBusy ? "Finding you…"
-    : miles === null ? "Both of you need to be sharing to see the distance 📍"
-    : miles < 1 ? "You're in the same place 💞"
-    : miles.toLocaleString() + " miles apart right now";
+    : miles === null ? "Both of you sharing turns this into a map 📍"
+    : whDistanceLine(miles);
 
   // the Settings row
   const btn = document.getElementById("whereToggle");
