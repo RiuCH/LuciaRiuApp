@@ -111,6 +111,383 @@
   box-shadow: 0 12px 32px rgba(79, 91, 112, 0.20);
 }
 
+/* ---------------- Daydream editorial prototype ----------------
+   The reference mixes a fashion-editorial serif with a quiet geometric sans,
+   then gives each Home memory its own wash of sage, sky or lavender. Keep the
+   treatment scoped to Daydream so every existing dark palette stays intact. */
+body.theme-daydream {
+  font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at 10% 12%, rgba(225, 240, 242, 0.72), transparent 30%),
+    radial-gradient(circle at 92% 28%, rgba(215, 213, 231, 0.78), transparent 34%),
+    linear-gradient(155deg, #fbf8ef 0%, #f7f3e8 48%, #eef0e8 100%);
+  background-size: 100% 100%;
+  animation: none;
+}
+
+.theme-daydream .heart { display: none; }
+
+.theme-daydream header {
+  position: relative;
+  padding-top: 22px;
+}
+.theme-daydream header::before,
+.theme-daydream header::after {
+  position: absolute;
+  top: 24px;
+  color: #9aa9d6;
+  font-family: Georgia, serif;
+  pointer-events: none;
+}
+.theme-daydream header::before {
+  content: "✦  ·";
+  left: 24px;
+  letter-spacing: 10px;
+  font-size: 18px;
+}
+.theme-daydream header::after {
+  content: "✦  · ·";
+  right: 18px;
+  color: #c5cbb3;
+  letter-spacing: 8px;
+  font-size: 15px;
+}
+.theme-daydream header .names {
+  font-family: Didot, "Bodoni 72", "Bodoni MT", Georgia, serif;
+  font-size: 40px;
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: 3px;
+  color: #273640;
+}
+.theme-daydream header .names .amp {
+  color: #9eabdc;
+  margin: 0 7px;
+  animation: none;
+}
+.theme-daydream header .sub {
+  margin: 10px 0 28px;
+  color: #55636e;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 4.5px;
+}
+.theme-daydream .app-gear {
+  top: 18px;
+  right: 4px;
+  color: #7d8992;
+  background: rgba(255, 255, 255, 0.48);
+}
+
+.theme-daydream .panel,
+.theme-daydream .card {
+  border-color: rgba(112, 126, 145, 0.16);
+  border-radius: 24px;
+  box-shadow: 0 10px 26px rgba(79, 91, 112, 0.12),
+              inset 0 1px 0 rgba(255, 255, 255, 0.88);
+}
+.theme-daydream .panel {
+  padding: 20px;
+  margin-bottom: 14px;
+}
+.theme-daydream .panel .ptitle {
+  margin-bottom: 13px;
+  color: #31414c;
+  font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* Home surface rhythm from the reference image. */
+.theme-daydream #page-home .cp-panel,
+.theme-daydream #page-home #homeCd {
+  background: linear-gradient(145deg, rgba(241, 240, 250, 0.94), rgba(223, 224, 243, 0.86));
+}
+.theme-daydream #page-home #annivBar {
+  background: linear-gradient(145deg, rgba(244, 245, 236, 0.96), rgba(226, 229, 213, 0.90));
+}
+.theme-daydream #page-home #homeClocks,
+.theme-daydream #page-home #qotdCard {
+  background: linear-gradient(145deg, rgba(239, 248, 249, 0.96), rgba(210, 232, 240, 0.88));
+}
+.theme-daydream #page-home #jrHomeCard,
+.theme-daydream #page-home #wdTeaser {
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.theme-daydream .cp-panel { padding: 15px; }
+.theme-daydream .cp-panel .ptitle {
+  margin: 3px 28px 14px 3px;
+  text-align: left;
+  font-family: Didot, "Bodoni 72", "Bodoni MT", Georgia, serif;
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: -0.3px;
+}
+.theme-daydream .cp-frame {
+  border-color: rgba(96, 112, 133, 0.17);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.34);
+}
+.theme-daydream .cp-caption {
+  margin: 10px 7px 0;
+  text-align: left;
+  color: #56646e;
+  font-size: 14px;
+}
+.theme-daydream .cp-gear {
+  top: 13px;
+  right: 13px;
+  width: 31px;
+  height: 31px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 0;
+  opacity: 0.72;
+}
+.theme-daydream .cp-gear::before {
+  content: "•••";
+  color: #98a6d5;
+  font-size: 16px;
+  letter-spacing: 2px;
+}
+
+/* Circular section marks, aligned like the supplied prototype. */
+.theme-daydream #annivBar {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  text-align: left;
+  column-gap: 12px;
+}
+.theme-daydream #annivBar::before {
+  content: "♥";
+  grid-column: 1;
+  grid-row: 1 / span 3;
+  align-self: center;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  color: #b7c09d;
+  background: rgba(255, 255, 255, 0.62);
+  font-family: Georgia, serif;
+  font-size: 25px;
+}
+.theme-daydream #annivBar .ptitle,
+.theme-daydream #annivBar .together,
+.theme-daydream #annivBar .nextanniv { grid-column: 2; }
+.theme-daydream #annivBar .ptitle { margin: 1px 0 5px; }
+.theme-daydream #annivBar .together {
+  font-size: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.theme-daydream #annivBar .together b { color: #52636e; }
+
+.theme-daydream #homeClocks .ptitle::before,
+.theme-daydream #homeCd .ptitle::before,
+.theme-daydream #qotdCard .ptitle::before {
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  margin-right: 9px;
+  border-radius: 50%;
+  vertical-align: middle;
+  font-size: 19px;
+  font-weight: 400;
+}
+.theme-daydream #homeClocks .ptitle::before {
+  content: "◎";
+  color: #78a9c4;
+  background: rgba(191, 221, 234, 0.55);
+}
+.theme-daydream #homeCd .ptitle::before {
+  content: "♡";
+  color: #7f91cd;
+  background: rgba(211, 212, 239, 0.65);
+}
+.theme-daydream #qotdCard .ptitle::before {
+  content: "?";
+  color: #6f9eb8;
+  background: rgba(191, 221, 234, 0.55);
+}
+.theme-daydream #homeClocks .ptitle,
+.theme-daydream #homeCd .ptitle { text-align: left; }
+
+.theme-daydream .clock {
+  max-width: none;
+  padding: 10px 8px 9px;
+  border-color: rgba(94, 118, 134, 0.14);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.28);
+}
+.theme-daydream .clock .who {
+  color: #68747c;
+  font-family: Didot, "Bodoni 72", Georgia, serif;
+  font-size: 13px;
+  letter-spacing: 1.5px;
+}
+.theme-daydream .clock .time {
+  margin: 2px 0 0;
+  color: #263640;
+  font-family: Didot, "Bodoni 72", "Bodoni MT", Georgia, serif;
+  font-size: 34px;
+  font-weight: 400;
+  line-height: 1;
+}
+.theme-daydream .clock .city { color: #66737b; font-size: 13px; }
+
+.theme-daydream .countdown { gap: 0; }
+.theme-daydream .cd-cell {
+  position: relative;
+  flex: 1;
+  width: auto;
+  padding: 5px 4px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.theme-daydream .cd-cell + .cd-cell {
+  border-left: 1px solid rgba(102, 118, 139, 0.15);
+}
+.theme-daydream .cd-cell .num {
+  color: #51616d;
+  font-family: Didot, "Bodoni 72", "Bodoni MT", Georgia, serif;
+  font-size: 34px;
+  font-weight: 400;
+  line-height: 1;
+}
+.theme-daydream .cd-cell .unit {
+  margin-top: 5px;
+  color: #53626d;
+  font-size: 10px;
+  letter-spacing: 1.4px;
+}
+.theme-daydream #homeCd .rowbtns { gap: 9px; margin-top: 15px; }
+.theme-daydream #homeCd .rowbtns button { flex: 1; padding: 11px 12px; }
+.theme-daydream #setDateBtn {
+  color: #fff;
+  background: #9aa9d8;
+  border-color: #9aa9d8;
+  box-shadow: 0 7px 16px rgba(113, 131, 189, 0.20);
+}
+.theme-daydream #missYouBtn { background: rgba(255, 255, 255, 0.62); }
+
+.theme-daydream #qotdCard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 10px;
+  text-align: left;
+}
+.theme-daydream #qotdCard .ptitle { margin: 0; }
+.theme-daydream #qotdCard .qotd-chiprow { margin: 0; }
+.theme-daydream #qotdCard .chip {
+  padding: 6px 12px;
+  color: #37464f;
+  background: rgba(240, 232, 196, 0.68);
+  border-color: rgba(190, 172, 94, 0.30);
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.theme-daydream #qotdCard .qotd-q,
+.theme-daydream #qotdCard .ac-box {
+  grid-column: 1 / -1;
+}
+.theme-daydream #qotdCard .qotd-q {
+  margin-top: 10px;
+  color: #2f404a;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+/* Reference-style stacked navigation without changing the accessible labels. */
+.theme-daydream .nav {
+  width: calc(100% - 24px);
+  max-width: 402px;
+  gap: 1px;
+  padding: 6px 5px;
+  border-color: rgba(94, 107, 125, 0.15);
+  border-radius: 26px;
+  background: rgba(255, 253, 247, 0.92);
+}
+.theme-daydream .nav button {
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: 7px 2px 5px;
+  border-radius: 18px;
+  color: #6c7880;
+  font-size: 0;
+}
+.theme-daydream .nav button::before {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 32px;
+  border-radius: 13px;
+  font-size: 21px;
+  line-height: 1;
+}
+.theme-daydream .nav button::after {
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+.theme-daydream #navHome::before { content: "⌂"; }
+.theme-daydream #navHome::after { content: "Home"; }
+.theme-daydream #navJourneys::before { content: "✈"; }
+.theme-daydream #navJourneys::after { content: "Trips"; }
+.theme-daydream #navTreats::before { content: "♡"; }
+.theme-daydream #navTreats::after { content: "Memories"; }
+.theme-daydream #navPlan::before { content: "▤"; }
+.theme-daydream #navPlan::after { content: "Plan"; }
+.theme-daydream #navDuel::before { content: "⌘"; }
+.theme-daydream #navDuel::after { content: "Games"; }
+.theme-daydream .nav button.active {
+  color: #7183bd;
+  background: transparent;
+  box-shadow: none;
+}
+.theme-daydream .nav button.active::before {
+  color: #fff;
+  background: #9aa9d8;
+  box-shadow: 0 6px 14px rgba(113, 131, 189, 0.24);
+}
+
+@media (min-width: 900px) {
+  .theme-daydream header .names { font-size: 46px; }
+  .theme-daydream #page-home.active { gap: 18px; }
+  .theme-daydream #page-home .cp-panel { display: flex; }
+  .theme-daydream #annivBar { align-content: center; }
+  .theme-daydream .nav { max-width: 470px; }
+  .theme-daydream .nav button::after { font-size: 11px; }
+}
+
+@media (max-width: 420px) {
+  .theme-daydream header::before { left: 6px; }
+  .theme-daydream header::after { right: 2px; }
+  .theme-daydream header .names { font-size: 38px; letter-spacing: 2px; }
+  .theme-daydream header .sub { font-size: 12px; letter-spacing: 3.9px; }
+  .theme-daydream .panel { padding: 18px; }
+  .theme-daydream .cp-panel { padding: 14px; }
+  .theme-daydream #annivBar { grid-template-columns: 48px minmax(0, 1fr); gap: 9px; }
+  .theme-daydream #annivBar::before { width: 44px; height: 44px; }
+  .theme-daydream #annivBar .together { font-size: 14px; }
+  .theme-daydream .nav button::after { font-size: 9.5px; }
+}
+
+
 
 /* ---------------- the picker in Settings ---------------- */
 .th-grid {
