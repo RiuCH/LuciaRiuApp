@@ -195,29 +195,16 @@ function q20Started() {
          q20.asked.length > 0;
 }
 
-function q20SetMe(who) {
-  if (who === wdMe) return;
-  // one identity across the whole Games tab — see wdSideLocked() in js/duel.js
-  if (typeof wdSideLocked === "function" && wdSideLocked()) {
-    popToast("No swapping mid-game 😌 Hit 🔄 Restart if you picked wrong");
-    return;
-  }
-  wdMe = who;
-  setHashParam("me", who);
-  if (typeof wdRenderWhoAmI === "function") wdRenderWhoAmI();
-  q20Render();
-}
+// The picker moved to ⚙️ Settings (js/me.js), which owns the identity and asks
+// ME_LOCKS — including the duel's side lock — before letting it change.
 
-document.querySelectorAll("#q20WhoAmI .chip").forEach(chip =>
-  chip.addEventListener("click", () => q20SetMe(chip.dataset.me)));
-
-const q20IamThinker = () => wdMe && q20.thinker === wdMe;
-const q20IamGuesser = () => wdMe && q20.thinker && q20.thinker !== wdMe;
+const q20IamThinker = () => meWho && q20.thinker === meWho;
+const q20IamGuesser = () => meWho && q20.thinker && q20.thinker !== meWho;
 
 // ---------------- actions ----------------
 document.getElementById("q20Start").addEventListener("click", () => {
-  if (!wdMe) { popToast("Pick who you are first 😌"); return; }
-  q20 = { phase: "setup", thinker: wdMe, word: "", asked: [], pending: null, result: null, reveal: false };
+  if (!meWho) { popToast("Say who you are in ⚙️ Settings first 😌"); return; }
+  q20 = { phase: "setup", thinker: meWho, word: "", asked: [], pending: null, result: null, reveal: false };
   q20Render();
   document.getElementById("q20Word").focus();
 });
@@ -234,7 +221,7 @@ document.getElementById("q20Lock").addEventListener("click", (e) => {
   const word = document.getElementById("q20Word").value.trim();
   if (!word) { popToast("Think of something first 🧠"); return; }
   q20.word = word;
-  q20.thinker = wdMe;
+  q20.thinker = meWho;
   q20.phase = "asking";
   q20.asked = [];
   q20.pending = null;
@@ -376,8 +363,8 @@ function q20Render() {
 
   // whose turn it is, in words
   const roleLine =
-    !wdMe ? "Pick who you are, then somebody think of something."
-    : q20.phase === "setup" && q20.thinker === wdMe ? "You're thinking. Type your secret below 🤫"
+    !meWho ? "Say who you are in ⚙️ Settings, then somebody think of something."
+    : q20.phase === "setup" && q20.thinker === meWho ? "You're thinking. Type your secret below 🤫"
     : q20.phase === "setup" && q20.thinker ? capitalise(q20.thinker) + " is thinking of something…"
     : q20.phase === "setup" ? "Nobody's thinking of anything yet."
     : q20.phase === "over" ? (q20.result === "won" ? pickStable(Q20_WON) : pickStable(Q20_LOST))
@@ -387,8 +374,8 @@ function q20Render() {
   el("q20Role").textContent = roleLine;
 
   // setup controls
-  el("q20Start").style.display = q20.phase === "setup" && !(q20.thinker === wdMe) ? "inline-block" : "none";
-  el("q20SetupBox").style.display = q20.phase === "setup" && q20.thinker === wdMe ? "block" : "none";
+  el("q20Start").style.display = q20.phase === "setup" && !(q20.thinker === meWho) ? "inline-block" : "none";
+  el("q20SetupBox").style.display = q20.phase === "setup" && q20.thinker === meWho ? "block" : "none";
 
   // the asking board
   el("q20Board").style.display = q20.phase === "setup" ? "none" : "block";

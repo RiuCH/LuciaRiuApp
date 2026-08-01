@@ -27,9 +27,11 @@ let whBusy = false;
 const whKey = who => "where_" + who;
 const whName = who => (who === "lucia" ? "Lucia" : "Riu");
 
-// Which of us is on this phone. Reuses the app's existing `#me`, the same
-// answer the duel and 20 Questions use — one identity, asked once.
-function whMe() { return typeof wdMe !== "undefined" ? wdMe : null; }
+// Which of us is on this phone — js/me.js, picked once in ⚙️ Settings (and
+// usually not picked at all: a signed-in address answers it). This used to
+// reach into js/duel.js for `wdMe`, which is how identity ended up living
+// under the duel's prefix.
+function whMe() { return typeof meGet === "function" ? meGet() : null; }
 
 function whMine() { const me = whMe(); return me ? whWhere[me] : null; }
 function whSharing() { return !!whMine(); }
@@ -102,7 +104,7 @@ async function whLoad() {
 
 async function whPublish(announce) {
   const me = whMe();
-  if (!me) { popToast("Pick who you are first 😌"); return false; }
+  if (!me) { popToast("Say who you are in ⚙️ Settings first 😌"); return false; }
   if (!supaOn()) { popToast("Needs the backend — nothing to share with"); return false; }
   whBusy = true; whRender();
   try {

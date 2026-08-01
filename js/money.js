@@ -23,7 +23,7 @@ let mnReady = null;       // null unknown · true table exists · false needs mo
 let mnOpen = false;       // is the add/history panel expanded
 
 function mnEl(id) { return document.getElementById(id); }
-function mnMe() { return getHashParam("me") || null; }
+function mnMe() { return typeof meGet === "function" ? meGet() : null; }
 // "−$80", not "$-80": the sign belongs in front of the money, not inside it.
 function mnMoney(n) {
   const v = Math.round(n);

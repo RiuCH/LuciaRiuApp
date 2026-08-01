@@ -22,6 +22,11 @@ function boot(label, fn) {
 // the clock on the front page is still right.
 boot("home widgets", () => { homeTickFast(); homeTickSlow(); });
 
+// Identity BEFORE anything that draws with it. js/auth.js has already restored
+// its session at parse time, so the signed-in address is available now and most
+// launches never have to ask (js/me.js).
+boot("who am I", meInit);
+
 boot("calendar", calLoad);
 boot("question of the day", qotdRender);
 boot("answers", () => { acRender(); acLoad(); });   // C1: paint empty, then adopt today's

@@ -33,7 +33,7 @@ let sdShowDone = false;
 
 // Which of us is on this phone. Shares `#me` with the duel and 20 Questions —
 // one identity, picked once. Null until you've chosen a side there.
-function sdMe() { return getHashParam("me") || null; }
+function sdMe() { return typeof meGet === "function" ? meGet() : null; }
 
 function sdEl(id) { return document.getElementById(id); }
 
