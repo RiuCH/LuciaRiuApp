@@ -26,38 +26,31 @@
 /* ------- the Home card ------- */
 .cal-card { cursor: pointer; }
 .cal-card:hover { border-color: var(--accent); }
-.cal-minihead {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 8px;
-}
 .cal-open { color: var(--text-dim); font-weight: 600; letter-spacing: 0.6px; }
 
-.cal-mini { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.cal-mini { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
 .cal-dow {
-  font-size: 9.5px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.5px;
   color: var(--text-dim);
   text-align: center;
   padding-bottom: 2px;
 }
+/* Rows are shorter than they are wide and the digits are bigger. Square cells
+   at 11.5px left each number marooned in its own tile — the complaint was that
+   the gaps read louder than the dates, and they did. The width is fixed by
+   seven columns, so the only lever is height. */
 .cal-mday {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  aspect-ratio: 1;
+  gap: 1px;
+  aspect-ratio: 1 / 0.72;
   border-radius: 8px;
-  font-size: 11.5px;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--text-dim);
 }
 .cal-mday i { font-style: normal; }
@@ -69,8 +62,10 @@
 
 .cal-key {
   display: flex;
+  align-items: center;
   gap: 14px;
   justify-content: center;
+  flex-wrap: wrap;
   margin-top: 12px;
   font-size: 11px;
   color: var(--text-dim);

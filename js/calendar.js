@@ -132,6 +132,24 @@ async function calDelete(ev) {
   catch (e) { popToast("Couldn't delete that 😢 (" + e.message + ")"); }
 }
 
+// One dot per person present, not per event — five dots in a 40px cell is a
+// smudge, and "who" is the only thing at this size that can be read honestly.
+//
+// The row is ALWAYS appended, empty or not. Adding it only on busy days made
+// those days taller by 6px, which nudged their numbers up and left the row of
+// dates visibly wavy. A constant height keeps every number on one baseline.
+function calDots(on) {
+  const dots = document.createElement("i");
+  dots.className = "cal-dots";
+  ["riu", "lucia"].forEach(who => {
+    if (!on.some(e => e.who === who)) return;
+    const dot = document.createElement("b");
+    dot.className = "cal-dot cal-" + who;
+    dots.appendChild(dot);
+  });
+  return dots;
+}
+
 // ---------------- the Home card ----------------
 // A real month, not a teaser: the point of a shared calendar is seeing whose
 // week is busy without opening anything.
@@ -142,6 +160,9 @@ function calRenderHome() {
 
   const today = calToday();
   const mo = calMonthOf(today);
+  // The month IS the card's title. It used to be a third line under "Our
+  // calendar", which stacked a name, a month and a tap hint above a grid that
+  // already says all three.
   label.textContent = calMonthLabel(mo);
   grid.innerHTML = "";
 
@@ -162,20 +183,7 @@ function calRenderHome() {
     const n = document.createElement("i");
     n.textContent = d;
     cell.appendChild(n);
-    const on = calOn(key);
-    if (on.length) {
-      const dots = document.createElement("i");
-      dots.className = "cal-dots";
-      // One dot per person present, not per event — five dots in a 30px cell
-      // is a smudge, and "who" is the only thing this size can honestly say.
-      ["riu", "lucia"].forEach(who => {
-        if (!on.some(e => e.who === who)) return;
-        const dot = document.createElement("b");
-        dot.className = "cal-dot cal-" + who;
-        dots.appendChild(dot);
-      });
-      cell.appendChild(dots);
-    }
+    cell.appendChild(calDots(calOn(key)));
     grid.appendChild(cell);
   }
 
@@ -268,18 +276,7 @@ function calRenderSheet() {
     const n = document.createElement("i");
     n.textContent = d;
     cell.appendChild(n);
-    const on = calOn(key);
-    if (on.length) {
-      const dots = document.createElement("i");
-      dots.className = "cal-dots";
-      ["riu", "lucia"].forEach(who => {
-        if (!on.some(e => e.who === who)) return;
-        const dot = document.createElement("b");
-        dot.className = "cal-dot cal-" + who;
-        dots.appendChild(dot);
-      });
-      cell.appendChild(dots);
-    }
+    cell.appendChild(calDots(calOn(key)));
     cell.addEventListener("click", () => { calPickedDay = key; calRenderSheet(); });
     grid.appendChild(cell);
   }

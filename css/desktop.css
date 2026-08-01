@@ -78,6 +78,10 @@
   .card { padding: 52px 40px 46px; }
   .tfd-text { font-size: 27px; }
   #page-home .qotd-q { font-size: 20px; }
+  /* The card is 544px here, so its day cells are half again as wide as on a
+     phone — the dates need to grow with them or the same "small numbers in a
+     lot of space" reappears at laptop size. */
+  #page-home .cal-mday { font-size: 15.5px; }
 
   /* ---- PLAN ---- */
   #page-plan.active { margin: 0 auto; }

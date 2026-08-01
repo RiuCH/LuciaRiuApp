@@ -211,13 +211,15 @@
     <!-- 📅 Our calendar. Tapping anywhere on the card opens the month sheet
          defined near the bottom of this file. -->
     <div class="panel cal-card" id="calCard">
-      <div class="ptitle">Our calendar</div>
-      <div class="cal-minihead"><span id="calMiniMonth">—</span><span class="cal-open">tap to open ›</span></div>
+      <div class="ptitle" id="calMiniMonth">Our calendar</div>
       <div class="cal-mini" id="calMini"></div>
       <div class="cal-next cal-dim" id="calNext">Loading…</div>
+      <!-- the legend carries the "tap to open" affordance, so the top of the
+           card is a month and nothing else -->
       <div class="cal-key">
         <span class="cal-keyone"><b class="cal-dot cal-riu"></b>Riu</span>
         <span class="cal-keyone"><b class="cal-dot cal-lucia"></b>Lucia</span>
+        <span class="cal-open">tap to open ›</span>
       </div>
     </div>
 
