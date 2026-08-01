@@ -132,23 +132,6 @@
 
     <!-- Editing `allowed_emails`, which the Before User Created hook checks
          (supabase/allowlist.sql). Signed-in-only, and RLS gates it anyway. -->
-    <!-- 👤 Who is holding this phone. ONE place for it now — the calendar,
-         both games, ✍️ Answer & compare and 📍 Location all read js/me.js.
-         Signed in with a recognised address, this is set for you and you
-         never come here at all. -->
-    <div class="set-group" id="meWhoRow">
-      <div class="set-label">I'm</div>
-      <div class="wd-whoami" id="meWhoPick">
-        <span class="chip" data-me="lucia">Lucia</span>
-        <span class="chip" data-me="riu">Riu</span>
-      </div>
-      <div class="hint" id="meWhoHint"></div>
-      <!-- only shown once this account is actually linked (js/me.js) -->
-      <div class="rowbtns" id="meForgetRow" style="display:none">
-        <button id="meForget">🔓 Not me — unlink this account</button>
-      </div>
-    </div>
-
     <div class="set-group">
       <div class="set-label">Location</div>
       <div class="rowbtns">

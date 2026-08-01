@@ -221,8 +221,16 @@ owner text so colour is never the only cue.
 
 ## Who is on this phone — ask js/me.js, never the hash
 
-`meWho` in `js/me.js` is the app's one identity, picked in ⚙️ Settings.
-Consumers call `meGet()`; **nothing but `js/me.js` may write `#me`**.
+`meWho` in `js/me.js` is the app's one identity, and **nobody is ever asked
+for it** — it comes from the Google account you signed in with. Consumers call
+`meGet()`; **nothing but `js/me.js` may write `#me`**.
+
+The email→person mapping is set in ⚙️ Settings → 👥 Who can sign in: every
+allowed address gets a Lucia/Riu dropdown (`meAssignSelect()`, dropped into the
+row by `js/auth.js`). `meAssign()` is the only writer. Putting it there rather
+than behind a self-service "I'm ___" picker means either of you can assign
+**both** addresses from your own phone — and it's the screen that already
+decides who these people are.
 
 It used to be `wdMe` in `js/duel.js`, with four separate "I'm playing as"
 pickers all setting the same param — Word Duel, 20 Questions, ✍️ Answer &
