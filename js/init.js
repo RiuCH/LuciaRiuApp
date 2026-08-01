@@ -38,10 +38,16 @@ boot("moon", cyRender);
 // had already fetched that whole table — four requests for one table's worth of
 // rows. Now loadSettings() hands its snapshot over: 4 boot round trips → 1.
 loadSettings().then(rows => {
-  if (rows) { meAdopt(rows); thAdopt(rows); wdAdopt(rows); q20AdoptRows(rows); cyAdopt(rows); mbAdopt(rows); return; }
-  // No snapshot: either local mode (these return without touching the network)
-  // or the fetch failed (they retry and mark themselves unsynced). Same as before.
-  wdPull(); q20Pull(); cyPull(); mbLoadIfNeeded();
+  if (rows) { meAdopt(rows); thAdopt(rows); wdAdopt(rows); q20AdoptRows(rows); cyAdopt(rows); mbAdopt(rows); }
+  else {
+    // No snapshot: either local mode (these return without touching the
+    // network) or the fetch failed (they retry and mark themselves unsynced).
+    wdPull(); q20Pull(); cyPull(); mbLoadIfNeeded();
+  }
+  // Either way the theme is now as right as it is going to get, so the veil
+  // can go. In local mode that is immediately, which is the point — an app
+  // with no backend should not sit behind a spinner.
+  boot("lift the veil", bootSettingsLanded);
 });
 // The backup door into the hidden Moon tab, for when a long-press is awkward.
 // The long-press in js/core.js is the everyday way in.

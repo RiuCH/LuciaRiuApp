@@ -83,7 +83,7 @@ because skipping them broke something.
 
 | File | What lives there |
 |---|---|
-| `css/base.css` | theme vars (including shared light/dark surface tokens), layout shell, `.panel`/`.card`/`.chip`/buttons, Daily Q page, nav, toast, burst, lock screen |
+| `css/base.css` | theme vars (including shared light/dark surface tokens), layout shell, `.panel`/`.card`/`.chip`/buttons, Daily Q page, nav, toast, burst, boot veil, lock screen |
 | `css/calendar.css` | 📅 calendar card, month sheet, the two person colours |
 | `css/home.css` | anniversary, clocks, countdown, teasers, couple photo |
 | `css/tfd.css` | Talk · Flirt · Dare: mode switches, deck buttons, prompt card |
@@ -99,6 +99,7 @@ because skipping them broke something.
 | `css/twenty.css` | Games-tab chooser, 20 Questions board + interrogation log |
 | `css/cycle.css` | 🌙 Moon: month grid, day marks, stat tiles |
 | `css/desktop.css` | the whole `@media (min-width: 900px)` layout — every tab is `.app` wide, no per-tab caps |
+| `js/boot.js` | the boot veil — loads FIRST, lifts on settings or on a timer |
 | `js/core.js` | hash params, `EPOCH`/`afterDark`, `mulberry32`, `dayNumber`, `switchTab`, `popToast`, `burst`, hearts |
 | `js/supabase.js` | `SUPABASE_*` config, `supa()`, `loadSettings()`, `saveReunion()`, `loadQuestions()` |
 | `js/questions.js` | `BANK` (11 prompt categories), `CHIPS`, `QUESTION_SOURCE`, the seeded daily deck (`dailyQuestion()`) |
@@ -124,7 +125,7 @@ because skipping them broke something.
 | `js/lock.js` | login gate (offline door; real auth skips it) |
 | `js/init.js` | boot order — **loads last** |
 
-Script order in `index.html` is load-bearing: `core` → `supabase` →
+Script order in `index.html` is load-bearing: `boot` → `core` → `supabase` →
 `auth` → `questions` → `home` → `journeys` → `food` → `gifts` → `moodboard` → `duel` → `twenty` → `cycle` →
 `lock` → `init`.
 Anything
@@ -424,6 +425,16 @@ can reference anything.
   there's nothing to offer). Element prefix: `jr*`. Tables: `journeys`,
   `settings`, `questions` (schema in `supabase/`, guide in
   docs/SUPABASE.md). Serverless: `api/album.js` (iCloud CORS proxy)
+- Boot veil (`#boot`, `js/boot.js`): the theme (`settings.theme`) and the
+  couple photo are only known after a network round trip, so opening the app
+  showed the DEFAULT palette with an empty frame and then corrected itself.
+  The veil covers that. It sits ABOVE the lock screen (z 60 vs 50) because it
+  covers the moment before we know whether there is one, wears `var(--bg1)` so
+  it matches whatever palette is current, and **lifts on a `setTimeout` armed
+  at parse time no matter what** — golden rule 6 means a dead network costs
+  two seconds once, it never leaves you looking at a spinner. `js/init.js`
+  lifts it early via `bootSettingsLanded()` once `loadSettings()` resolves,
+  with a short grace period for the photo to decode
 - Lock screen: `#lock` overlay, password = anniversary date (DB
   `settings.lock_keys` when Supabase is up, `LOCK_KEYS` fallback),
   unlock persists via `#unlocked=1` hash param
