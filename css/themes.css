@@ -391,10 +391,13 @@ body.theme-daydream:not(.hot) .cd-cell .unit {
 }
 body.theme-daydream:not(.hot) #homeCd .rowbtns { gap: 9px; margin-top: 15px; }
 body.theme-daydream:not(.hot) #homeCd .rowbtns button { flex: 1; padding: 11px 12px; }
+/* var(--accent), not the lighter #9aa9d8 it used to carry: white on #9aa9d8
+   is 2.3:1, which is unreadable at 14px. The accent takes it to 3.4:1 and
+   makes this look like every other filled button in the theme. */
 body.theme-daydream:not(.hot) #setDateBtn {
-  color: #fff;
-  background: #9aa9d8;
-  border-color: #9aa9d8;
+  color: var(--on-accent);
+  background: var(--accent);
+  border-color: var(--accent);
   box-shadow: 0 7px 16px rgba(113, 131, 189, 0.20);
 }
 body.theme-daydream:not(.hot) #missYouBtn { background: rgba(255, 255, 255, 0.62); }

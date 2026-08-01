@@ -65,13 +65,13 @@ header .names .amp {
   padding: 0;
   border-radius: 12px;
   border: 1px solid transparent;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--control-bg);
   font-size: 13.5px;
   font-weight: 600;
   backdrop-filter: none;
 }
 /* The shared button:hover lift makes a 42-cell grid seasick — flatten it. */
-.cy-day:hover { transform: none; background: rgba(255, 255, 255, 0.14); }
+.cy-day:hover { transform: none; background: var(--control-hover); }
 .cy-day:active { transform: scale(0.94); }
 .cy-out { opacity: 0.3; }
 .cy-num { line-height: 1; }
@@ -101,7 +101,7 @@ header .names .amp {
 .cy-today { outline: 2px solid var(--accent); outline-offset: 1px; }
 .cy-picked {
   border-color: var(--text);
-  background: rgba(255, 255, 255, 0.24);
+  background: var(--control-hover);
 }
 
 .cy-legend {
@@ -140,7 +140,7 @@ header .names .amp {
   margin-top: 4px;
 }
 .cy-stat {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--control-bg);
   border: 1px solid var(--card-border);
   border-radius: 14px;
   padding: 11px 6px;
