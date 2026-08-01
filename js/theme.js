@@ -56,6 +56,20 @@ function thApply(key, opts) {
     const cls = THEMES[thCurrent].cls;
     if (cls) el.classList.add(cls);
   });
+  // Daydream's stacked nav uses decorative generated icons and labels. Keep
+  // the spoken names short instead of letting assistive tech concatenate the
+  // generated and original button text.
+  [
+    ["navHome", "Home"],
+    ["navJourneys", "Trips"],
+    ["navTreats", "Memories"],
+    ["navPlan", "Plan"],
+    ["navDuel", "Games"],
+    ["cpGear", "Change our photo"]
+  ].forEach(pair => {
+    const el = document.getElementById(pair[0]);
+    if (el) el.setAttribute("aria-label", pair[1]);
+  });
   thSyncBar();
   thRender();
   if (opts && opts.save) thSave(thCurrent);
@@ -127,5 +141,5 @@ function thRender() {
 (function thInit() {
   const fromHash = getHashParam("theme");
   if (fromHash) thApply(fromHash);
-  else thRender();
+  else thApply(TH_DEFAULT);
 })();
