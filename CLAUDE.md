@@ -111,6 +111,8 @@ because skipping them broke something.
 | `js/cycle.js` | 🌙 Moon: cycle calendar + our tally (`cy*`) — the hidden tab |
 | `js/auth.js` | Google sign-in via Supabase Auth (`auth*`) — session, JWT, URL scrub |
 | `js/ai.js` | the one door to the Claude API (`ai*`) — `aiReady()` is how every ✨ feature hides itself |
+| `js/push.js` | 🔔 notifications (`push*`) — the Settings toggle + `pushNotify()` for callers |
+| `sw.js` | the service worker — **push only, and never a `fetch` handler** (see below) |
 | `js/lock.js` | login gate (offline door; real auth skips it) |
 | `js/init.js` | boot order — **loads last** |
 
@@ -305,7 +307,34 @@ can reference anything.
   `LR_SUPABASE_ANON_KEY`. The allowlist must agree with `public.is_us()` and
   `allowed_emails` — three lists, one set of two people. **🌙 Moon data never
   goes to the API**; payloads are explicit field whitelists, never "send the
-  table". First caller: ✨ Draft a plan in `js/trip.js`
+  table". First caller: ✨ Draft a plan in `js/trip.js`. The gate itself lives
+  in `api/_gate.js`, shared with `api/notify.js` — one copy on purpose
+- **🔔 Notifications (`js/push.js` + `sw.js` + `api/notify.js`)**: Web Push,
+  and the one place the app owns a service worker.
+  - **`sw.js` has NO `fetch` handler and must never get one.** The old rule
+    was "no service worker" because a cached shell breaks golden rule 4 — but
+    that's about *caching*, and push can't work without a worker. With no
+    `fetch` handler nothing is intercepted or cached, so every load is still
+    from the network. Adding one, for any reason, breaks rule 4.
+  - **iOS: Home Screen only**, from iOS 16.4. A Safari tab has no Push API at
+    all. Permission must come from a tap and there's no second prompt if it's
+    denied — hence a deliberate toggle in ⚙️ Settings, never an ask on boot.
+  - **The push carries no payload.** Payloads need RFC 8291 encryption, which
+    would mean a dependency; instead every notification reads "Something new
+    💞" and the app shows what changed. The upside: *nothing about them travels
+    through Apple's servers*. `push_subs` stores `p256dh`/`auth` anyway so
+    adding text later is a sender change, not a re-subscribe.
+  - **The actor comes from the verified JWT**, never the request body —
+    otherwise either of you could ring the other's phone on demand.
+    `api/notify.js` reads `push_subs` with the *caller's* token, so it needs no
+    service-role key, and prunes endpoints that answer 404/410.
+  - `pushNotify()` is fire-and-forget and feature-detected at all three call
+    sites (`js/food.js`, `sdAdd` and `tpSave` in `js/someday.js`) — a
+    notification must never be able to fail the thing it's announcing.
+  - Vercel env: `LR_VAPID_PUBLIC`, `LR_VAPID_PRIVATE`, `LR_VAPID_SUBJECT`.
+    `VAPID_PUBLIC` in `js/push.js` ships in the page (it's an identifier, like
+    the anon key); **empty ⇒ the toggle is hidden**, so this is safe to deploy
+    before the keys exist. Needs `supabase/push.sql` run once
 - Couple photo: `cp*` block — home hero image from `settings.home_photo`
   (URL / upload data-URL / `album:<link>` = Apple-album photo-of-the-day,
   seed offset 15485863); `#photo=` hash + session fallbacks

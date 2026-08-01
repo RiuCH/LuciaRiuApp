@@ -169,9 +169,16 @@ App Store, no signing, no $99/yr, no expiry** — Share → Add to Home Screen.
 - Wrap inset rules in `@supports (padding: env(safe-area-inset-top))`. A bare
   `calc(16px + env(...))` is dropped wholesale by a browser without `env()`,
   taking the sane fallback with it.
-- **Don't add a service worker without weighing golden rule 4.** A cached shell
-  is exactly how two phones end up on different versions. If one is ever added
-  it must be network-first for HTML/CSS/JS.
+- **`sw.js` exists, and it must never gain a `fetch` handler.** This used to
+  read "no service worker at all", and the reason was right — a cached shell is
+  exactly how two phones end up on different versions (golden rule 4). But that
+  reason is about *caching*, not about service workers: Web Push cannot work
+  without one, so `sw.js` was added for `push` + `notificationclick` **only**.
+  With no `fetch` handler it intercepts nothing, caches nothing, and cannot
+  serve a stale page — every load still comes from the network.
+  **Adding `self.addEventListener("fetch", …)`, even "just for the icons",
+  breaks golden rule 4.** Offline support is a conversation about that rule,
+  not a quiet commit.
 - On `file://` the manifest just fails to fetch and is ignored — double-click
   still works, which is the whole point.
 - Launch state: `start_url` is `./`, so an installed launch starts with **no

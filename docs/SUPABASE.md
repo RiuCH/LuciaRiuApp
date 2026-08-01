@@ -163,6 +163,42 @@ until someone remembered to run a migration — while the panel cheerfully
 claimed hearts were shared. The status line now reports what's actually
 happening instead.
 
+## 🔔 Notification setup (VAPID keys)
+
+Run `supabase/push.sql` once, then generate a keypair. **Paste this into a
+browser console — not a terminal.** It never leaves the page, so the private
+half doesn't pass through a shell history or an editor buffer:
+
+```js
+const kp = await crypto.subtle.generateKey({name:"ECDSA",namedCurve:"P-256"}, true, ["sign","verify"]);
+const raw = new Uint8Array(await crypto.subtle.exportKey("raw", kp.publicKey));
+const jwk = await crypto.subtle.exportKey("jwk", kp.privateKey);
+const b64 = u => btoa(String.fromCharCode(...u)).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+console.log("VAPID_PUBLIC :", b64(raw));
+console.log("VAPID_PRIVATE:", jwk.d);
+```
+
+Then:
+
+| Where | What |
+|---|---|
+| `js/push.js` → `VAPID_PUBLIC` | the public half. It ships in the page exactly like the anon key — it's an identifier, not a secret. **Until it's filled in the toggle stays hidden**, which is why this is safe to deploy first. |
+| Vercel → `LR_VAPID_PUBLIC` | the same public value (the sender derives the JWK `x`/`y` from it, so there's no third secret to store) |
+| Vercel → `LR_VAPID_PRIVATE` | the private half. Server only. |
+| Vercel → `LR_VAPID_SUBJECT` | `mailto:you@example.com` — a contact address, required by the VAPID spec |
+
+Env vars only take effect on a new build, so redeploy after setting them.
+
+Then, **on each phone**: open the app *from the Home Screen icon* (iOS gives a
+Safari tab no Push API at all), ⚙️ → Notifications → 🔔 Turn on. Say yes to the
+iOS prompt — there's only one, and a "no" can only be undone in iOS Settings.
+Two rows should appear in `push_subs`, one per address.
+
+To test: add a wish on one phone and watch the other. If nothing arrives, check
+the Vercel function log for `/api/notify` — it returns `{sent, pruned}`, so
+`sent: 0` means it found no subscription for the other address, while a 503
+means an env var is missing.
+
 ## Security, honestly
 
 The anon key ships in the page source, and the RLS policies let that key
