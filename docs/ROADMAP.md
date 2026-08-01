@@ -61,9 +61,23 @@
    together. **The blocker is gone** — login shipped in v10 — and this is
    still the feature that makes the daily question 10× better. Fits on the
    existing Home card, so it costs no nav space. Do this one.
-2. **Claude features** 🤖 — a Vercel serverless function proxying the Claude
-   API (key stays server-side). Ideas: generate fresh questions weekly,
-   "settle our debate" button, date-night idea generator.
+2. **Claude features** 🤖 — **the endpoint shipped 2026-07-26** as
+   `api/claude.js` + `js/ai.js`, with ✨ Draft a plan (🗓️ Trip Plan) as its
+   first caller. Two decisions worth keeping when you add the next one:
+
+   - **It is gated and task-based, not a proxy.** Every request carries a
+     Supabase JWT checked against an allowlist, and the browser sends *data*
+     against a named task whose prompt lives server-side. An open `/api/claude`
+     would let anyone with the app's URL spend the API balance — the other
+     three functions in `api/` verify nothing about their caller, and that
+     pattern must not be copied here.
+   - **Every AI feature hides itself when it can't work** (`aiReady()`), the
+     same way Supabase-backed ones do. Golden rule 6 covers Claude too.
+
+   Still on the list: fresh questions weekly (⚠️ must write to the shared
+   `questions` table — generating per-device breaks golden rule 3's "same
+   question on both phones"), "settle our debate", and a read on a month of
+   ✍️ Answer & compare. **Never** the 🌙 Moon log.
 3. **Money** 💸 — **what we have together, and what each plan would cost.**
 
    **Decided 2026-07-26: this is a pot, NOT Splitwise.** The earlier version of

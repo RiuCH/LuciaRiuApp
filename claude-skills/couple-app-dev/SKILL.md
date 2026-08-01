@@ -338,11 +338,45 @@ shared-album proxy; iCloud sends no CORS headers so the browser can't call
 it directly), `api/geocode.js` (GPS → city/country via OpenStreetMap, which
 needs a server-side User-Agent and ≤1 req/s), `api/food-import.js` (copies
 shared-album bytes into our bucket). The app must still degrade if a function is unreachable —
-they're an enhancement, like Supabase. The Claude API proxy will join it.
+they're an enhancement, like Supabase.
 
-External requests are still forbidden **except**: Supabase, and iCloud's
-`sharedstreams` endpoints (Apple Shared Album embeds in the Journeys tab).
-Both must degrade gracefully when unreachable.
+External requests are still forbidden **except**: Supabase, iCloud's
+`sharedstreams` endpoints (Apple Shared Album embeds in the Journeys tab), and
+the Claude API **via `api/claude.js` only**. All must degrade gracefully when
+unreachable.
+
+### Adding a Claude ✨ feature
+
+`api/claude.js` + `js/ai.js` shipped 2026-07-26. Adding a feature means adding
+a **task**, not a new endpoint. Four rules, each of which exists because the
+alternative is a real hole:
+
+1. **Add an entry to `TASKS` in `api/claude.js`** — a system prompt, a JSON
+   schema, and a function that builds the user message from the posted data.
+   Never accept a prompt string from the browser: the allowlist stops
+   strangers, but a stolen JWT should read our trip plan, not run anything on
+   our card.
+2. **Gate the caller on `aiReady()`** and render no button when it's false
+   (`file://`, signed out, or the function undeployed). Golden rule 6 covers
+   Claude: the tab has to be complete without it.
+3. **Whitelist the payload field by field.** Never post a whole row or table.
+   **The 🌙 Moon log and cycle data never leave the app** — not in a summary,
+   not "for context", not ever.
+4. **Preview before writing.** Anything the model produces that would land in a
+   shared table gets a ticklist first. Both phones read the same rows, so a
+   feature that writes straight through is putting decisions in front of the
+   other person that neither of you agreed to.
+
+Also worth knowing: use `output_config.format` with a JSON schema so there's no
+parsing to defend; validate any model-supplied key that the UI keys off (the
+draft checks `day_date` against the trip's own days, because a date outside
+them would save a row onto a day nothing renders); and check
+`stop_reason === "refusal"` before reading content. Env vars live in Vercel —
+`ANTHROPIC_API_KEY`, `LR_ALLOWED_EMAILS`, `LR_SUPABASE_URL`,
+`LR_SUPABASE_ANON_KEY` — and the allowlist must agree with `public.is_us()`
+and `allowed_emails`. **Read the issuer from env, never from the request
+body**: `api/food-import.js` takes it from the body, which is harmless there
+and a complete bypass here.
 
 ## Testing with the in-app browser (Claude sessions)
 
