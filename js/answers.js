@@ -21,17 +21,10 @@ let acLoadedDay = null;  // which day acToday describes
 
 const acEl = id => document.getElementById(id);
 
-// Which of us is on this phone. Shares the games' `#me` so you only ever pick
-// a side once; if the signed-in address is recognisable we skip the asking.
-function acMe() {
-  if (typeof wdMe === "string" && wdMe) return wdMe;
-  if (typeof authEmail === "function" && authEmail() && typeof AUTH_ALLOWED !== "undefined") {
-    const i = AUTH_ALLOWED.indexOf(authEmail());
-    if (i === 0) return "riu";
-    if (i === 1) return "lucia";
-  }
-  return null;
-}
+// Which of us is on this phone — one answer for the whole app, in js/me.js.
+// This used to derive it from AUTH_ALLOWED itself; that logic moved so the
+// calendar, the games and 📍 Location couldn't drift apart from it.
+function acMe() { return typeof meGet === "function" ? meGet() : null; }
 
 const acThem = () => (acMe() === "riu" ? "lucia" : "riu");
 const acName = who => (who === "riu" ? "Riu" : "Lucia");
@@ -100,10 +93,6 @@ function acRender() {
   const theirs = me ? acRowFor(acThem()) : null;
   const both = !!(mine && theirs);
 
-  // who-am-I row, only until it's known
-  acEl("acWho").style.display = me ? "none" : "flex";
-  document.querySelectorAll("#acWho .chip").forEach(c =>
-    c.classList.toggle("sel", c.dataset.me === me));
 
   // the composer
   const canWrite = !!me && acReady === true && !mine;
@@ -149,14 +138,6 @@ if (acEl("acSend")) {
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) acSubmit();
   });
   acEl("acInput").setAttribute("maxlength", String(AC_MAX));
-  document.querySelectorAll("#acWho .chip").forEach(chip =>
-    chip.addEventListener("click", () => {
-      if (typeof wdMe !== "undefined") wdMe = chip.dataset.me;
-      setHashParam("me", chip.dataset.me);
-      if (typeof renderWhoAmIRows === "function") renderWhoAmIRows();
-      acRender();
-      acLoad();
-    }));
 }
 
 // Repaint when Home comes back, and roll over at midnight with the question.

@@ -108,7 +108,7 @@ async function pushEnable() {
         p256dh: (json.keys && json.keys.p256dh) || null,
         auth: (json.keys && json.keys.auth) || null,
         email: authEmail(),
-        who: getHashParam("me") || null
+        who: (typeof meGet === "function" ? meGet() : null)
       }
     });
     popToast("You'll know when she adds something 🔔");

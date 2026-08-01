@@ -42,6 +42,11 @@ June 2, 2026). Fun is a feature — keep the tone playful.
    `#me=lucia|riu`, `#moon=1`). Private data is the exception — the 🌙 Moon
    log stays out of the hash on purpose, since the hash is visible in the
    address bar and in shared links.
+   **`#me` is written by `js/me.js` alone.** Nothing else may set it: it's one
+   identity for the calendar, both games, ✍️ Answer & compare and 📍 Location,
+   and it is re-derived from the signed-in address on every cold launch —
+   `start_url: "./"` means an installed launch arrives with no hash at all, so
+   the hash by itself could never be the answer.
 3. **The daily question must stay deterministic and shared.** The pool is
    shuffled by a seeded PRNG (`mulberry32`) into a *deck* and dealt one per
    day since July 24, 2026, so every question comes up once before any
@@ -112,6 +117,7 @@ because skipping them broke something.
 | `js/twenty.js` | 20 Questions (`q20*`) **and** the Games-tab chooser (`gamesShow`) |
 | `js/cycle.js` | 🌙 Moon: cycle calendar + our tally (`cy*`) — the hidden tab |
 | `js/auth.js` | Google sign-in via Supabase Auth (`auth*`) — session, JWT, URL scrub |
+| `js/me.js` | 👤 which of us is on this phone (`me*`) — `meWho`, the ⚙️ Settings picker, `ME_LOCKS` |
 | `js/ai.js` | the one door to the Claude API (`ai*`) — `aiReady()` is how every ✨ feature hides itself |
 | `js/push.js` | 🔔 notifications (`push*`) — the Settings toggle + `pushNotify()` for callers |
 | `sw.js` | the service worker — **push only, and never a `fetch` handler** (see below) |
@@ -303,6 +309,24 @@ can reference anything.
   (documented exception to "boot work goes in init.js") because `js/lock.js`
   needs the answer before `init.js` runs. Sign-in cannot work from `file://`
   — a double-clicked `index.html` runs offline-only
+- **👤 Who am I (`js/me.js`)**: `meWho`, one identity for the whole app,
+  picked in ⚙️ Settings and nowhere else. It was `wdMe` in `js/duel.js` with
+  four separate pickers reading it (Word Duel, 20 Questions, ✍️ Answer &
+  compare, 📅 the calendar) — identity was never the duel's to own.
+  - **Signed in, we don't ask.** `meFromAccount()` maps the Google address via
+    `AUTH_ALLOWED` in `js/auth.js`, whose **order is load-bearing: Riu is [0],
+    Lucia is [1]**. Reorder that array and you swap the two of them everywhere.
+    It returns null rather than guessing while the list still holds its
+    `@example.com` placeholder — mislabelling who added something is worse than
+    asking once.
+  - **Nothing is stored for it.** No new table, no settings row; it's derived
+    every launch from the session, so there's no state to migrate or go stale.
+  - **`ME_LOCKS`** lets a tab veto a change with a reason — Word Duel pushes
+    one so you can't swap sides mid-match. The rule stays in `js/duel.js`;
+    `me.js` doesn't know what a duel is.
+  - `meBroadcast()` repaints every tab that draws identity, each call
+    feature-detected *and* individually caught — one missing function must not
+    take the rest down.
 - **Claude / AI (`js/ai.js` + `api/claude.js`)**: there is exactly ONE endpoint
   and it is **gated and task-based**. Three rules, all load-bearing:
   1. **It verifies the caller.** Every request must carry a Supabase user JWT

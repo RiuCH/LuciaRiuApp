@@ -27,7 +27,8 @@ let calOpen = false;
 let calError = null;
 
 const calEl = id => document.getElementById(id);
-function calMe() { return getHashParam("me") || null; }
+// One identity for the whole app — js/me.js, picked in ⚙️ Settings.
+function calMe() { return typeof meGet === "function" ? meGet() : null; }
 
 // ---------------- dates as strings ----------------
 function calPad(n) { return String(n).padStart(2, "0"); }
@@ -326,19 +327,22 @@ function calRenderSheet() {
 
 // Whose entry this will be. Shared with the duel and 20 Questions through
 // `#me`, so picking a side once picks it everywhere.
+// The picker moved to ⚙️ Settings (js/me.js) — this now just reflects it, and
+// says where to go when nobody has been chosen. Kept as a function because
+// me.js calls it whenever the identity changes.
 function calRenderWho() {
   const me = calMe();
-  document.querySelectorAll("#calWho .chip").forEach(c =>
-    c.classList.toggle("sel", c.dataset.me === me));
   const save = calEl("calSave");
   if (save) save.disabled = !me;
   const hint = calEl("calWhoHint");
-  if (hint) hint.textContent = me ? "" : "Say who you are first — that's what picks the colour";
+  if (hint) hint.textContent = me
+    ? ""
+    : "⚙️ Settings → I'm — that's what picks the colour";
 }
 
 function calSubmit() {
   const me = calMe();
-  if (!me) { popToast("Pick who you are first 💁"); return; }
+  if (!me) { popToast("Say who you are in ⚙️ Settings first 💁"); return; }
   const title = calEl("calTitle").value.trim();
   if (!title) { popToast("Give it a name 📅"); return; }
   const at = calEl("calAt").value.trim();
@@ -365,5 +369,3 @@ calEl("calToday").addEventListener("click", () => {
 });
 calEl("calSave").addEventListener("click", calSubmit);
 calEl("calTitle").addEventListener("keydown", (e) => { if (e.key === "Enter") calSubmit(); });
-document.querySelectorAll("#calWho .chip").forEach(chip =>
-  chip.addEventListener("click", () => { setHashParam("me", chip.dataset.me); calRenderWho(); }));
