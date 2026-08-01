@@ -169,9 +169,16 @@ App Store, no signing, no $99/yr, no expiry** — Share → Add to Home Screen.
 - Wrap inset rules in `@supports (padding: env(safe-area-inset-top))`. A bare
   `calc(16px + env(...))` is dropped wholesale by a browser without `env()`,
   taking the sane fallback with it.
-- **Don't add a service worker without weighing golden rule 4.** A cached shell
-  is exactly how two phones end up on different versions. If one is ever added
-  it must be network-first for HTML/CSS/JS.
+- **`sw.js` exists, and it must never gain a `fetch` handler.** This used to
+  read "no service worker at all", and the reason was right — a cached shell is
+  exactly how two phones end up on different versions (golden rule 4). But that
+  reason is about *caching*, not about service workers: Web Push cannot work
+  without one, so `sw.js` was added for `push` + `notificationclick` **only**.
+  With no `fetch` handler it intercepts nothing, caches nothing, and cannot
+  serve a stale page — every load still comes from the network.
+  **Adding `self.addEventListener("fetch", …)`, even "just for the icons",
+  breaks golden rule 4.** Offline support is a conversation about that rule,
+  not a quiet commit.
 - On `file://` the manifest just fails to fetch and is ignored — double-click
   still works, which is the whole point.
 - Launch state: `start_url` is `./`, so an installed launch starts with **no
@@ -227,6 +234,22 @@ native-control tokens exposed by `css/base.css`.
   `--text-dim`, `--control-bg`, `--control-hover`, `--nav-bg`, `--nav-hover`,
   `--on-accent`, `--danger`, the success/warning/danger text and border
   tokens, and `--color-scheme`.
+- **A bare `rgba()` is a hardcoded colour too.** The hex rule was being kept
+  while thirty-odd inner surfaces carried `rgba(0,0,0,0.22)` for a sunken well
+  and `rgba(255,255,255,0.07)` for a hairline — invisible-to-inverted the
+  moment a light palette was picked, which is exactly what made Daydream look
+  wrong on every card. Sunken surfaces are `var(--control-bg)`, their hover is
+  `var(--control-hover)`, separators are `var(--card-border)`. The ONLY
+  legitimate fixed-dark values are scrims and captions sitting **on top of a
+  photo** (`.fd-cap`, `.jr-lbdel`, lightbox backdrops) — those are dark
+  because the photo is behind them, not because the theme is.
+  Check with: `grep -rn 'rgba(0, *0, *0\|rgba(255, *255, *255' css/` — every
+  hit outside `base.css`'s `:root` and a photo overlay is a bug waiting for a
+  light theme.
+- **A tinted fill needs its text checked, not just its background.** Daydream
+  gave `#setDateBtn` white on `#9aa9d8` — 2.3:1, unreadable. If you fill a
+  button with a pastel, the label has to come from `--on-accent` over
+  `--accent`, not a lighter one-off.
 - A theme is one class on **`<html>` AND `<body>`** (the root needs it: its
   `background-color` paints the strip iOS rubber-bands into).
 - **💞 Together mode must outrank every theme.** `base.css` uses

@@ -294,7 +294,13 @@ async function fdHandleFiles(files) {
     }
   }
   fdProgress("");
-  if (done) { popToast(done + " photo" + (done > 1 ? "s" : "") + " added 🍜"); await fdLoad(); }
+  if (done) {
+    popToast(done + " photo" + (done > 1 ? "s" : "") + " added 🍜");
+    await fdLoad();
+    // Nudge the other phone. Fire-and-forget and feature-detected: a
+    // notification is a courtesy and must never be able to fail an upload.
+    if (typeof pushNotify === "function") pushNotify();
+  }
 }
 
 // City/country from the photo's own GPS, via our proxy (api/geocode.js).

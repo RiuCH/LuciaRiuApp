@@ -29,7 +29,7 @@
   font-size: 14px;
   line-height: 1.45;
   color: var(--text);
-  background: rgba(0,0,0,0.25);
+  background: var(--control-bg);
   border: 1px solid var(--card-border);
   border-radius: 14px;
   padding: 10px 12px;
@@ -46,7 +46,7 @@
 /* ------- the reveal ------- */
 .ac-list { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
 .ac-answer {
-  background: rgba(0,0,0,0.2);
+  background: var(--control-bg);
   border: 1px solid var(--card-border);
   border-radius: 14px;
   padding: 10px 12px;

@@ -16,24 +16,11 @@
 // would still hold, but the blast radius of a stolen JWT goes from "reads our
 // trip plan" to "runs anything, on our card".
 //
-// ──────────────────────────────────────────────────────────── the spoofing trap
-// SUPABASE_URL is read from the environment and NEVER from the request body.
-// api/food-import.js does take it from the body, which is fine there — it's
-// authorising against the caller's own project either way. Here it would be a
-// complete bypass: point this at your own Supabase project, sign yourself in
-// with an allowlisted address, and the gate waves you through. If a future
-// change tries to "simplify" this by accepting the URL from the client, don't.
+// The gate itself — and the env vars it needs, and the reason the issuer is
+// never taken from the request body — lives in api/_gate.js, shared with
+// api/notify.js. Read that file before changing anything about auth here.
 //
-// ────────────────────────────────────────────────────────────── Vercel env vars
-//   ANTHROPIC_API_KEY      sk-ant-…              never reaches the page
-//   LR_ALLOWED_EMAILS      riu@…,lucia@…         comma separated
-//   LR_SUPABASE_URL        https://….supabase.co the issuer we trust
-//   LR_SUPABASE_ANON_KEY   eyJ…                  public; identifies the project
-//
-// LR_ALLOWED_EMAILS must agree with public.is_us() in supabase/auth_policies.sql
-// and with allowed_emails in supabase/allowlist.sql. Three places, one list —
-// is_us() decides what you can see, allowed_emails decides who can sign up,
-// this decides who can spend money.
+//   ANTHROPIC_API_KEY   sk-ant-…   never reaches the page (this file only)
 //
 // Spend is bounded by three things, in descending order of how much they
 // actually matter: the allowlist (two people), the fixed task list (no
@@ -50,6 +37,8 @@
 // symptom is a function timeout, not a Claude error.
 export const config = { maxDuration: 60 };
 
+import { requireUs } from "./_gate.js";
+
 const MODEL = "claude-opus-4-8";
 
 // Bound what we'll pay to think about. These are generous for a real trip and
@@ -60,26 +49,6 @@ const MAX_DAYS = 30;
 
 const str = (v, n) => String(v == null ? "" : v).slice(0, n);
 const num = v => (isFinite(Number(v)) ? Number(v) : 0);
-
-// ─────────────────────────────────────────────────────────────────── the gate
-// Ask Supabase who this token belongs to. Verifying the signature locally
-// would save ~100ms and need the JWT secret in yet another env var; against a
-// call that takes seconds and costs cents, the round trip is free — and this
-// way a revoked session is rejected too, which local verification wouldn't
-// catch until the token expired on its own.
-async function callerEmail(token, supaUrl, anonKey) {
-  try {
-    const r = await fetch(supaUrl.replace(/\/$/, "") + "/auth/v1/user", {
-      headers: { apikey: anonKey, Authorization: "Bearer " + token }
-    });
-    if (!r.ok) return null;
-    const user = await r.json();
-    const email = user && user.email;
-    return email ? String(email).trim().toLowerCase() : null;
-  } catch (e) {
-    return null;
-  }
-}
 
 // ──────────────────────────────────────────────────────────── the trip_draft task
 const TRIP_SYSTEM = `You are helping Riu and Lucia plan a trip together. They are a couple, long distance — Riu in San Francisco, Lucia in Phoenix — so a trip is the thing they count down to, not a routine holiday. Warm, specific, never gushing.
@@ -168,28 +137,10 @@ export default async function handler(req, res) {
   if (req.method !== "POST") { res.status(405).json({ error: "POST only" }); return; }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  const supaUrl = process.env.LR_SUPABASE_URL;
-  const anonKey = process.env.LR_SUPABASE_ANON_KEY;
-  const allowed = String(process.env.LR_ALLOWED_EMAILS || "")
-    .split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
+  if (!apiKey) { res.status(503).json({ error: "not configured" }); return; }
 
-  // Fail closed on every one of these. An empty allowlist here is NOT the
-  // fail-open case that supabase/allowlist.sql argues for — that one risked
-  // locking you out of your own app, this one risks a stranger on your card.
-  if (!apiKey || !supaUrl || !anonKey || !allowed.length) {
-    res.status(503).json({ error: "not configured" });
-    return;
-  }
-
-  const auth = String(req.headers.authorization || "");
-  const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
-  if (!token) { res.status(401).json({ error: "sign in first" }); return; }
-
-  const email = await callerEmail(token, supaUrl, anonKey);
-  if (!email || allowed.indexOf(email) === -1) {
-    res.status(403).json({ error: "this app is for two people 😌" });
-    return;
-  }
+  const who = await requireUs(req);
+  if (!who.ok) { res.status(who.status).json({ error: who.error }); return; }
 
   const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
   const task = TASKS[String(body.task || "")];

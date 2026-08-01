@@ -110,6 +110,14 @@
       <div class="hint">Changes it on both phones — it's one app we both look at 💞</div>
     </div>
 
+    <!-- 🔔 Notifications. Hidden entirely until VAPID_PUBLIC is filled in
+         (js/push.js), so this ships safely before the keys exist. -->
+    <div class="set-group" id="pushRow" style="display:none">
+      <div class="set-label">Notifications</div>
+      <div class="rowbtns"><button id="pushBtn">🔔 Turn on</button></div>
+      <div class="hint" id="pushHint"></div>
+    </div>
+
     <div class="set-group">
       <div class="set-label">Account</div>
       <!-- Signed out, the app still runs on its hardcoded copy (golden rule 6) —
@@ -1045,6 +1053,8 @@
 <script src="js/auth.js"></script>
 <!-- after auth.js (aiCall sends the user's JWT), before any tab that offers ✨ -->
 <script src="js/ai.js"></script>
+<!-- after auth.js (a subscription is tied to an account, not a device) -->
+<script src="js/push.js"></script>
 <script src="js/theme.js"></script>
 <script src="js/questions.js"></script>
 <script src="js/home.js"></script>

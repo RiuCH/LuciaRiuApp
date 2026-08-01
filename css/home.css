@@ -16,7 +16,7 @@
 .clock {
   flex: 1;
   max-width: 200px;
-  background: rgba(0,0,0,0.18);
+  background: var(--control-bg);
   border: 1px solid var(--card-border);
   border-radius: 16px;
   padding: 12px 10px;
@@ -29,7 +29,7 @@
 /* ------- countdown ------- */
 .countdown { display: flex; gap: 10px; justify-content: center; }
 .cd-cell {
-  background: rgba(0,0,0,0.18);
+  background: var(--control-bg);
   border: 1px solid var(--card-border);
   border-radius: 14px;
   padding: 10px 0;
@@ -42,7 +42,7 @@ input[type="date"] {
   font-family: inherit;
   font-size: 14px;
   color: var(--text);
-  background: rgba(0,0,0,0.25);
+  background: var(--control-bg);
   border: 1px solid var(--card-border);
   border-radius: 12px;
   padding: 9px 12px;
@@ -53,7 +53,7 @@ input[type="date"] {
   margin-top: 14px;
   font-size: 15px;
   line-height: 1.5;
-  background: rgba(0,0,0,0.18);
+  background: var(--control-bg);
   border: 1px dashed var(--accent);
   border-radius: 14px;
   padding: 14px 16px;
@@ -87,7 +87,7 @@ input[type="date"] {
 .cp-frame {
   border-radius: 18px;
   overflow: hidden;
-  background: rgba(0,0,0,0.18);
+  background: var(--control-bg);
   border: 1px solid var(--card-border);
 }
 .cp-frame img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; }
@@ -112,7 +112,7 @@ input[type="date"] {
   font-family: inherit;
   font-size: 13.5px;
   color: var(--text);
-  background: rgba(0,0,0,0.25);
+  background: var(--control-bg);
   border: 1px solid var(--card-border);
   border-radius: 12px;
   padding: 10px 12px;

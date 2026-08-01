@@ -67,6 +67,9 @@ async function sdAdd(row) {
       if (i >= 0) sdWishes[i] = saved[0];
       sdReady = true;
       sdRender();
+      // Only once it has actually saved — a wish that exists on one phone is
+      // not worth interrupting the other for. Fire-and-forget, feature-detected.
+      if (typeof pushNotify === "function") pushNotify();
     }
   } catch (e) {
     sdReady = false;
@@ -613,6 +616,7 @@ sdEl("tpSave").addEventListener("click", async () => {
         tpRender();
       }
       popToast("Planned ✈️ — it's on both phones");
+      if (typeof pushNotify === "function") pushNotify();
     } catch (e) {
       popToast(typeof authSignedIn === "function" && !authSignedIn()
         ? "Saved on this phone only — sign in to share it 💞"
