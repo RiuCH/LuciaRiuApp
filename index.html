@@ -995,6 +995,13 @@
       <div class="hint" id="calWhoHint"></div>
       <div class="cal-form">
         <input type="text" id="calTitle" placeholder="What's happening?" maxlength="80">
+        <!-- Hidden until supabase/calendar_repeat.sql is run (js/calendar.js). -->
+        <div class="cal-repeat" id="calRepeat">
+          <span class="chip sel" data-repeat="none">Once</span>
+          <span class="chip" data-repeat="weekly">Weekly</span>
+          <span class="chip" data-repeat="monthly">Monthly</span>
+          <span class="chip" data-repeat="yearly">Yearly</span>
+        </div>
         <div class="cal-row">
           <input type="text" id="calAt" placeholder="Time (optional) — 7pm" maxlength="20">
           <button class="primary" id="calSave">➕ Add it</button>
