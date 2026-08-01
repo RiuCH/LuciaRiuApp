@@ -309,15 +309,21 @@ can reference anything.
   (documented exception to "boot work goes in init.js") because `js/lock.js`
   needs the answer before `init.js` runs. Sign-in cannot work from `file://`
   — a double-clicked `index.html` runs offline-only
-- **👤 Who am I (`js/me.js`)**: `meWho`, one identity for the whole app,
-  picked in ⚙️ Settings and nowhere else. It was `wdMe` in `js/duel.js` with
+- **👤 Who am I (`js/me.js`)**: `meWho`, one identity for the whole app.
+  **Nobody is asked — it comes from the account you signed in with.** The
+  email→person mapping is set in ⚙️ Settings → 👥 Who can sign in, where every
+  allowed address carries a Lucia/Riu dropdown. That's deliberately the screen
+  that already decides who may sign in at all, and it means either of you can
+  assign **both** addresses from your own phone. It was `wdMe` in `js/duel.js` with
   four separate pickers reading it (Word Duel, 20 Questions, ✍️ Answer &
   compare, 📅 the calendar) — identity was never the duel's to own.
-  - **Signed in, we don't ask.** The mapping lives in two `settings` rows,
-    `account_lucia` and `account_riu`, each holding a Google address — and it's
-    written by *picking your name while signed in*, not by a separate form.
-    They ride the one boot fetch (`loadSettings` → `meAdopt`), so it costs no
-    extra request, and `settings` is key/value so there's **no migration**.
+  - The mapping lives in two `settings` rows, `account_lucia` and
+    `account_riu`, each holding one Google address. They ride the one boot
+    fetch (`loadSettings` → `meAdopt`), so it costs no extra request, and
+    `settings` is key/value so there's **no migration**. `meAssign()` is the
+    only writer; `meAssignSelect()` builds the dropdown that `js/auth.js` drops
+    into each allowlist row (auth.js owns the list, me.js owns what the answer
+    means).
   - **`AUTH_ALLOWED` in `js/auth.js` is only the fallback now**, for a phone
     that hasn't seen those rows yet. It reads **by position — Riu `[0]`, Lucia
     `[1]`** — and disables itself while the list holds its `@example.com`
@@ -327,8 +333,11 @@ can reference anything.
   - **One address is never both of you.** Re-picking on a linked account
     deletes the other slot, or `meFromAccount()` would answer with whichever it
     scanned first.
-  - **Tapping the name you're already on is not a no-op** — it re-links an
-    account you've unlinked, which is what the hint tells you to do.
+  - **Signed out there is no picker at all**, by design: `#me=` in the URL
+    still works, but everything this identity feeds needs the database, and the
+    database needs a sign-in. `ME_LOCKS` still applies — mid-duel, the dropdown
+    for *your own* address is frozen; the other one isn't, since reassigning
+    somebody else's address can't move the phone in your hand.
   - **`ME_LOCKS`** lets a tab veto a change with a reason — Word Duel pushes
     one so you can't swap sides mid-match. The rule stays in `js/duel.js`;
     `me.js` doesn't know what a duel is.

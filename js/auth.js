@@ -399,17 +399,25 @@ async function authAllowLoad() {
       const row = document.createElement("div");
       row.className = "auth-allow-row";
       const who = document.createElement("span");
-      who.textContent = r.note ? r.note + " · " + r.email : r.email;
+      who.className = "auth-allow-email";
+      who.textContent = r.email;
+      row.appendChild(who);
+
+      // Which of us this address is. The control belongs to js/me.js —
+      // auth.js owns the list, me.js owns what the answer means — and it's
+      // feature-detected so the panel still works without that file.
+      if (typeof meAssignSelect === "function") row.appendChild(meAssignSelect(r.email));
+
       const del = document.createElement("button");
       del.textContent = "✕";
       del.title = "Remove";
       del.addEventListener("click", () => authAllowRemove(r.email));
-      row.appendChild(who);
       row.appendChild(del);
       list.appendChild(row);
     });
+    if (typeof meRender === "function") meRender();
     hint.textContent = rows && rows.length
-      ? "Anyone not on this list is refused at sign-up. Removing someone does NOT sign them out — they keep access until their session expires."
+      ? "Say which of us each address is — that's what the calendar, the games and 📍 Location read. Anyone not on this list is refused at sign-up. Removing someone does NOT sign them out — they keep access until their session expires."
       : "Empty list = everyone allowed, on purpose: an empty table is far more likely to be a botched migration than a decision to lock us both out.";
   } catch (e) {
     hint.textContent = "Can't read the list — has supabase/allowlist.sql been run yet?";
