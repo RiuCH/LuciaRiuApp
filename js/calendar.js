@@ -22,6 +22,9 @@ let calReady = null;        // null unknown · true table exists · false needs 
 let calMonth = null;        // {y, m} the sheet is showing, m is 0-11
 let calPickedDay = null;    // "YYYY-MM-DD" the sheet has open, or null
 let calOpen = false;
+// The last load failure, verbatim. Without it every failure looked identical
+// to "the table isn't there", which sent Riu to re-run SQL he had already run.
+let calError = null;
 
 const calEl = id => document.getElementById(id);
 function calMe() { return getHashParam("me") || null; }
@@ -94,15 +97,35 @@ function calUpcoming(limit) {
 }
 
 async function calLoad() {
-  if (!supaOn()) { calReady = false; calRenderHome(); return; }
+  if (!supaOn()) { calReady = false; calError = null; calRenderHome(); return; }
   try {
     calEvents = await supa(CAL_TABLE + "?select=*&order=day.asc") || [];
     calReady = true;
+    calError = null;
   } catch (e) {
     calReady = false;
+    calError = (e && e.message) || String(e);
   }
   calRenderHome();
   if (calOpen) calRenderSheet();
+}
+
+// What actually went wrong, in the words of whatever went wrong. Every branch
+// here used to collapse into "run supabase/calendar.sql", which is only true
+// for one of them — and is actively misleading once you HAVE run it.
+function calWhyNot() {
+  if (!supaOn()) return "Local mode — the calendar needs Supabase";
+  if (typeof authSignedIn === "function" && !authSignedIn()) {
+    return "Sign in to see our calendar 🔑";
+  }
+  const err = calError || "";
+  // 404 = PostgREST hasn't noticed the table yet. It reloads its schema cache
+  // on its own, but not always instantly, so "I ran it and nothing happened"
+  // is usually this and usually fixed by waiting a moment and reloading.
+  if (/40[34]/.test(err)) return "Table not visible yet — if you just ran supabase/calendar.sql, reload in a minute 📅";
+  if (/401/.test(err)) return "Supabase refused that (401) — is the session still good?";
+  if (err) return "Couldn't load the calendar — " + err + " · tap to retry";
+  return "Run supabase/calendar.sql to switch this on 📅";
 }
 
 async function calAdd(fields) {
@@ -193,9 +216,7 @@ function calRenderHome() {
     const soon = calUpcoming(2);
     if (calReady === false) {
       next.className = "cal-next cal-dim";
-      next.textContent = supaOn()
-        ? "Run supabase/calendar.sql to switch this on 📅"
-        : "Local mode — the calendar needs Supabase";
+      next.textContent = calWhyNot();
     } else if (!soon.length) {
       next.className = "cal-next cal-dim";
       next.textContent = calReady === null ? "Loading…" : "Nothing planned yet — tap to add something 💞";
@@ -241,7 +262,10 @@ function calOpenSheet(dayKey) {
   calMonth = calMonthOf(calPickedDay);
   calEl("calSheet").classList.add("show");
   calRenderSheet();
-  if (calReady === null) calLoad();
+  // Retry on every open while it's broken, not only the first time. A failure
+  // at boot used to be permanent until a full reload — including the very
+  // common one where you run the SQL with the app already open.
+  if (calReady !== true) calLoad();
 }
 
 function calCloseSheet() {
@@ -295,11 +319,9 @@ function calRenderSheet() {
   }
   calRenderWho();
   calEl("calStatus").textContent =
-    !supaOn() ? "Local mode — this calendar lives on this phone only"
-      : (typeof authSignedIn === "function" && !authSignedIn()) ? "Sign in to share the calendar"
-        : calReady === false ? "⚠️ Run supabase/calendar.sql to switch this on"
-          : calReady === null ? "Loading…"
-            : calEvents.length + (calEvents.length === 1 ? " entry · shared 💞" : " entries · shared 💞");
+    calReady === false ? "⚠️ " + calWhyNot()
+      : calReady === null ? "Loading…"
+        : calEvents.length + (calEvents.length === 1 ? " entry · shared 💞" : " entries · shared 💞");
 }
 
 // Whose entry this will be. Shared with the duel and 20 Questions through
