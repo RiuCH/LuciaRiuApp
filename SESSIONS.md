@@ -249,7 +249,7 @@ array in `js/core.js`, which is what `switchTab` actually iterates):
 **Element id / CSS class prefixes:** `lock*` (login), `cd*` (countdown),
 `nav*` (nav buttons), `fd*` (🍜 Food), `mb*` (Lucia/Riu moodboards), `q20*` (20 Questions), `tick*` (home widget functions), `tfd*` (Talk · Flirt ·
 Dare), `qotd*` (home Question of the Day), `jr*` (journeys
-timeline), `wd*` (Word Duel), `cp*` (couple photo), `cy*` (🌙 Moon calendar), `auth*` (Google sign-in).
+timeline), `wd*` (Word Duel), `cp*` (couple photo), `cy*` (🌙 Moon calendar), `wh*` (📍 Where we are), `auth*` (Google sign-in).
 **Pre-reserved for the Task board** (don't take these for anything else):
 `ac*` (C1 Answer & compare), `gf*` (D1 Gifts), `sd*` (E1 Someday), `tp*` (E1
 Trip Plan), `mn*` (E2 Money), `ai*` (B2 Claude features).
@@ -287,7 +287,7 @@ plain text so they can be repaired by hand in the table editor), `theme`
 (the palette, a `THEMES` key from `js/theme.js` — **shared, so changing it
 changes both phones**, which is the point), `moodboard_prompts`,
 `moodboard_lucia`, and `moodboard_riu` (shared square requirements and each
-person's ordered photo records for 💝 Memories).
+person's ordered photo records for 💝 Memories). `where_lucia` + `where_riu` (📍 Where we are — JSON `{lat, lon, city, country, at}`, coords rounded to ~1km; the row's EXISTENCE is the opt-in, so stopping deletes it).
 
 **Chooser globals in `js/core.js`** (each guards its tab's on-screen work so
 only the visible sub-view fetches or polls): `gamesPick` (🎮 Games) is live;

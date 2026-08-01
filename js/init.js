@@ -46,6 +46,10 @@ loadSettings().then(rows => {
 //
 // 🌙 Moon is excluded by switchTab() itself, so `#tab` can never say `cycle` —
 // that tab is meant to re-hide on refresh.
+// 📍 paint from whatever is published, then refresh our own point if it has
+// gone stale. Never asks for a position unless sharing is already on.
+boot("where we are", () => { whRender(); whLoad().then(whRefreshIfStale); });
+
 boot("restore the tab", () => {
   const want = getHashParam("tab");
   if (!want || want === "cycle" || TABS.indexOf(want) === -1) return;

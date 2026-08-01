@@ -29,6 +29,7 @@
       "photo anniv"
       "photo clocks"
       "photo cd"
+      "photo where"
       "qotd teased"
       "qotd trips";
     /* The Question card spans the last two rows. Without this, grid splits its
@@ -46,6 +47,7 @@
   #page-home #annivBar   { grid-area: anniv; }
   #page-home #homeClocks { grid-area: clocks; }
   #page-home #homeCd     { grid-area: cd; }
+  #page-home #wherePanel { grid-area: where; }
   #page-home #qotdCard   { grid-area: qotd; }
   #page-home #wdTeaser   { grid-area: teased; }
   #page-home #jrHomeCard { grid-area: trips; }
