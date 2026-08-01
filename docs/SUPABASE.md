@@ -33,6 +33,7 @@ falls back to the hardcoded copies and in-memory state ("local mode").
 | `food_photos` / `food_tags` / `food_photo_tags` | the 🍜 Food library: one row per photo (url, path, `taken_at`, GPS), the tag catalogue with a `kind`, and the links between them | none — the tab says to run `supabase/food.sql` |
 | `gifts` | 🎁 the given-half log: what, who gave it, when, occasion, note, and the photo's storage `path` (in the `food` bucket under `gifts/`) | none — the pane says to run `supabase/gifts.sql` |
 | `answers` | Answer & compare: one row per `(day, who)` with the text. The unique index IS the "locked once submitted" rule | none — the Home card says to run `supabase/answers.sql` |
+| `calendar_events` | 📅 the shared calendar: one row per entry (`day`, `at`, `title`, `note`, `who`) | none — the Home card says to run `supabase/calendar.sql` |
 | `album_cache` | slimmed iCloud shared-album metadata, keyed by album token — written and read by `api/album.js`, never by the browser | fetch straight from iCloud (correct, just slow) |
 
 - **Change the password:** Table editor → `settings` → edit the `lock_keys`
@@ -97,6 +98,10 @@ Projects set up before v6 need one-off migrations, run in the SQL editor.
 - `supabase/album_cache.sql` — adds the `album_cache` table (v6.3). Until
   you run it, the app still works — album metadata is simply fetched from
   iCloud every time, which is the ~50s wait it exists to remove.
+- `supabase/calendar.sql` — the 📅 calendar on Home: one table plus its RLS.
+  Until it's run the card renders (it's a real month either way) and says to
+  run it; nothing can be added. `day` is a `date` and `at` is free text on
+  purpose — see the comments in the file.
 - `supabase/journey_photos.sql` — adds `journeys.photos` (jsonb), the trip's
   own uploaded photos as `[{url, path}]`. Until it's run, ✈️ Trips still shows
   and syncs everything else; the "📸 Add photos" button simply doesn't appear.

@@ -22,6 +22,7 @@ function boot(label, fn) {
 // the clock on the front page is still right.
 boot("home widgets", () => { homeTickFast(); homeTickSlow(); });
 
+boot("calendar", calLoad);
 boot("question of the day", qotdRender);
 boot("answers", () => { acRender(); acLoad(); });   // C1: paint empty, then adopt today's
 boot("word duel", () => { wdRollLetters(false); wdRenderAll(); });  // works offline first
