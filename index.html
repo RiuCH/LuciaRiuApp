@@ -40,6 +40,7 @@
      so source order is what lets a theme override the default -->
 <link rel="stylesheet" href="css/themes.css">
 <link rel="stylesheet" href="css/home.css">
+<link rel="stylesheet" href="css/calendar.css">
 <link rel="stylesheet" href="css/answers.css">
 <link rel="stylesheet" href="css/tfd.css">
 <link rel="stylesheet" href="css/journeys.css">
@@ -224,22 +225,18 @@
       <div class="hint" id="whereHint"></div>
     </div>
 
-    <div class="panel qotd" id="qotdCard">
-      <div class="ptitle">Question of the day</div>
-      <div class="qotd-chiprow"><span class="chip" id="qotdChip">😂 Funny</span></div>
-      <div class="qotd-q" id="qotdText">Loading today's question…</div>
-      <div class="ac-box" id="acBox">
-        <div class="ac-status" id="acStatus"></div>
-        <div class="wd-whoami ac-who" id="acWho" style="display:none">
-          <span class="wd-whoami-lbl">I'm</span>
-          <span class="chip" data-me="lucia">Lucia</span>
-          <span class="chip" data-me="riu">Riu</span>
-        </div>
-        <div class="ac-compose" id="acCompose" style="display:none">
-          <textarea id="acInput" rows="2" placeholder="your answer — they can't see it until they've answered too…"></textarea>
-          <button class="primary" id="acSend">🔒 Lock it in</button>
-        </div>
-        <div class="ac-list" id="acList"></div>
+    <!-- 📅 Our calendar. Tapping anywhere on the card opens the month sheet
+         defined near the bottom of this file. -->
+    <div class="panel cal-card" id="calCard">
+      <div class="ptitle" id="calMiniMonth">Our calendar</div>
+      <div class="cal-mini" id="calMini"></div>
+      <div class="cal-next cal-dim" id="calNext">Loading…</div>
+      <!-- the legend carries the "tap to open" affordance, so the top of the
+           card is a month and nothing else -->
+      <div class="cal-key">
+        <span class="cal-keyone"><b class="cal-dot cal-riu"></b>Riu</span>
+        <span class="cal-keyone"><b class="cal-dot cal-lucia"></b>Lucia</span>
+        <span class="cal-open">tap to open ›</span>
       </div>
     </div>
 
@@ -619,6 +616,28 @@
          `gamesPick` value and every id/prefix is unchanged. -->
     <div id="gameTfd" style="display:none">
 
+    <!-- Question of the day + Answer & compare. This lived on Home until the
+         calendar took that slot. Talk is the questions sub-view, so it belongs
+         here at least as well — same ids, same js/answers.js, same daily pick. -->
+    <div class="panel qotd" id="qotdCard">
+      <div class="ptitle">Question of the day</div>
+      <div class="qotd-chiprow"><span class="chip" id="qotdChip">😂 Funny</span></div>
+      <div class="qotd-q" id="qotdText">Loading today's question…</div>
+      <div class="ac-box" id="acBox">
+        <div class="ac-status" id="acStatus"></div>
+        <div class="wd-whoami ac-who" id="acWho" style="display:none">
+          <span class="wd-whoami-lbl">I'm</span>
+          <span class="chip" data-me="lucia">Lucia</span>
+          <span class="chip" data-me="riu">Riu</span>
+        </div>
+        <div class="ac-compose" id="acCompose" style="display:none">
+          <textarea id="acInput" rows="2" placeholder="your answer — they can't see it until they've answered too…"></textarea>
+          <button class="primary" id="acSend">🔒 Lock it in</button>
+        </div>
+        <div class="ac-list" id="acList"></div>
+      </div>
+    </div>
+
     <div class="panel tfd-modes">
       <div class="ptitle">Where are we tonight?</div>
       <div class="tfd-seg" id="tfdDistance">
@@ -959,6 +978,45 @@
   </div>
 </div>
 <div class="toast" id="toast">Copied!</div>
+<!-- 📅 the calendar popout. A sheet rather than a tab: it is a thing you
+     open, write in and dismiss, and it has to be reachable from Home. -->
+<div class="cal-sheet" id="calSheet">
+  <div class="cal-panel">
+    <div class="cal-head">
+      <button id="calPrev" title="Previous month">‹</button>
+      <span class="cal-month" id="calMonthLabel">—</span>
+      <button id="calNextMonth" title="Next month">›</button>
+      <button id="calToday" class="cal-todaybtn">Today</button>
+      <button id="calClose" class="cal-x" title="Close">✕</button>
+    </div>
+    <div class="cal-status" id="calStatus">Loading…</div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div class="cal-key">
+      <span class="cal-keyone"><b class="cal-dot cal-riu"></b>Riu</span>
+      <span class="cal-keyone"><b class="cal-dot cal-lucia"></b>Lucia</span>
+    </div>
+
+    <div class="cal-daybox">
+      <div class="cal-daytitle" id="calDayTitle">—</div>
+      <div class="cal-daylist" id="calDayList"></div>
+      <div class="wd-whoami cal-who" id="calWho">
+        <span class="wd-whoami-lbl">I'm</span>
+        <span class="chip" data-me="lucia">Lucia</span>
+        <span class="chip" data-me="riu">Riu</span>
+      </div>
+      <div class="hint" id="calWhoHint"></div>
+      <div class="cal-form">
+        <input type="text" id="calTitle" placeholder="What's happening?" maxlength="80">
+        <div class="cal-row">
+          <input type="text" id="calAt" placeholder="Time (optional) — 7pm" maxlength="20">
+          <button class="primary" id="calSave">➕ Add it</button>
+        </div>
+        <input type="text" id="calNote" placeholder="Anything to remember (optional)" maxlength="140">
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="jr-lightbox" id="jrLightbox"><img id="jrLightboxImg" alt="journey photo, full size"><video id="jrLightboxVid" controls playsinline style="display:none"></video><button id="jrLightboxDel" class="jr-lbdel" style="display:none">🗑️ Remove photo</button></div>
 <div class="jr-picker" id="jrPicker">
   <div class="panel jr-picker-box">
@@ -990,6 +1048,7 @@
 <script src="js/theme.js"></script>
 <script src="js/questions.js"></script>
 <script src="js/home.js"></script>
+<script src="js/calendar.js"></script>
 <script src="js/answers.js"></script>
 <script src="js/tfd.js"></script>
 <script src="js/journeys.js"></script>

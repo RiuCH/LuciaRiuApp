@@ -79,6 +79,7 @@ because skipping them broke something.
 | File | What lives there |
 |---|---|
 | `css/base.css` | theme vars (including shared light/dark surface tokens), layout shell, `.panel`/`.card`/`.chip`/buttons, Daily Q page, nav, toast, burst, lock screen |
+| `css/calendar.css` | 📅 calendar card, month sheet, the two person colours |
 | `css/home.css` | anniversary, clocks, countdown, teasers, couple photo |
 | `css/tfd.css` | Talk · Flirt · Dare: mode switches, deck buttons, prompt card |
 | `css/journeys.css` | timeline, journey cards, photo grid, lightbox, picker |
@@ -97,6 +98,7 @@ because skipping them broke something.
 | `js/supabase.js` | `SUPABASE_*` config, `supa()`, `loadSettings()`, `saveReunion()`, `loadQuestions()` |
 | `js/questions.js` | `BANK` (11 prompt categories), `CHIPS`, `QUESTION_SOURCE`, the seeded daily deck (`dailyQuestion()`) |
 | `js/tfd.js` | Talk · Flirt · Dare tab: the three decks, Together/Apart mode (`tfd*`) |
+| `js/calendar.js` | 📅 Our calendar: the Home card + the month popout (`cal*`) |
 | `js/home.js` | `MISSYOU`, anniversary/clock/countdown ticks, couple photo (`cp*`) |
 | `js/journeys.js` | timeline CRUD + sort, our photo uploads, iCloud album, lightbox (`jr*`) |
 | `js/gifts.js` | 🎁 Gifts: the given-half log, giver/occasion filters (`gf*`) |
@@ -150,8 +152,23 @@ can reference anything.
   `(day, who)`, so a second insert is refused by Postgres, not just hidden.
   Needs `supabase/answers.sql`; the card says so until it's run. Side comes
   from the games' `#me`. Polls only while yours is in and theirs isn't
-- Question of the Day: a card on **Home** (`qotd*` in `js/home.js`), not a
-  tab. One per day, same on both phones, unchanged by refresh
+- 📅 Our calendar (`#calCard` on Home, `cal*` in `js/calendar.js`): a month
+  grid you both write to. Tapping the card opens `#calSheet` — month nav, a
+  day panel, and a form. **Every entry carries `who`, and the colour means
+  only that**: `--who-riu` / `--who-lucia` are fixed in `css/calendar.css`,
+  NOT derived from `--accent`, because a theme that repaints the accent would
+  otherwise repaint people's identities. `#me` picks whose entry you're
+  adding, shared with the duel and 20 Questions. Days are `"YYYY-MM-DD"`
+  strings end to end and times are free text — two timezones mean a timestamp
+  would render as a different DAY on the two phones (the bug 🍜 Food already
+  paid for). `calMinutes()` parses "6am"/"19:30" so a day sorts by clock
+  rather than alphabetically. Needs `supabase/calendar.sql`; until it's run
+  the card says so. Its own TABLE, not a `settings` JSON row: two people add
+  independently, and a read-modify-write blob loses whoever saves second
+- Question of the Day: `qotd*` in `js/home.js` + Answer & compare
+  (`js/answers.js`). It was Home's fourth card until the calendar took that
+  slot on 2026-07-31; it now lives at the top of **🎭 Talk** (`#gameTfd`).
+  Same ids, same daily pick — only the parent element changed
 - Talk · Flirt · Dare (`#gameTfd`, a chip in 🎮 Games): three decks, live `Math.random()` draws
   (one phone during a call — no seed needed). One switch: 💞 Together vs
   ✈️ Apart, which picks the deck contents AND runs the app hot (`hotMode`
