@@ -136,7 +136,7 @@ can reference anything.
 ### Details worth knowing
 
 - CSS: `:root` variables = theme; `body.afterdark` = red After Dark theme
-- `BANK` — 345 prompts in 11 categories: funny, romantic, spicy, nasty, ldr,
+- `BANK` — 445 prompts in 11 categories: funny, romantic, spicy, nasty, ldr,
   deep, filthy, dareapart, dareapartx, daretogether, daretogetherx. Home's
   Question of the Day only ever draws from the sweet three (`QOTD_CATS` =
   funny + romantic + ldr); everything adult lives behind Talk · Flirt · Dare,

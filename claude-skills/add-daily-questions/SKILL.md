@@ -7,7 +7,7 @@ description: Use when adding, editing, or removing questions in the daily questi
 
 ## Where
 
-- `BANK` — in `js/questions.js`: 345 prompts across the 11 category arrays
+- `BANK` — in `js/questions.js`: 445 prompts across the 11 category arrays
   listed under "Category tone guide" below (`funny`, `romantic`, `spicy`,
   `nasty`, `ldr`, `deep`, `filthy`, `dareapart`, `dareapartx`,
   `daretogether`, `daretogetherx`)
@@ -77,9 +77,18 @@ So: add new questions at the **END** of their category array, then push
 them to the DB with
 
 ```bash
+export LR_TOKEN="…"                             # authToken() in the browser console
 python3 supabase/append_questions.py            # dry run — shows the diff
 python3 supabase/append_questions.py --apply    # insert (non-destructive)
 ```
+
+**`LR_TOKEN` is not optional.** `questions` has been us-only since
+`auth_policies.sql`, and the anon key reads **zero rows without erroring** —
+so the script used to conclude the table was empty and offer to append the
+entire bank, which against a populated table would duplicate every question
+and desync the online and offline decks. It now refuses an empty anon read
+instead of guessing. Get a token by opening the deployed app, signing in, and
+running `authToken()` in the console; it lasts about an hour.
 
 It refuses to run if the stored rows aren't a prefix of `BANK`, verifies
 the two match afterwards, and never deletes. Only use
