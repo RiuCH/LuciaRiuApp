@@ -62,7 +62,14 @@ function whAgo(at) {
 // ---------------- the position ----------------
 // enableHighAccuracy stays OFF: a city name doesn't need GPS, and asking for it
 // spins up the radio and drains the battery for nothing.
-function whPosition() {
+//
+// `fresh` turns the cache off. It used to be maximumAge: 5 minutes for every
+// caller, which is the same number as WH_STALE_MS — so a refresh triggered the
+// moment the stored fix went stale could be answered from a cached fix taken
+// just before it. The timestamp moved; the city didn't. A refresh that returns
+// the position it was refreshing is worse than no refresh, because it looks
+// like it worked.
+function whPosition(fresh) {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) { reject(new Error("no geolocation here")); return; }
     navigator.geolocation.getCurrentPosition(
@@ -71,7 +78,7 @@ function whPosition() {
         lon: Math.round(p.coords.longitude * WH_ROUND) / WH_ROUND
       }),
       err => reject(err),
-      { enableHighAccuracy: false, timeout: 12000, maximumAge: 5 * 60 * 1000 }
+      { enableHighAccuracy: false, timeout: 12000, maximumAge: fresh ? 0 : 60000 }
     );
   });
 }
@@ -108,7 +115,9 @@ async function whPublish(announce) {
   if (!supaOn()) { popToast("Needs the backend — nothing to share with"); return false; }
   whBusy = true; whRender();
   try {
-    const pt = await whPosition();
+    // An announced publish is one you asked for by tapping the button, so it
+    // gets a genuinely new fix rather than whatever the phone had lying around.
+    const pt = await whPosition(!!announce);
     const place = await whPlace(pt);
     // The phone already knows its IANA zone exactly. Deriving one from lat/lon
     // would need a lookup table or a third-party call, and would still be a
@@ -153,6 +162,34 @@ function whRefreshIfStale() {
   if (Date.now() - (mine.at || 0) < WH_STALE_MS) return;
   whPublish(false);
 }
+
+// "Refreshed whenever you open the app" was only true of a COLD open. This ran
+// once, from js/init.js, and reopening a home-screen app resumes the page
+// rather than reloading it — so init never ran again, this never ran again, and
+// the only way to move your pin was Stop sharing then Share again. Which is
+// exactly what Riu found.
+//
+// Three events, because no single one covers every way a phone comes back:
+// visibilitychange is the usual resume, pageshow fires when iOS restores a page
+// from the back/forward cache (where visibilitychange may not), and focus
+// catches a desktop tab being clicked into. They overlap constantly, hence the
+// gate below.
+let whWokeAt = 0;
+
+function whWoke() {
+  if (document.hidden) return;
+  // The three events fire together on a normal resume. One wake, one refresh.
+  const now = Date.now();
+  if (now - whWokeAt < 3000) return;
+  whWokeAt = now;
+  // Their pin first — it costs one request and needs no permission — then ours
+  // if it has gone stale.
+  whLoad().then(whRefreshIfStale);
+}
+
+document.addEventListener("visibilitychange", whWoke);
+window.addEventListener("pageshow", whWoke);
+window.addEventListener("focus", whWoke);
 
 // ---------------- render ----------------
 function whLabel(who) {
@@ -245,7 +282,7 @@ function whRender() {
       ? "Say who you are first — ⚙️ Settings → I'm"
       : whSharing()
         ? "Sharing your city with " + whName(whMe() === "lucia" ? "riu" : "lucia") +
-          " — refreshed whenever you open the app"
+          " — refreshed when you open or return to the app"
         : "Off. Nothing about your location is stored.";
   }
 }

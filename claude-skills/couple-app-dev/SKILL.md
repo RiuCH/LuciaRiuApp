@@ -166,6 +166,21 @@ App Store, no signing, no $99/yr, no expiry** — Share → Add to Home Screen.
   the insets (`css/base.css`). Insets are 0 in a normal tab, so desktop is
   unchanged. **Anything new pinned to a screen edge must add them too**, or it
   lands under the clock or on top of the home indicator.
+- **"When you open the app" is NOT `js/init.js`.** An installed app is
+  resumed far more often than it is launched: the page stays alive, so
+  `init.js` runs once and never again. Anything that should be current *every
+  time you come back* has to listen for the resume as well —
+  `visibilitychange` (the usual one), `pageshow` (iOS restoring from the
+  back/forward cache, where visibilitychange may not fire) and `focus` (a
+  desktop tab clicked into). They fire together on a normal resume, so gate on
+  a timestamp or you will do the work three times. 📍 Location shipped with
+  its refresh wired only to init, and the pin froze until you toggled sharing
+  off and on; `whWoke()` in `js/where.js` is the shape to copy.
+- **A refresh that can be answered from cache is not a refresh.** If you pass
+  `maximumAge` to `getCurrentPosition`, keep it well under whatever staleness
+  threshold triggered the call — equal values mean the "refresh" can return the
+  very fix it was replacing, moving the timestamp and nothing else. A refresh
+  the user asked for by tapping something gets `maximumAge: 0`.
 - Wrap inset rules in `@supports (padding: env(safe-area-inset-top))`. A bare
   `calc(16px + env(...))` is dropped wholesale by a browser without `env()`,
   taking the sane fallback with it.
