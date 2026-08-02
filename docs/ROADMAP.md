@@ -303,6 +303,11 @@ being advertised at the top level at all (the tab key stays `tfd`).
 - **Repo:** private, both partners collaborators, deploy = push to `main`
 
 ## Parking lot
+- **🎨 Color Together:** turn a built-in picture or uploaded couple photo into
+  a shared, zoomable Impressionist paint-by-number canvas, then save completed
+  work in `Our Art Gallery`. The agreed product, AI conversion, region-map,
+  sync, privacy and phased-delivery direction lives in
+  [`docs/COLOR_TOGETHER.md`](COLOR_TOGETHER.md).
 - Real streak tracking (needs DB)
 - Custom question packs the couple writes for each other
 - Push notification "your person answered today" (needs backend; the PWA half
